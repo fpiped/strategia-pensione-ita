@@ -5,10 +5,6 @@ import { FINANCIAL_CONSTANTS } from '../constants/financial-constants.js';
  * Calcola l'evoluzione di un singolo investimento nel tempo
  */
 export class FinancialModel {
-    constructor() {
-      this.csvContent = "data:text/csv;charset=utf-8,";
-    }
-
     /**
      * Calcola tutti gli scenari finanziari basati sui parametri di input
      * Supporta 4 combinazioni: singolo/cumulativo x reinvesti/non-reinvesti
@@ -20,7 +16,8 @@ export class FinancialModel {
         durata, reddito, investimento,
         quotaDatoreFpPerc, quotaMinAderentePerc,
         rendimentoAnnualeFpPerc, rendimentoAnnualePacPerc,
-        reinvestiRisparmio, modalitaCumulativa, riscattoAnticipato
+        reinvestiRisparmio, modalitaCumulativa, riscattoAnticipato,
+        addizionaliPerc = 0, ulterioriDetrazioni = 0
       } = config;
 
       const results = [];
@@ -56,7 +53,13 @@ export class FinancialModel {
 
       for (let anno = 1; anno <= durata; anno++) {
         // Calcola il risparmio fiscale base di quest'anno (solo sull'investimento base)
-        const risparmioAnnoBase = this._calculateTaxSavings(reddito, investimento, quotaDatoreFp);
+        const risparmioAnnoBase = this._calculateTaxSavings(
+          reddito,
+          investimento,
+          quotaDatoreFp,
+          addizionaliPerc,
+          ulterioriDetrazioni
+        );
 
         // Il contributo di quest'anno dipende dalla modalità
         let contributoFpAnno, contributoPacAnno;
@@ -76,7 +79,13 @@ export class FinancialModel {
 
             // Calcola il risparmio fiscale generato QUEST'ANNO (disponibile l'anno prossimo)
             const deduzioneAnno = Math.min(investimentoEffettivoAnno, limiteDeduzione);
-            risparmioAnnoEffettivo = this._calculateTaxSavings(reddito, deduzioneAnno, quotaDatoreFp);
+            risparmioAnnoEffettivo = this._calculateTaxSavings(
+              reddito,
+              deduzioneAnno,
+              quotaDatoreFp,
+              addizionaliPerc,
+              ulterioriDetrazioni
+            );
 
             // Strategia Mix
             contributoFpMixAnno = Math.min(investimentoEffettivoAnno, limiteDeduzione) + quotaDatoreFp;
@@ -164,7 +173,13 @@ export class FinancialModel {
 
               // Calcola il nuovo (minore) risparmio fiscale dall'importo reinvestito
               const deduzioneReinvest = Math.min(risparmioDaReinvestire, limiteDeduzione);
-              risparmioAnnoEffettivo = this._calculateTaxSavings(reddito, deduzioneReinvest, quotaDatoreFp);
+              risparmioAnnoEffettivo = this._calculateTaxSavings(
+                reddito,
+                deduzioneReinvest,
+                quotaDatoreFp,
+                addizionaliPerc,
+                ulterioriDetrazioni
+              );
 
               // Traccia il totale dei risparmi generati (per la visualizzazione)
               risparmioAccumulato += risparmioAnnoEffettivo;
@@ -207,50 +222,43 @@ export class FinancialModel {
         // Tassazione FP
         const tassazioneFP = this.calcolaTassazioneFp(anno - 1, riscattoAnticipato);
 
-        // Calcolo exit FP
-        // La tassazione 15-9% si applica solo ai CONTRIBUTI versati, non ai rendimenti
-        // (i rendimenti sono già tassati annualmente al 12.5-20%, incluso nel rendimento netto COVIP)
         const contributiTotaliFP = contributoAderenteTotale + contributoDatoreTotale;
-        let exitFP = montanteFP - (contributiTotaliFP * tassazioneFP);
-        if (reinvestiRisparmio) {
-          // Aggiungi solo il risparmio pendente di quest'anno (non ancora reinvestito)
-          exitFP += risparmioAnnoEffettivo;
-        } else {
-          // Aggiungi tutti i risparmi accumulati (tenuti separati, non investiti)
-          exitFP += risparmioAccumulato;
-        }
+        const exitFP = this._calculateFpExit({
+          montante: montanteFP,
+          contributi: contributiTotaliFP,
+          tassazione: tassazioneFP,
+          risparmioAnno: risparmioAnnoEffettivo,
+          risparmioAccumulato,
+          reinvestiRisparmio
+        });
+        const exitPAC = this._calculatePacExit(montantePAC, investimentoTotalePAC);
 
-        // Exit PAC: 26% di tasse solo sulle plusvalenze
-        const plusvalenzaPAC = montantePAC - investimentoTotalePAC;
-        const exitPAC = montantePAC - (plusvalenzaPAC * FINANCIAL_CONSTANTS.TASSAZIONE_RENDITE_PAC);
-
-        // Exit Mix (stessa logica del FP per la porzione FP)
-        // Tassazione solo sui contributi FP Mix, non sui rendimenti
-        let exitFPMix = montanteFPMix - (contributoFPMixTotale * tassazioneFP);
-        if (reinvestiRisparmio) {
-          exitFPMix += risparmioAnnoEffettivo;
-        } else {
-          exitFPMix += risparmioAccumulato;
-        }
-        const plusvalenzaPACMix = montantePACMix - investimentoTotalePACMix;
-        const exitPACMix = montantePACMix - (plusvalenzaPACMix * FINANCIAL_CONSTANTS.TASSAZIONE_RENDITE_PAC);
+        const exitFPMix = this._calculateFpExit({
+          montante: montanteFPMix,
+          contributi: contributoFPMixTotale,
+          tassazione: tassazioneFP,
+          risparmioAnno: risparmioAnnoEffettivo,
+          risparmioAccumulato,
+          reinvestiRisparmio
+        });
+        const exitPACMix = this._calculatePacExit(montantePACMix, investimentoTotalePACMix);
         const exitMix = exitFPMix + exitPACMix;
 
         // Memorizza i risultati per quest'anno
         // Tutti i valori sono PER ANNO (non cumulati)
-        results.push({
-          "Anno": anno,
-          "Entro Min": Math.round(quotaEntroMinAnno),
-          "Extra Min": Math.round(quotaExtraMinAnno),
-          "Entro Ded": Math.round(quotaEntroDedAnno),
-          "Extra Ded": Math.round(quotaExtraDedAnno),
-          "Aderente": Math.round(aderenteAnno),
-          "Datore": Math.round(datoreAnno),
-          "Risparmio": Math.round(risparmioAnnoEffettivo),
-          "Exit FP": Math.round(exitFP),
-          "Exit PAC": Math.round(exitPAC),
-          "Exit Mix": Math.round(exitMix),
-        });
+        results.push(this._createResultRow({
+          anno,
+          quotaEntroMinAnno,
+          quotaExtraMinAnno,
+          quotaEntroDedAnno,
+          quotaExtraDedAnno,
+          aderenteAnno,
+          datoreAnno,
+          risparmioAnnoEffettivo,
+          exitFP,
+          exitPAC,
+          exitMix
+        }));
       }
 
       // Per il valore di ritorno, usa i risparmi accumulati finali
@@ -259,12 +267,8 @@ export class FinancialModel {
       // Calcola l'anno di breakeven (quando il PAC diventa migliore del FP)
       const breakeven = this._calculateBreakeven(results);
 
-      // Genera il testo della strategia
-      const strategyText = this._generateStrategyText(results, breakeven, modalitaCumulativa);
-
       return {
         results,
-        strategyText,
         breakeven,
         risparmioImposta: Math.round(risparmioImpostaFinale),
         quotaDatoreFp: Math.round(quotaDatoreFp)
@@ -272,16 +276,56 @@ export class FinancialModel {
     }
 
     /**
-     * Calcola il valore futuro di una rendita anticipata (versamenti a inizio periodo)
-     * VF = C × (1+r) × [(1+r)^n - 1] / r
-     * @param {number} contributo - Contributo annuale
-     * @param {number} r - Tasso di rendimento annuale
-     * @param {number} anni - Numero di anni
-     * @returns {number} Valore futuro
+     * Calcola il netto di uscita per la componente Fondo Pensione.
+     * La tassazione 15-9% si applica solo ai contributi, non ai rendimenti
+     * gia considerati netti nel rendimento FP.
      */
-    _calculateAnnuityDue(contributo, r, anni) {
-      if (r === 0) return contributo * anni;
-      return contributo * (1 + r) * (Math.pow(1 + r, anni) - 1) / r;
+    _calculateFpExit({
+      montante,
+      contributi,
+      tassazione,
+      risparmioAnno,
+      risparmioAccumulato,
+      reinvestiRisparmio
+    }) {
+      const risparmioDaAggiungere = reinvestiRisparmio ? risparmioAnno : risparmioAccumulato;
+      return montante - (contributi * tassazione) + risparmioDaAggiungere;
+    }
+
+    /**
+     * Calcola il netto PAC tassando solo le plusvalenze.
+     */
+    _calculatePacExit(montante, investimentoTotale) {
+      const plusvalenza = Math.max(montante - investimentoTotale, 0);
+      return montante - (plusvalenza * FINANCIAL_CONSTANTS.TASSAZIONE_RENDITE_PAC);
+    }
+
+    _createResultRow({
+      anno,
+      quotaEntroMinAnno,
+      quotaExtraMinAnno,
+      quotaEntroDedAnno,
+      quotaExtraDedAnno,
+      aderenteAnno,
+      datoreAnno,
+      risparmioAnnoEffettivo,
+      exitFP,
+      exitPAC,
+      exitMix
+    }) {
+      return {
+        "Anno": anno,
+        "Entro Min": Math.round(quotaEntroMinAnno),
+        "Extra Min": Math.round(quotaExtraMinAnno),
+        "Entro Ded": Math.round(quotaEntroDedAnno),
+        "Extra Ded": Math.round(quotaExtraDedAnno),
+        "Aderente": Math.round(aderenteAnno),
+        "Datore": Math.round(datoreAnno),
+        "Risparmio": Math.round(risparmioAnnoEffettivo),
+        "Exit FP": Math.round(exitFP),
+        "Exit PAC": Math.round(exitPAC),
+        "Exit Mix": Math.round(exitMix),
+      };
     }
 
     /**
@@ -299,13 +343,21 @@ export class FinancialModel {
     }
 
     /**
-     * Calcola il risparmio fiscale dal contributo al fondo pensione (base, senza cascata)
+     * Calcola il risparmio fiscale dal contributo al fondo pensione.
      * @param {number} reddito - Reddito annuale
      * @param {number} investimento - Importo dell'investimento
      * @param {number} quotaDatoreFp - Contributo del datore
+     * @param {number} addizionaliPerc - Aliquota stimata addizionali regionali/comunali
+     * @param {number} ulterioriDetrazioni - Altre detrazioni annue stimate
      * @returns {number} Importo del risparmio fiscale
      */
-    _calculateTaxSavings(reddito, investimento, quotaDatoreFp) {
+    _calculateTaxSavings(
+      reddito,
+      investimento,
+      quotaDatoreFp,
+      addizionaliPerc = 0,
+      ulterioriDetrazioni = 0
+    ) {
       const redditoImponibile = reddito * (1 - FINANCIAL_CONSTANTS.TASSAZIONE_INPS);
       const limiteDeduzione = Math.max(FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP - quotaDatoreFp, 0);
 
@@ -314,99 +366,22 @@ export class FinancialModel {
 
       // Calcola l'imposta senza deduzione
       const impostaLorda = this.calcolaImposta(redditoImponibile);
+      const addizionali = redditoImponibile * addizionaliPerc;
       const detrazione = this.calcolaDetrazioniDipendente(redditoImponibile);
-      const impostaNetta = Math.max(impostaLorda - detrazione, 0);
+      const impostaNetta = Math.max(impostaLorda + addizionali - detrazione - ulterioriDetrazioni, 0);
 
       // Calcola l'imposta con deduzione
       const redditoDedotto = Math.max(redditoImponibile - deduzione, 0);
       const impostaLordaDedotta = this.calcolaImposta(redditoDedotto);
-      const impostaNettaDedotta = Math.max(impostaLordaDedotta - detrazione, 0);
+      const addizionaliDedotte = redditoDedotto * addizionaliPerc;
+      const detrazioneDedotta = this.calcolaDetrazioniDipendente(redditoDedotto);
+      const impostaNettaDedotta = Math.max(
+        impostaLordaDedotta + addizionaliDedotte - detrazioneDedotta - ulterioriDetrazioni,
+        0
+      );
 
       // Risparmio fiscale
       return impostaNetta - impostaNettaDedotta;
-    }
-
-    /**
-     * Calcola il risparmio fiscale effettivo con effetto cascata quando si reinveste
-     * Il risparmio genera altro risparmio: risparmio → reinvesti → altro risparmio → ...
-     * Converge a: totaleRisparmio = risparmioBase / (1 - aliquotaMarginale)
-     * @param {number} reddito - Reddito annuale
-     * @param {number} investimento - Importo dell'investimento base
-     * @param {number} quotaDatoreFp - Contributo del datore
-     * @returns {Object} {risparmio, investimentoEffettivo, aliquotaMarginale}
-     */
-    _calculateCascadeTaxSavings(reddito, investimento, quotaDatoreFp) {
-      const redditoImponibile = reddito * (1 - FINANCIAL_CONSTANTS.TASSAZIONE_INPS);
-      const limiteDeduzione = Math.max(FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP - quotaDatoreFp, 0);
-
-      // Calcola l'aliquota marginale
-      const aliquotaMarginale = this._getMarginalRate(redditoImponibile);
-
-      // Con cascata: investimentoEffettivo = investimentoBase / (1 - aliquota)
-      // Ma limitato al tetto di deduzione
-      const investimentoEffettivo = Math.min(
-        investimento / (1 - aliquotaMarginale),
-        limiteDeduzione
-      );
-
-      // Calcola il risparmio fiscale effettivo sull'investimento effettivo
-      const risparmio = this._calculateTaxSavings(reddito, investimentoEffettivo, quotaDatoreFp);
-
-      return {
-        risparmio,
-        investimentoEffettivo,
-        aliquotaMarginale
-      };
-    }
-
-    /**
-     * Ottiene l'aliquota IRPEF marginale per un dato reddito
-     * @param {number} reddito - Reddito imponibile
-     * @returns {number} Aliquota marginale
-     */
-    _getMarginalRate(reddito) {
-      if (reddito <= 28000) {
-        return 0.23;
-      } else if (reddito <= 60000) {
-        return 0.33;
-      } else {
-        return 0.43;
-      }
-    }
-
-    /**
-     * Genera il testo della strategia basato sui risultati finali
-     * @param {Array} results - Risultati dei calcoli
-     * @param {number|null} breakeven - Anno di breakeven
-     * @param {boolean} modalitaCumulativa - Se la modalità cumulativa è attiva
-     * @returns {string} Descrizione della strategia
-     */
-    _generateStrategyText(results, breakeven, modalitaCumulativa) {
-      if (!results.length) return "";
-
-      const lastResult = results[results.length - 1];
-      const exitFP = lastResult['Exit FP'];
-      const exitPAC = lastResult['Exit PAC'];
-      const exitMix = lastResult['Exit Mix'];
-
-      const values = [
-        { name: 'Fondo Pensione', value: exitFP },
-        { name: 'PAC', value: exitPAC },
-        { name: 'Mix', value: exitMix }
-      ];
-
-      const best = values.reduce((a, b) => a.value > b.value ? a : b);
-
-      let breakevenText = '';
-      if (breakeven) {
-        breakevenText = ` Il PAC supera il FP dopo ${breakeven} anni.`;
-      } else {
-        breakevenText = ` Il FP rimane conveniente per tutta la durata.`;
-      }
-
-      const modeText = modalitaCumulativa ? ' (modalità cumulativa)' : '';
-
-      return `Con i parametri inseriti${modeText}, la strategia migliore è ${best.name} con un exit di ${best.value.toLocaleString('it-IT')} €.${breakevenText}`;
     }
 
     /**
@@ -425,7 +400,8 @@ export class FinancialModel {
     }
 
     /**
-     * Calcola l'imposta sul reddito in base agli scaglioni progressivi (IRPEF 2025)
+     * Calcola l'imposta sul reddito in base agli scaglioni progressivi IRPEF 2025.
+     * Aggiornato alla Legge 30 dicembre 2024, n. 207.
      * @param {number} reddito - Importo del reddito
      * @returns {number} Importo dell'imposta
      */
@@ -433,16 +409,17 @@ export class FinancialModel {
       let imposta;
       if (reddito <= 28000) {
         imposta = reddito * 0.23;
-      } else if (reddito <= 60000) {
-        imposta = 28000 * 0.23 + (reddito - 28000) * 0.33;
+      } else if (reddito <= 50000) {
+        imposta = 28000 * 0.23 + (reddito - 28000) * 0.35;
       } else {
-        imposta = 28000 * 0.23 + 32000 * 0.33 + (reddito - 60000) * 0.43;
+        imposta = 28000 * 0.23 + 22000 * 0.35 + (reddito - 50000) * 0.43;
       }
       return imposta;
     }
 
     /**
-     * Calcola le detrazioni per lavoro dipendente in base al reddito
+     * Calcola le detrazioni per lavoro dipendente in base al reddito.
+     * Aggiornato alla Legge 30 dicembre 2024, n. 207.
      * @param {number} reddito - Importo del reddito
      * @returns {number} Importo della detrazione
      */
@@ -450,7 +427,7 @@ export class FinancialModel {
       let detrazione;
 
       if (reddito <= 15000) {
-        detrazione = 1880;
+        detrazione = 1955;
       } else if (reddito <= 28000) {
         const rapporto = (28000 - reddito) / 13000;
         detrazione = 1910 + (1190 * rapporto);

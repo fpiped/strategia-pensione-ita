@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="it" data-theme="light">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calcolatore Fondo Pensione vs PAC</title>
-    <link rel="icon" href="./favicon.png" type="image/png">
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
     <link rel="stylesheet" href="styles.css">
@@ -22,24 +22,19 @@
                     <div class="subheader">Confronta strategie di investimento per il tuo futuro</div>
                 </div>
             </div>
-            <button class="theme-toggle" id="theme-toggle" aria-label="Cambia tema">
-                <i class="fas fa-moon"></i>
-            </button>
-        </div>
-    </header>
-
-    <div class="page-container">
-        <div class="main-content">
-            <!-- Tabs -->
-            <div class="tabs">
+            <nav class="tabs" aria-label="Sezioni principali">
                 <div class="tab active" data-tab="calculator">
                     <i class="fas fa-calculator"></i> Calcolatore
                 </div>
                 <div class="tab" data-tab="documentation">
                     <i class="fas fa-book"></i> Guida
                 </div>
-            </div>
+            </nav>
+        </div>
+    </header>
 
+    <div class="page-container">
+        <div class="main-content">
             <!-- Calculator Section -->
             <div class="tab-content active" id="calculator-content">
 
@@ -80,9 +75,23 @@
                                         <input type="number" id="quotaMinAderentePerc" class="form-control" value="1" min="0" max="100" step="0.1">
                                     </div>
                                 </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="addizionaliPerc"><span class="help-trigger" data-help="addizionaliPerc">Addizionali stimate (%)</span></label>
+                                        <input type="number" id="addizionaliPerc" class="form-control" value="2" min="0" max="10" step="0.1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ulterioriDetrazioni"><span class="help-trigger" data-help="ulterioriDetrazioni">Ulteriori detrazioni (€)</span></label>
+                                        <input type="number" id="ulterioriDetrazioni" class="form-control" value="0" min="0" step="100">
+                                    </div>
+                                </div>
                                 <div class="info-box" id="info-contributo-datore">
                                     <i class="fas fa-info-circle"></i>
                                     <span>Per ottenere il contributo datore devi investire almeno <strong id="min-investimento-display">300 €</strong>/anno</span>
+                                </div>
+                                <div class="info-box">
+                                    <i class="fas fa-circle-exclamation"></i>
+                                    <span>Il calcolo non include il TFR: confronta solo contributi volontari, contributo datore, deduzione fiscale e rendimento.</span>
                                 </div>
                             </div>
                         </div>
@@ -94,6 +103,17 @@
                                 Rendimenti e Opzioni
                             </div>
                             <div class="card-body">
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="scenarioRendimento"><span class="help-trigger" data-help="scenarioRendimento">Scenario rendimenti</span></label>
+                                        <select id="scenarioRendimento" class="form-control">
+                                            <option value="centrale" selected>Centrale: FP 4%, PAC 8%</option>
+                                            <option value="prudente">Prudente: FP 2%, PAC 4%</option>
+                                            <option value="aggressivo">Aggressivo: FP 5%, PAC 10%</option>
+                                            <option value="custom">Personalizzato</option>
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label for="compartoFp"><span class="help-trigger" data-help="compartoFp">Comparto FP</span></label>
@@ -120,15 +140,20 @@
                                 </div>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="rendimentoAnnualeFpPerc"><span class="help-trigger" data-help="rendimentoAnnualeFpPerc">Rendimento FP (%)</span></label>
+                                        <label for="rendimentoAnnualeFpPerc"><span class="help-trigger" data-help="rendimentoAnnualeFpPerc">Rendimento FP ipotizzato (%)</span></label>
                                         <input type="number" id="rendimentoAnnualeFpPerc" class="form-control" value="4" min="0" max="20" step="0.1">
                                     </div>
                                     <div class="form-group">
-                                        <label for="rendimentoAnnualePacPerc"><span class="help-trigger" data-help="rendimentoAnnualePacPerc">Rendimento PAC (%)</span></label>
+                                        <label for="rendimentoAnnualePacPerc"><span class="help-trigger" data-help="rendimentoAnnualePacPerc">Rendimento PAC ipotizzato (%)</span></label>
                                         <input type="number" id="rendimentoAnnualePacPerc" class="form-control" value="8" min="0" max="20" step="0.1">
                                     </div>
                                 </div>
-                                <div class="form-row">
+                                <div class="info-box">
+                                    <i class="fas fa-triangle-exclamation"></i>
+                                    <span>I rendimenti sono ipotesi di simulazione, non previsioni o garanzie. Modificali per testare scenari conservativi e ottimistici.</span>
+                                </div>
+                                <div class="input-warnings" id="input-warnings" aria-live="polite"></div>
+                                <div class="form-row options-row">
                                     <div class="form-group">
                                         <label class="toggle-label">
                                             <input type="checkbox" id="modalitaCumulativa" checked>
@@ -189,7 +214,7 @@
                     <div class="metric-card metric-breakeven">
                         <div class="metric-label">Breakeven</div>
                         <div class="metric-value" id="metric-breakeven-value">-</div>
-                        <div class="metric-subtitle">Orizzonte minimo per preferire ETF</div>
+                        <div class="metric-subtitle" id="metric-breakeven-subtitle">Quando il PAC supera il FP</div>
                     </div>
                 </div>
 
@@ -237,7 +262,7 @@
             <div class="tab-content" id="documentation-content">
                 <div class="docs-section">
 
-                    <p><strong>Indice:</strong> <a href="#introduction">Il problema</a> · <a href="#step1">Vantaggi FP</a> · <a href="#step2">Vantaggi ETF</a> · <a href="#step3">Confronto</a> · <a href="#step4">Simulazione</a> · <a href="#options">Opzioni</a> · <a href="#results">Risultati</a> · <a href="#fonti">Fonti</a></p>
+                    <p><strong>Indice:</strong> <a href="#introduction">Il problema</a> · <a href="#tfr-escluso">TFR escluso</a> · <a href="#step1">Vantaggi FP</a> · <a href="#step2">Vantaggi ETF</a> · <a href="#step3">Confronto</a> · <a href="#step4">Simulazione</a> · <a href="#options">Opzioni</a> · <a href="#results">Risultati</a> · <a href="#fonti">Fonti</a></p>
 
                     <h2 id="introduction">Il problema: FP o PAC?</h2>
 
@@ -248,6 +273,21 @@
                     </ul>
 
                     <p><strong>La domanda:</strong> i vantaggi fiscali del FP battono i rendimenti potenzialmente più alti dell'ETF?</p>
+
+                    <h2 id="tfr-escluso">Cosa non include: il TFR</h2>
+
+                    <p>Questo calcolatore <strong>non include il TFR</strong>. Il confronto è intenzionalmente limitato ai soldi che decidi di investire ogni anno:</p>
+                    <ul>
+                        <li>versamento volontario nel fondo pensione;</li>
+                        <li>eventuale contributo del datore;</li>
+                        <li>risparmio fiscale della deduzione;</li>
+                        <li>rendimento e tassazione del fondo pensione;</li>
+                        <li>rendimento e tassazione del PAC in ETF.</li>
+                    </ul>
+
+                    <p>Il TFR è escluso perché ha una logica diversa: matura in base alla retribuzione, può restare in azienda o essere destinato al fondo pensione, segue una rivalutazione legale se resta fuori dal FP e ha una tassazione separata. Mescolarlo nello stesso calcolo renderebbe il confronto meno leggibile.</p>
+
+                    <p><strong>Quindi questo strumento risponde a questa domanda:</strong> “dato un importo annuo che voglio investire, conviene metterlo nel fondo pensione o in un PAC?”. Non risponde ancora alla domanda completa: “conviene destinare anche il TFR al fondo pensione?”.</p>
 
                     <h3>Glossario</h3>
                     <table>
@@ -334,7 +374,7 @@
                     <p><small>*L'aliquota parte dal 15% e scende dello 0.3% per ogni anno oltre il 15°, fino al minimo del 9% (con 35+ anni di iscrizione).</small></p>
 
                     <div class="highlight">
-                        <strong>Esempio usato in questa guida:</strong> Mario, 35 anni, reddito €30.000, investe €3.000/anno. Il datore versa 1.5% se Mario versa almeno 1%.
+                        <strong>Esempio usato in questa guida:</strong> Mario, 35 anni, reddito €30.000, investe €3.000/anno. Il datore versa 1.5% se Mario versa almeno 1%. Addizionali stimate: 2%. Ulteriori detrazioni: €0. Rendimento FP ipotizzato: 4%. Rendimento PAC ipotizzato: 8%.
                     </div>
 
                     <h2 id="step1">Step 1: I vantaggi del FP</h2>
@@ -347,14 +387,23 @@ Contributo datore: 1.5% di €30.000 = €450
 Mario versa €3.000 → l'azienda aggiunge €450 gratis</pre>
 
                     <h3>Deduzione fiscale</h3>
-                    <p>I versamenti si deducono dal reddito → paghi meno IRPEF oggi.</p>
-                    <p><small>Nota: il calcolatore deduce prima i contributi INPS (~9.19%) dal reddito lordo per ottenere il reddito imponibile, poi calcola l'IRPEF.</small></p>
-                    <p><small>Scaglioni IRPEF 2025 usati: 23% fino a €28.000, 33% da €28.001 a €60.000, 43% oltre €60.000.</small></p>
-<pre>Senza FP: IRPEF su €30.000 = €6.900
-Con FP:   IRPEF su €27.000 = €6.210
-Risparmio OGGI: €690</pre>
+                    <p>I versamenti si deducono dal reddito → paghi meno imposte oggi.</p>
+                    <p><small>Nota: il calcolatore deduce prima i contributi INPS (~9.19%) dal reddito lordo per ottenere il reddito imponibile, poi calcola IRPEF, addizionali stimate e detrazioni.</small></p>
+                    <p><small>Scaglioni IRPEF 2025 usati, aggiornati alla Legge 30 dicembre 2024, n. 207: 23% fino a €28.000, 35% da €28.001 a €50.000, 43% oltre €50.000.</small></p>
+                    <p><small>Le addizionali regionali/comunali sono stimate con una percentuale manuale. Le ulteriori detrazioni riducono l'imposta netta e servono a simulare bonus o detrazioni personali non modellati nel dettaglio.</small></p>
+<pre>Step fiscale con i parametri default:
 
-                    <p><strong>Attenzione:</strong> all'uscita pagherai il 9-15% sul montante. Ma è meno del 23% che avresti pagato oggi.</p>
+RAL:                     €30.000
+- INPS stimata 9.19%:    €2.757
+= Imponibile fiscale:    ~€27.243
+
+Deduzione FP anno 1:     €3.000
+Addizionali stimate:     2%
+Ulteriori detrazioni:    €0
+
+Risparmio fiscale stimato anno 1: ~€960</pre>
+
+                    <p><strong>Attenzione:</strong> il risparmio fiscale dipende dalla tua capienza fiscale. Se hai molte altre detrazioni, il beneficio effettivo può scendere.</p>
 
                     <h3>Limite deduzione</h3>
                     <p>Puoi dedurre max €5.164/anno, ma il contributo datore conta nel limite.</p>
@@ -363,16 +412,19 @@ Risparmio OGGI: €690</pre>
 = Per te:      €4.714</pre>
 
                     <h3>Totale vantaggi FP (anno 1)</h3>
-<pre>Mario versa:       €3.000
-+ Datore:          €450
-+ Risparmio IRPEF: €690
-= Valore totale:   €4.140</pre>
+<pre>Mario versa nel FP:          €3.000
++ Datore:                   €450
++ Risparmio fiscale stimato: €960
+= Vantaggio iniziale lordo:  €4.410</pre>
+
+                    <p>Il risparmio fiscale non entra automaticamente nel fondo nello stesso anno. Con l'opzione "Reinvesti deduzione", il calcolatore lo reinveste dall'anno successivo.</p>
 
                     <h2 id="step2">Step 2: I vantaggi dell'ETF</h2>
 
                     <h3>Rendimento potenziale più alto</h3>
-<pre>FP tipico: 2-4% annuo
-ETF MSCI World: 5-8% annuo (media storica)</pre>
+                    <p>Gli ETF azionari globali possono avere un rendimento atteso più alto, ma anche oscillazioni più forti. I valori inseriti nel calcolatore sono ipotesi: servono a simulare scenari, non a prevedere il futuro.</p>
+<pre>FP prudente/dinamico: 2-4% annuo ipotizzato
+ETF globale:          5-8% annuo ipotizzato</pre>
 
                     <h3>Tassazione più efficiente</h3>
                     <p>Il FP tassa i rendimenti ogni anno. L'ETF solo alla vendita.</p>
@@ -395,59 +447,110 @@ Versamento              €3.000          €3.000
 + Datore                €450            €0
 = Capitale iniziale     €3.450          €3.000
 ───────────────────────────────────────────────────────
-Deduzione IRPEF         €690            €0
+Risparmio fiscale      €960            €0
 Tassa uscita            9-15%           Nessuna
 ───────────────────────────────────────────────────────
 Tassa rendimenti        Ogni anno       Solo vendita
 Aliquota                12.5-20%        26%</pre>
 
-                    <p>Il FP parte con €1.140 in più (€450 + €690). Ma l'ETF può recuperare grazie a rendimenti più alti e tassazione più efficiente.</p>
+                    <p>Il FP parte con un vantaggio lordo stimato di €1.410 (€450 del datore + circa €960 di risparmio fiscale). L'ETF può recuperare se il rendimento netto composto resta più alto per abbastanza anni.</p>
 
                     <h2 id="step4">Step 4: Simulazione anno per anno</h2>
 
-                    <p>Rendimento FP: 3%, Rendimento PAC: 5%</p>
+                    <p>Questa simulazione usa i parametri default del calcolatore: FP 4%, PAC 8%, addizionali stimate 2%, reinvestimento della deduzione attivo. È uno scenario centrale, non una previsione.</p>
 
                     <h3>Anno 1</h3>
-<pre>FP:  €3.450 × 1.03 = €3.554 + risparmio €690
-     Tassa exit: €3.450 × 15% = €518 (solo sui contributi!)
-     Exit: €3.554 - €518 + €690 = €3.726
+<pre>FP:
+Versamento Mario:          €3.000
++ Datore:                  €450
+= Capitale versato FP:     €3.450
+Crescita al 4%:            €3.588
+Risparmio fiscale stimato: €960
+Exit netto stimato:        €4.030
 
-PAC: €3.000 × 1.05 = €3.150
-     Exit: €3.150 - €39 (tasse su plusvalenza) = €3.111
+PAC:
+Versamento:                €3.000
+Crescita all'8%:           €3.240
+Tassa 26% sulla plusvalenza
+Exit netto stimato:        €3.178
 
-→ FP vince: €3.726 vs €3.111</pre>
+→ FP vince: €4.030 vs €3.178</pre>
 
                     <h3>Anno 2</h3>
-<pre>FP:  Montante €7.925, Exit €7.585
-PAC: Montante €6.458, Exit €6.339
+<pre>FP:  Exit €8.426
+PAC: Exit €6.547
 
-→ FP vince: €7.585 vs €6.339</pre>
+→ FP vince: €8.426 vs €6.547</pre>
 
                     <h3>Anno 3</h3>
-<pre>FP:  Montante €12.591, Exit €11.589
-PAC: Montante €9.930, Exit €9.169
+<pre>FP:  Exit €13.087
+PAC: Exit €10.124
 
-→ FP vince: €11.589 vs €9.169</pre>
+→ FP vince: €13.087 vs €10.124</pre>
 
                     <h3>Anno 15</h3>
-<pre>FP:  Exit €32.450
-PAC: Exit €29.800
+<pre>FP:  Exit €89.033
+PAC: Exit €76.800
 
 → FP vince ancora, ma il gap si riduce</pre>
 
                     <h3>Anno 20</h3>
-<pre>FP:  Exit €45.200
-PAC: Exit €44.900
+<pre>FP:  Exit €135.729
+PAC: Exit €125.319
 
-→ Quasi pari! Questo è il breakeven</pre>
+→ FP è ancora avanti</pre>
 
                     <h3>Anno 25</h3>
-<pre>FP:  Exit €58.100
-PAC: Exit €63.500
+<pre>FP:  Exit €193.762
+PAC: Exit €194.779
 
-→ PAC vince: €63.500 vs €58.100</pre>
+→ PAC supera FP: questo è il breakeven</pre>
 
-                    <p>Dopo il breakeven (~20 anni in questo esempio), il PAC supera il FP grazie al rendimento più alto e alla tassazione differita.</p>
+                    <h3>Anno 30</h3>
+<pre>FP:  Exit €265.432
+PAC: Exit €295.008
+
+→ PAC vince grazie al rendimento composto più alto</pre>
+
+                    <p>Dopo il breakeven (~25 anni in questo scenario), il PAC supera il FP grazie al rendimento più alto e alla tassazione differita.</p>
+
+                    <h3>Quanto contano le ipotesi di rendimento</h3>
+                    <p>Il breakeven cambia molto se modifichi i rendimenti. Con gli stessi dati di Mario, ma cambiando solo FP e PAC:</p>
+                    <table>
+                        <tr>
+                            <th>Scenario</th>
+                            <th>FP</th>
+                            <th>PAC</th>
+                            <th>Breakeven</th>
+                            <th>Exit FP 30 anni</th>
+                            <th>Exit PAC 30 anni</th>
+                        </tr>
+                        <tr>
+                            <td>Conservativo</td>
+                            <td>2%</td>
+                            <td>4%</td>
+                            <td>PAC non supera entro 30 anni</td>
+                            <td>€185.327</td>
+                            <td>€152.889</td>
+                        </tr>
+                        <tr>
+                            <td>Centrale</td>
+                            <td>4%</td>
+                            <td>8%</td>
+                            <td>25 anni</td>
+                            <td>€265.432</td>
+                            <td>€295.008</td>
+                        </tr>
+                        <tr>
+                            <td>Ottimistico PAC</td>
+                            <td>5%</td>
+                            <td>10%</td>
+                            <td>20 anni</td>
+                            <td>€319.238</td>
+                            <td>€425.094</td>
+                        </tr>
+                    </table>
+                    <p>Questa tabella serve a leggere il risultato nel modo giusto: il calcolatore confronta scenari coerenti, ma non stabilisce quale rendimento si realizzerà davvero.</p>
 
                     <h3>L'orizzonte temporale conta</h3>
                     <p>Non tutti i versamenti hanno lo stesso orizzonte temporale:</p>
@@ -456,18 +559,26 @@ PAC: Exit €63.500
                         <li><strong>Versamenti a fine carriera:</strong> restano investiti 5-10 anni → il FP vince quasi sempre</li>
                     </ul>
                     <p>Inoltre, a fine carriera lo stipendio è tipicamente al massimo → aliquota IRPEF più alta → maggiore risparmio fiscale con il FP.</p>
-<pre>Esempio: stesso versamento di €3.000
+<pre>Esempio qualitativo: stesso versamento di €3.000
 
-A 30 anni (RAL €25.000, aliquota 25%, orizzonte 35 anni):
-→ Risparmio fiscale FP: €750
+A 30 anni, orizzonte 35 anni:
+→ L'ETF ha molto tempo per recuperare il vantaggio fiscale iniziale del FP
 → Ma l'ETF ha 35 anni per recuperare
 
-A 55 anni (RAL €50.000, aliquota 35%, orizzonte 10 anni):
-→ Risparmio fiscale FP: €1.050
+A 55 anni, orizzonte 10 anni:
+→ Il FP tende a essere più competitivo perché il vantaggio fiscale pesa di più
 → L'ETF ha solo 10 anni: non basta</pre>
                     <p><strong>Conclusione:</strong> il FP diventa sempre più conveniente man mano che ci si avvicina alla pensione.</p>
 
                     <h2 id="options">Le opzioni del calcolatore</h2>
+
+                    <h3>Scenario rendimenti</h3>
+                    <ul>
+                        <li><strong>Prudente:</strong> usa rendimenti bassi per FP e PAC.</li>
+                        <li><strong>Centrale:</strong> usa i parametri della guida, FP 4% e PAC 8%.</li>
+                        <li><strong>Aggressivo:</strong> aumenta il rendimento ipotizzato del PAC e mostra uno scenario più favorevole all'azionario.</li>
+                        <li><strong>Personalizzato:</strong> si attiva quando modifichi manualmente comparto, ETF o rendimenti.</li>
+                    </ul>
 
                     <h3>Modalità cumulativa</h3>
                     <ul>
@@ -479,12 +590,12 @@ Usa "No" per decidere dove mettere i soldi di quest'anno.</pre>
 
                     <h3>Reinvesti deduzione</h3>
                     <ul>
-                        <li><strong>Sì (default):</strong> il risparmio IRPEF viene reinvestito nel FP l'anno dopo → interesse composto</li>
+                        <li><strong>Sì (default):</strong> il risparmio fiscale stimato viene reinvestito nel FP l'anno dopo → interesse composto</li>
                         <li><strong>No:</strong> il risparmio resta sul tuo conto e viene sommato alla fine → più liquidità, meno rendimento</li>
                     </ul>
-<pre>Con reinvestimento (30 anni): ~€26.000
-Senza reinvestimento:         €20.700
-Differenza: ~€5.300</pre>
+<pre>Con reinvestimento (30 anni): Exit FP ~€265.432
+Senza reinvestimento:         Exit FP ~€219.154
+Differenza stimata:           ~€46.278</pre>
 
                     <h3>Riscatto anticipato</h3>
                     <ul>
@@ -492,6 +603,13 @@ Differenza: ~€5.300</pre>
                         <li><strong>Sì:</strong> simula un riscatto anticipato totale con tassazione fissa al 23%</li>
                     </ul>
                     <p>Il riscatto anticipato si applica quando ritiri il capitale prima della pensione per motivi non sanitari (es. acquisto casa, altre esigenze). In questi casi la tassazione è sempre 23%, senza la riduzione graduale.</p>
+
+                    <h3>Addizionali e altre detrazioni</h3>
+                    <ul>
+                        <li><strong>Addizionali stimate:</strong> percentuale manuale per approssimare addizionale regionale e comunale. Il default è una stima generica.</li>
+                        <li><strong>Ulteriori detrazioni:</strong> importo annuo di bonus o detrazioni personali che riducono l'imposta netta. Non sono deduzioni e non riducono il reddito imponibile.</li>
+                    </ul>
+                    <p>Questi campi servono a rendere la stima più realistica senza mantenere un database aggiornato di aliquote locali e casi fiscali personali.</p>
 
                     <h3>Mostra dettaglio</h3>
                     <ul>
@@ -519,7 +637,7 @@ Differenza: ~€5.300</pre>
                     </table>
 
                     <h3>Breakeven</h3>
-                    <p>È l'orizzonte minimo oltre il quale l'ETF conviene. Esempio: breakeven 18 anni significa che prima conviene FP, dopo conviene ETF.</p>
+                    <p>È l'orizzonte minimo oltre il quale l'ETF supera il FP nello scenario simulato. Esempio: breakeven 18 anni significa che, con quei parametri, prima prevale FP e dopo prevale ETF.</p>
 <pre>Orizzonte < breakeven → preferisci FP
 Orizzonte > breakeven → valuta ETF
 Orizzonte ≈ breakeven → quasi indifferente</pre>
@@ -533,7 +651,7 @@ Orizzonte ≈ breakeven → quasi indifferente</pre>
                         <tr><td>Extra Ded</td><td>Quota non deducibile</td></tr>
                         <tr><td>Aderente</td><td>Totale versato da te</td></tr>
                         <tr><td>Datore</td><td>Totale versato dall'azienda</td></tr>
-                        <tr><td>Risparmio</td><td>IRPEF risparmiata</td></tr>
+                        <tr><td>Risparmio</td><td>Risparmio fiscale stimato: IRPEF, addizionali e detrazioni disponibili</td></tr>
                         <tr><td>Exit</td><td>Netto se esci a quell'anno</td></tr>
                     </table>
 
@@ -547,14 +665,36 @@ I RENDIMENTI non vengono tassati all'uscita
 perché sono già stati tassati ogni anno (12.5-20%).</pre>
                     <p><strong>Esempio Anno 1:</strong> versi €3.450, crescono a €3.588. La tassa 15% si applica solo su €3.450, non sui €138 di rendimento (già tassato).</p>
 
-                    <h2 id="fonti">Fonti e Approfondimenti</h2>
+                    <h2 id="fonti">Fonti, ipotesi e limiti</h2>
 
-                    <h3>Rendimenti Fondi Pensione (COVIP)</h3>
-                    <p>I rendimenti dei fondi pensione nel calcolatore sono basati sui dati pubblicati dalla COVIP (Commissione di Vigilanza sui Fondi Pensione). Questi rendimenti sono già <strong>al netto della tassazione annuale</strong> (12.5% su titoli di stato, 20% su altri investimenti).</p>
-                    <p><a href="https://www.covip.it/la-covip-e-la-sua-attivita/pubblicazioni-statistiche/relazione-annuale" target="_blank" rel="noopener">COVIP - Relazione Annuale</a></p>
+                    <h3>Fonti normative usate nel calcolo</h3>
+                    <table>
+                        <tr>
+                            <th>Area</th>
+                            <th>Fonte</th>
+                            <th>Cosa usa il calcolatore</th>
+                        </tr>
+                        <tr>
+                            <td>IRPEF 2025</td>
+                            <td><a href="https://www.gazzettaufficiale.it/atto/serie_generale/caricaArticolo?art.codiceRedazionale=24G00229&amp;art.dataPubblicazioneGazzetta=2024-12-31&amp;art.flagTipoArticolo=0&amp;art.idArticolo=1&amp;art.idGruppo=1&amp;art.idSottoArticolo=1&amp;art.idSottoArticolo1=10&amp;art.progressivo=1&amp;art.versione=1" target="_blank" rel="noopener">Legge 30 dicembre 2024, n. 207</a></td>
+                            <td>Scaglioni 23%, 35%, 43% e detrazione lavoro dipendente minima €1.955.</td>
+                        </tr>
+                        <tr>
+                            <td>Deducibilità FP</td>
+                            <td><a href="https://www.gazzettaufficiale.it/atto/serie_generale/caricaArticolo?art.codiceRedazionale=005G0278&amp;art.dataPubblicazioneGazzetta=2005-12-13&amp;art.flagTipoArticolo=0&amp;art.idArticolo=8&amp;art.idGruppo=0&amp;art.idSottoArticolo=1&amp;art.idSottoArticolo1=10&amp;art.progressivo=0&amp;art.versione=1" target="_blank" rel="noopener">D.Lgs. 5 dicembre 2005, n. 252, art. 8</a></td>
+                            <td>Limite di deduzione annua dei contributi a previdenza complementare.</td>
+                        </tr>
+                        <tr>
+                            <td>Tassazione uscita FP</td>
+                            <td><a href="https://www.gazzettaufficiale.it/atto/serie_generale/caricaArticolo?art.codiceRedazionale=005G0278&amp;art.dataPubblicazioneGazzetta=2005-12-13&amp;art.flagTipoArticolo=0&amp;art.idArticolo=11&amp;art.idGruppo=0&amp;art.idSottoArticolo=1&amp;art.idSottoArticolo1=10&amp;art.progressivo=0&amp;art.versione=1" target="_blank" rel="noopener">D.Lgs. 5 dicembre 2005, n. 252, art. 11</a></td>
+                            <td>Aliquota 15%, riduzione progressiva fino al 9%, e simulazione del riscatto anticipato al 23%.</td>
+                        </tr>
+                    </table>
 
-                    <h3>ETF Consigliati per PAC</h3>
-                    <p>Ecco alcuni ETF comunemente usati per un PAC a lungo termine:</p>
+                    <h3>Fonti informative sui rendimenti</h3>
+                    <p>I rendimenti dei fondi pensione sono ipotesi ispirate ai dati storici pubblicati da <a href="https://www.covip.it/" target="_blank" rel="noopener">COVIP</a>. Nel modello sono trattati come rendimenti già al netto della tassazione annuale dei rendimenti, ma non sono rendimenti futuri garantiti.</p>
+
+                    <p>Gli ETF indicati sotto sono esempi comuni per costruire un PAC globale. Non sono raccomandazioni di acquisto: servono a dare riferimenti concreti agli scenari del calcolatore.</p>
                     <table>
                         <tr>
                             <th>ETF</th>
@@ -600,7 +740,16 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
                         </tr>
                     </table>
 
-                    <p class="disclaimer"><strong>Disclaimer:</strong> Questo calcolatore fornisce stime basate su rendimenti ipotizzati. Non costituisce consulenza finanziaria.</p>
+                    <h3>Ipotesi e limiti del modello</h3>
+                    <ul>
+                        <li>Il TFR non è incluso: il calcolo confronta contributi volontari FP/PAC, non la scelta tra TFR in azienda e TFR nel fondo pensione.</li>
+                        <li>Le addizionali regionali e comunali sono stimate con una percentuale manuale, non recuperate automaticamente dal Comune o dalla Regione.</li>
+                        <li>Le ulteriori detrazioni sono un campo sintetico: il calcolatore non ricostruisce tutti i bonus fiscali personali.</li>
+                        <li>I rendimenti FP e PAC sono ipotesi costanti anno per anno; nella realtà i mercati oscillano e l'ordine dei rendimenti conta.</li>
+                        <li>Costi, commissioni, fiscalità personale, cambi normativi e condizioni specifiche del singolo fondo possono modificare il risultato reale.</li>
+                    </ul>
+
+                    <p class="disclaimer"><strong>Disclaimer:</strong> Questo strumento fornisce stime orientative basate su ipotesi modificabili. Non costituisce consulenza finanziaria, fiscale o previdenziale.</p>
 
                 </div>
             </div>

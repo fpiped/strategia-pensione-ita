@@ -4,9 +4,6 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Inizializza il toggle della modalità scura
-    setupDarkMode();
-
     // Inizializza la navigazione a tab
     setupTabs();
 
@@ -42,52 +39,6 @@ function setupResultsToggle() {
         toggleChart.addEventListener('click', function() {
             chartSection.classList.toggle('collapsed');
         });
-    }
-}
-
-/**
- * Inizializza la funzionalità di toggle della modalità scura
- */
-function setupDarkMode() {
-    const themeToggle = document.getElementById('theme-toggle');
-    const html = document.documentElement;
-
-    // Controlla la preferenza del tema salvata o quella di sistema
-    const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    if (savedTheme) {
-        html.setAttribute('data-theme', savedTheme);
-        updateThemeIcon(savedTheme);
-    } else if (systemPrefersDark) {
-        html.setAttribute('data-theme', 'dark');
-        updateThemeIcon('dark');
-    }
-
-    // Cambia tema al click del pulsante
-    themeToggle.addEventListener('click', function() {
-        const currentTheme = html.getAttribute('data-theme');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-        html.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-        updateThemeIcon(newTheme);
-    });
-}
-
-/**
- * Aggiorna l'icona del pulsante di toggle del tema
- */
-function updateThemeIcon(theme) {
-    const themeToggle = document.getElementById('theme-toggle');
-    const icon = themeToggle.querySelector('i');
-
-    if (theme === 'dark') {
-        icon.classList.remove('fa-moon');
-        icon.classList.add('fa-sun');
-    } else {
-        icon.classList.remove('fa-sun');
-        icon.classList.add('fa-moon');
     }
 }
 
@@ -186,7 +137,7 @@ function setupMobileTooltips() {
         },
         investimento: {
             title: 'Quanto vuoi investire',
-            text: 'L\'importo che vuoi investire. In modalità cumulativa viene versato ogni anno. Ricorda: il limite di deducibilità fiscale per il FP è €5.164,57/anno (incluso contributo datore, escluso TFR).'
+            text: 'L\'importo che vuoi investire volontariamente ogni anno. Non include il TFR. In modalità cumulativa viene versato ogni anno. Ricorda: il limite di deducibilità fiscale per il FP è €5.164,57/anno (incluso contributo datore, escluso TFR).'
         },
         contribuzioneDatoreFpPerc: {
             title: 'Contributo datore di lavoro',
@@ -196,21 +147,33 @@ function setupMobileTooltips() {
             title: 'Quota minima aderente',
             text: 'Per ricevere il contributo del datore, molti contratti richiedono che tu versi almeno una certa percentuale del tuo reddito. Se non la versi, perdi il contributo aziendale. Verifica sul tuo CCNL.'
         },
+        addizionaliPerc: {
+            title: 'Addizionali stimate',
+            text: 'Percentuale manuale per stimare addizionale regionale e comunale. Il valore predefinito è una stima generica: puoi modificarlo se conosci la tua aliquota complessiva locale.'
+        },
+        ulterioriDetrazioni: {
+            title: 'Ulteriori detrazioni',
+            text: 'Importo annuo di altri bonus o detrazioni fiscali che riducono l’imposta netta. Non sono deduzioni: non abbassano il reddito imponibile, ma l’imposta da pagare.'
+        },
+        scenarioRendimento: {
+            title: 'Scenario rendimenti',
+            text: 'Imposta rapidamente coppie coerenti di rendimento FP/PAC. Prudente usa rendimenti bassi, Centrale usa i default della guida, Aggressivo aumenta il differenziale a favore del PAC. Scegli Personalizzato per modificare manualmente.'
+        },
         compartoFp: {
             title: 'Comparto del fondo pensione',
-            text: 'Il comparto determina come vengono investiti i tuoi soldi. Garantito: capitale protetto, basso rendimento. Obbligazionario: principalmente bond. Bilanciato: mix azioni/bond. Azionario: più rischioso ma rendimento atteso maggiore. I rendimenti COVIP sono già netti.'
+            text: 'Il comparto determina come vengono investiti i tuoi soldi. Garantito: più prudente, basso rendimento atteso. Obbligazionario: principalmente bond. Bilanciato: mix azioni/bond. Azionario: più rischioso ma rendimento atteso maggiore. I valori sono ipotesi ispirate a dati storici, non garanzie.'
         },
         etfPreset: {
             title: 'Tipo di ETF per il PAC',
-            text: 'ETF globali come MSCI World o FTSE All-World offrono diversificazione massima. I LifeStrategy combinano azioni e obbligazioni in percentuali fisse. Rendimenti basati su medie storiche ~10 anni, non garantiti per il futuro.'
+            text: 'ETF globali come MSCI World o FTSE All-World offrono ampia diversificazione. I LifeStrategy combinano azioni e obbligazioni in percentuali fisse. I rendimenti sono ipotesi di simulazione basate su dati storici e non sono garantiti.'
         },
         rendimentoAnnualeFpPerc: {
-            title: 'Rendimento fondo pensione',
-            text: 'Rendimento annuo atteso del FP. I dati COVIP (già al netto delle tasse annuali 12.5-20%) mostrano: Garantito ~2%, Obbligazionario ~2.5%, Bilanciato ~3%, Azionario ~4%. Puoi modificarlo manualmente.'
+            title: 'Rendimento fondo pensione ipotizzato',
+            text: 'Rendimento annuo usato nella simulazione FP. Il modello lo considera già netto dalla tassazione annuale dei rendimenti. Prova più valori: questo input influenza molto il breakeven.'
         },
         rendimentoAnnualePacPerc: {
-            title: 'Rendimento ETF',
-            text: 'Rendimento annuo atteso degli ETF. Storicamente: MSCI World ~10%, FTSE All-World ~9%, LifeStrategy 60% ~5%. Attenzione: rendimenti passati non garantiscono quelli futuri. Puoi modificarlo manualmente.'
+            title: 'Rendimento ETF ipotizzato',
+            text: 'Rendimento annuo usato nella simulazione PAC. Il modello tassa le plusvalenze al 26% solo all’uscita. Non è una previsione: rendimenti più bassi o più alti cambiano molto il risultato finale.'
         },
         modalitaCumulativa: {
             title: 'Modalità cumulativa',
@@ -236,7 +199,13 @@ function setupMobileTooltips() {
     modal.innerHTML = `
         <div class="help-modal-backdrop"></div>
         <div class="help-modal-content">
-            <div class="help-modal-title"></div>
+            <div class="help-modal-header">
+                <div class="help-modal-icon"><i class="fas fa-circle-info"></i></div>
+                <div class="help-modal-title"></div>
+                <button type="button" class="help-modal-close" aria-label="Chiudi">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
             <div class="help-modal-text"></div>
         </div>
     `;
@@ -270,6 +239,7 @@ function setupMobileTooltips() {
 
     // Chiudi modal cliccando fuori
     modal.querySelector('.help-modal-backdrop').addEventListener('click', closeModal);
+    modal.querySelector('.help-modal-close').addEventListener('click', closeModal);
 
     // Chiudi con ESC
     document.addEventListener('keydown', function(e) {

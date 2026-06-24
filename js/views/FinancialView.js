@@ -109,26 +109,47 @@ export class FinancialView {
     }
 
     /**
-     * Aggiorna il testo della strategia nell'interfaccia (rimosso)
-     * @param {string} text - Descrizione della strategia
-     */
-    updateStrategyText(text) {
-      // Card rimossa - funzione mantenuta per compatibilità
-    }
-
-    /**
      * Aggiorna la visualizzazione del breakeven
      * @param {number|null} breakeven - Anno di breakeven o null
      */
-    updateBreakeven(breakeven) {
+    updateBreakeven(breakeven, durata) {
       const element = document.getElementById('metric-breakeven-value');
+      const subtitle = document.getElementById('metric-breakeven-subtitle');
       if (element) {
         if (breakeven) {
-          element.textContent = `> ${breakeven} anni`;
+          element.textContent = `Anno ${breakeven}`;
+          if (subtitle) {
+            subtitle.textContent = 'Da qui il PAC supera il FP';
+          }
         } else {
           element.textContent = 'Mai';
+          if (subtitle) {
+            subtitle.textContent = `PAC non supera entro ${durata} anni`;
+          }
         }
       }
+    }
+
+    updateInputWarnings(warnings) {
+      const container = document.getElementById('input-warnings');
+      if (!container) return;
+
+      container.replaceChildren();
+      container.classList.toggle('is-visible', warnings.length > 0);
+
+      warnings.forEach((warning) => {
+        const item = document.createElement('div');
+        item.className = 'input-warning';
+
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-circle-exclamation';
+
+        const text = document.createElement('span');
+        text.textContent = warning;
+
+        item.append(icon, text);
+        container.appendChild(item);
+      });
     }
 
     /**

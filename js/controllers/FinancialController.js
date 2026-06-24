@@ -1,6 +1,12 @@
 import { FinancialModel } from '../models/FinancialModel.js';
 import { FinancialView } from '../views/FinancialView.js';
 import { COMPARTI_FP, ETF_PRESETS } from '../constants/financial-constants.js';
+import {
+  buildInputWarnings,
+  getScenarioSelection,
+  resolveRendimentoFp,
+  resolveRendimentoPac
+} from '../utils/input-helpers.js';
 
 /**
  * FinancialController - Gestisce gli eventi e collega model e view
@@ -9,6 +15,7 @@ export class FinancialController {
     constructor() {
         this.model = new FinancialModel();
         this.view = new FinancialView();
+        this.isApplyingPreset = false;
         this.initEventListeners();
       }
   
@@ -20,8 +27,15 @@ export class FinancialController {
       document.getElementById('input-form').addEventListener('change', () => this.updateResults()); // Per checkbox
       document.getElementById("download-csv").addEventListener("click", () => this.downloadCsv());
 
+      document.getElementById('scenarioRendimento').addEventListener('change', (e) => {
+        this.applyScenario(e.target.value);
+      });
+
       // Listener per cambio comparto FP
       document.getElementById('compartoFp').addEventListener('change', (e) => {
+        if (!this.isApplyingPreset) {
+          document.getElementById('scenarioRendimento').value = 'custom';
+        }
         const comparto = COMPARTI_FP[e.target.value];
         const rendimentoFpInput = document.getElementById('rendimentoAnnualeFpPerc');
         if (comparto) {
@@ -37,6 +51,9 @@ export class FinancialController {
 
       // Listener per cambio ETF preset
       document.getElementById('etfPreset').addEventListener('change', (e) => {
+        if (!this.isApplyingPreset) {
+          document.getElementById('scenarioRendimento').value = 'custom';
+        }
         const etf = ETF_PRESETS[e.target.value];
         const rendimentoPacInput = document.getElementById('rendimentoAnnualePacPerc');
         if (etf) {
@@ -53,25 +70,77 @@ export class FinancialController {
       // Imposta lo stato iniziale dei campi rendimento (bloccati perché i default non sono "custom")
       document.getElementById('rendimentoAnnualeFpPerc').disabled = true;
       document.getElementById('rendimentoAnnualePacPerc').disabled = true;
+
+      document.getElementById('rendimentoAnnualeFpPerc').addEventListener('input', () => {
+        if (!this.isApplyingPreset) {
+          document.getElementById('scenarioRendimento').value = 'custom';
+        }
+      });
+      document.getElementById('rendimentoAnnualePacPerc').addEventListener('input', () => {
+        if (!this.isApplyingPreset) {
+          document.getElementById('scenarioRendimento').value = 'custom';
+        }
+      });
+    }
+
+    applyScenario(scenario) {
+      const selected = getScenarioSelection(scenario);
+      if (!selected) return;
+
+      this.isApplyingPreset = true;
+
+      const compartoFp = document.getElementById('compartoFp');
+      const etfPreset = document.getElementById('etfPreset');
+      const rendimentoFpInput = document.getElementById('rendimentoAnnualeFpPerc');
+      const rendimentoPacInput = document.getElementById('rendimentoAnnualePacPerc');
+
+      compartoFp.value = selected.compartoFp;
+      etfPreset.value = selected.etfPreset;
+
+      if (selected.compartoFp === 'custom') {
+        rendimentoFpInput.disabled = false;
+        rendimentoFpInput.value = selected.rendimentoFp;
+      } else {
+        rendimentoFpInput.disabled = true;
+        rendimentoFpInput.value = resolveRendimentoFp(selected.compartoFp);
+      }
+
+      if (selected.etfPreset === 'custom') {
+        rendimentoPacInput.disabled = false;
+        rendimentoPacInput.value = selected.rendimentoPac;
+      } else {
+        rendimentoPacInput.disabled = true;
+        rendimentoPacInput.value = resolveRendimentoPac(selected.etfPreset);
+      }
+
+      this.isApplyingPreset = false;
+      this.updateResults();
     }
   
     /**
      * Funzione principale di calcolo che raccoglie gli input e aggiorna i risultati
      */
     updateResults() {
+      const readNumber = (id, fallback = 0) => {
+        const value = parseFloat(document.getElementById(id).value);
+        return Number.isFinite(value) ? value : fallback;
+      };
+
       // Raccogli tutti i valori di input
       const config = {
-        durata: parseInt(document.getElementById('durata').value),
-        reddito: parseFloat(document.getElementById('reddito').value),
-        investimento: parseFloat(document.getElementById('investimento').value),
+        durata: readNumber('durata', 1),
+        reddito: readNumber('reddito'),
+        investimento: readNumber('investimento'),
 
         // Percentuali contributi
-        quotaDatoreFpPerc: parseFloat(document.getElementById('contribuzioneDatoreFpPerc').value) / 100,
-        quotaMinAderentePerc: parseFloat(document.getElementById('quotaMinAderentePerc').value) / 100,
+        quotaDatoreFpPerc: readNumber('contribuzioneDatoreFpPerc') / 100,
+        quotaMinAderentePerc: readNumber('quotaMinAderentePerc') / 100,
+        addizionaliPerc: readNumber('addizionaliPerc') / 100,
+        ulterioriDetrazioni: readNumber('ulterioriDetrazioni'),
 
         // Tassi di rendimento
-        rendimentoAnnualeFpPerc: parseFloat(document.getElementById('rendimentoAnnualeFpPerc').value) / 100,
-        rendimentoAnnualePacPerc: parseFloat(document.getElementById('rendimentoAnnualePacPerc').value) / 100,
+        rendimentoAnnualeFpPerc: readNumber('rendimentoAnnualeFpPerc') / 100,
+        rendimentoAnnualePacPerc: readNumber('rendimentoAnnualePacPerc') / 100,
 
         // Opzioni di calcolo
         reinvestiRisparmio: document.getElementById('reinvestiRisparmio').checked,
@@ -85,9 +154,9 @@ export class FinancialController {
       
       // Aggiorna la view
       this.view.createTable(results.results, config.mostraDettaglio);
-      this.view.updateStrategyText(results.strategyText);
       this.view.updateMetricsDashboard(results.results);
-      this.view.updateBreakeven(results.breakeven);
+      this.view.updateBreakeven(results.breakeven, config.durata);
+      this.view.updateInputWarnings(buildInputWarnings(config));
       this.view.updateChart(results.results);
 
       // Aggiorna la visualizzazione dell'investimento minimo

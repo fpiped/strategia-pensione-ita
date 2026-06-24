@@ -5,8 +5,8 @@ export const FINANCIAL_CONSTANTS = {
 };
 
 /**
- * Comparti Fondo Pensione con rendimenti medi netti (fonte COVIP ~10 anni)
- * I rendimenti sono già al netto della tassazione annuale (12.5-20%)
+ * Comparti Fondo Pensione con rendimenti ipotizzati per la simulazione.
+ * Il modello li tratta come già al netto della tassazione annuale (12.5-20%).
  */
 export const COMPARTI_FP = {
   garantito: {
@@ -32,7 +32,8 @@ export const COMPARTI_FP = {
 };
 
 /**
- * ETF Preset per PAC con rendimenti storici medi (~10 anni)
+ * ETF Preset per PAC con rendimenti ipotizzati per la simulazione.
+ * Sono valori modificabili dall'utente, non previsioni.
  */
 export const ETF_PRESETS = {
   msciWorld: {

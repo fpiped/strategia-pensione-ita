@@ -21,12 +21,56 @@ Confronta **Fondo Pensione** e **PAC in ETF** nel contesto fiscale italiano.
 
 ## Avvio locale
 
+Prerequisiti:
+
+- Node.js installato
+- un browser moderno
+
 ```bash
 git clone https://github.com/pippo995/calcolatore-fondo-pensione-vs-pac.git
 cd calcolatore-fondo-pensione-vs-pac
-# Aprire index.html con Live Server (VS Code) o qualsiasi server locale
+npm start
+```
+
+Poi apri:
+
+```text
+http://localhost:9000
+```
+
+Alternativa senza `npm`:
+
+```bash
+python3 -m http.server 9000
+```
+
+e apri lo stesso URL.
+
+> Nota: non aprire direttamente `index.html` come file locale. L'app usa moduli JavaScript ES (`type="module"`), quindi serve un piccolo server statico.
+
+## Test
+
+```bash
+npm test
+```
+
+I test coprono la logica principale di calcolo del modello finanziario.
+
+## Struttura
+
+```text
+index.html                         UI e contenuti della guida
+styles.css                         stile e responsive layout
+js/app.js                          entrypoint JavaScript
+js/controllers/FinancialController.js
+js/models/FinancialModel.js        logica di calcolo
+js/views/FinancialView.js          rendering tabella, metriche e grafico
+js/constants/financial-constants.js
+test/FinancialModel.test.js        test del modello
 ```
 
 ## Tech
 
 HTML, CSS, JavaScript vanilla. No framework.
+
+L'app usa CDN esterne per Chart.js, Font Awesome e Google Fonts.
