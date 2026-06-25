@@ -12,12 +12,15 @@ Assunzione principale: il modello è pensato per un **lavoratore dipendente** e 
 - Tiene conto di: deduzione IRPEF, contributo datore, tassazione all'uscita
 - Ottimizza la quota deducibile tra FP e PAC anno per anno
 - Considera la quota oltre deduzione sempre nel PAC
+- Supporta la maggiorazione per prima occupazione post 31/12/2006, se inserisci plafond extra residuo e anni residui
+- Applica al PAC l'imposta di bollo annua dello 0,2% sul montante
 
 ## Opzioni
 
 | Opzione | Descrizione |
 |---------|-------------|
 | Riscatto anticipato | Tassazione 23% invece di 15%→9% |
+| Prima occupazione post 2006 | Aggiunge al limite ordinario il recupero extra, max 2.582,29 €/anno entro plafond residuo |
 | Viste tabella | Mix, confronto scenari o dettaglio completo |
 
 Il calcolo è sempre cumulativo e reinveste sempre il risparmio fiscale stimato l'anno successivo: il beneficio fiscale non è trattato come bonus separato, ma come capitale da reinvestire per confrontare FP e PAC in modo coerente.

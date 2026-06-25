@@ -21,9 +21,9 @@ test('calcola lo scenario cumulativo predefinito', () => {
   const result = model.calculateResults(baseConfig);
 
   assert.equal(result.results.length, 30);
-  assert.equal(result.breakeven, 26);
+  assert.equal(result.breakeven, 25);
   assert.equal(result.quotaDatoreFp, 450);
-  assert.equal(result.risparmioImposta, 9380);
+  assert.equal(result.risparmioImposta, 10609);
 
   assert.deepEqual(result.results[0], {
     Anno: 1,
@@ -38,25 +38,25 @@ test('calcola lo scenario cumulativo predefinito', () => {
     'PAC Cons': 2700,
     Scelta: 'MIX',
     'Exit FP': 3970,
-    'Exit PAC': 3178,
-    'Exit Mix': 3624
+    'Exit PAC': 3173,
+    'Exit Mix': 3619
   });
 
   assert.deepEqual(result.results.at(-1), {
     Anno: 30,
     'Entro Min': 300,
-    'Extra Min': 4019,
-    'Entro Ded': 4319,
+    'Extra Min': 4024,
+    'Entro Ded': 4324,
     'Extra Ded': 0,
-    Aderente: 4319,
+    Aderente: 4324,
     Datore: 450,
-    Risparmio: 1324,
-    'FP Cons': 4319,
+    Risparmio: 1325,
+    'FP Cons': 4324,
     'PAC Cons': 0,
     Scelta: 'FP',
     'Exit FP': 258836,
-    'Exit PAC': 295008,
-    'Exit Mix': 319274
+    'Exit PAC': 283955,
+    'Exit Mix': 309702
   });
 });
 
@@ -129,6 +129,19 @@ test('le ulteriori detrazioni riducono il beneficio fiscale se manca capienza', 
   assert.equal(Math.round(model._calculateTaxSavings(12000, 3000, 0, 0, 2000)), 0);
 });
 
+test('applica il bollo annuo dello 0.2% al PAC', () => {
+  const model = new FinancialModel();
+  const result = model.calculateResults({
+    ...baseConfig,
+    durata: 1,
+    investimento: 3000,
+    rendimentoAnnualePacPerc: 0.08
+  });
+
+  assert.equal(result.results[0]['Exit PAC'], 3173);
+  assert.ok(result.results[0]['Exit PAC'] < 3178);
+});
+
 test('manda sempre nel PAC la quota oltre deduzione', () => {
   const model = new FinancialModel();
   const result = model.calculateResults({
@@ -138,11 +151,32 @@ test('manda sempre nel PAC la quota oltre deduzione', () => {
     addizionaliPerc: 0.02
   });
 
-  assert.equal(result.results[0]['Entro Ded'], 4714);
-  assert.equal(result.results[0]['Extra Ded'], 3286);
-  assert.equal(result.results[0]['FP Cons'], 4714);
-  assert.equal(result.results[0]['PAC Cons'], 3286);
+  assert.equal(result.results[0]['Entro Ded'], 4715);
+  assert.equal(result.results[0]['Extra Ded'], 3285);
+  assert.equal(result.results[0]['FP Cons'], 4715);
+  assert.equal(result.results[0]['PAC Cons'], 3285);
   assert.equal(result.results[0].Scelta, 'MIX');
+});
+
+test('applica la maggiorazione deducibile per prima occupazione post 2006', () => {
+  const model = new FinancialModel();
+  const result = model.calculateResults({
+    ...baseConfig,
+    durata: 2,
+    investimento: 8000,
+    addizionaliPerc: 0.02,
+    primaOccupazionePost2006: true,
+    plafondExtraPrimaOccupazione: 3000,
+    anniResiduiMaggiorazione: 20
+  });
+
+  assert.equal(result.results[0]['Entro Ded'], 7297);
+  assert.equal(result.results[0]['Extra Ded'], 703);
+  assert.equal(result.results[0]['FP Cons'], 7297);
+  assert.equal(result.results[0].Risparmio, 2427);
+
+  assert.equal(result.results[1]['Entro Ded'], 5132);
+  assert.equal(result.results[1]['Extra Ded'], 5295);
 });
 
 test('il mix consigliato puo dividere la quota deducibile prima del FP pieno', () => {
@@ -188,6 +222,6 @@ test('converte i risultati in CSV con intestazione coerente', () => {
   assert.equal(
     model.convertToCSV(result.results),
     'Anno,Entro Min,Extra Min,Entro Ded,Extra Ded,Aderente,Datore,Risparmio,FP Cons,PAC Cons,Scelta,Exit FP,Exit PAC,Exit Mix\r\n' +
-      '1,300,2700,3000,0,3000,450,900,3000,0,FP,3970,3178,3970\r\n'
+      '1,300,2700,3000,0,3000,450,900,3000,0,FP,3970,3173,3970\r\n'
   );
 });

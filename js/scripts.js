@@ -155,6 +155,18 @@ function setupMobileTooltips() {
             title: 'Ulteriori detrazioni',
             text: 'Importo annuo di altri bonus o detrazioni fiscali che riducono l’imposta netta. Non sono deduzioni: non abbassano il reddito imponibile, ma l’imposta da pagare.'
         },
+        primaOccupazionePost2006: {
+            title: 'Prima occupazione post 2006',
+            text: 'Attiva questa opzione se la tua prima occupazione è successiva al 31/12/2006 e sei nel periodo in cui puoi recuperare deduzione non usata nei primi 5 anni di partecipazione al fondo pensione.'
+        },
+        plafondExtraPrimaOccupazione: {
+            title: 'Plafond extra residuo',
+            text: 'Quota di deduzione aggiuntiva ancora recuperabile. Si calcola come 25.822,85 € meno i contributi effettivamente versati nei primi 5 anni di partecipazione. Ogni anno puoi usare al massimo 2.582,29 € extra.'
+        },
+        anniResiduiMaggiorazione: {
+            title: 'Anni residui maggiorazione',
+            text: 'Numero di anni ancora disponibili per usare il plafond extra. La normativa consente il recupero nei 20 anni successivi ai primi 5 anni di partecipazione.'
+        },
         compartoFp: {
             title: 'Comparto del fondo pensione',
             text: 'Il comparto determina come vengono investiti i tuoi soldi. Garantito: più prudente, basso rendimento atteso. Obbligazionario: principalmente bond. Bilanciato: mix azioni/bond. Azionario: più rischioso ma rendimento atteso maggiore. I valori sono ipotesi ispirate a dati storici, non garanzie.'

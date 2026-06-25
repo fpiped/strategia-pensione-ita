@@ -17,7 +17,10 @@ export class FinancialModel {
         quotaDatoreFpPerc, quotaMinAderentePerc,
         rendimentoAnnualeFpPerc, rendimentoAnnualePacPerc,
         reinvestiRisparmio, modalitaCumulativa, riscattoAnticipato,
-        addizionaliPerc = 0, ulterioriDetrazioni = 0
+        addizionaliPerc = 0, ulterioriDetrazioni = 0,
+        primaOccupazionePost2006 = false,
+        plafondExtraPrimaOccupazione = 0,
+        anniResiduiMaggiorazione = FINANCIAL_CONSTANTS.MAGGIORAZIONE_PRIMA_OCCUPAZIONE_ANNI
       } = config;
 
       const optimizedResults = [];
@@ -28,9 +31,15 @@ export class FinancialModel {
       const rFP = rendimentoAnnualeFpPerc;
       const rPAC = rendimentoAnnualePacPerc;
 
-      const fpPlan = this._createStrategyState();
-      const pacPlan = this._createStrategyState();
-      const recommendedPlan = this._createStrategyState();
+      const firstEmploymentConfig = {
+        enabled: primaOccupazionePost2006,
+        extraRemaining: plafondExtraPrimaOccupazione,
+        yearsRemaining: anniResiduiMaggiorazione
+      };
+
+      const fpPlan = this._createStrategyState(firstEmploymentConfig);
+      const pacPlan = this._createStrategyState(firstEmploymentConfig);
+      const recommendedPlan = this._createStrategyState(firstEmploymentConfig);
 
       for (let anno = 1; anno <= durata; anno++) {
         const budgetBaseAnno = modalitaCumulativa || anno === 1 ? investimento : 0;
@@ -41,13 +50,19 @@ export class FinancialModel {
         const pacBudget = budgetBaseAnno;
         const recommendedBudget = budgetBaseAnno + (reinvestiRisparmio ? recommendedPlan.risparmioDaReinvestire : 0);
 
-        const fpAllocation = this._splitBudget(fpBudget, quotaMinAderente, quotaDatorePotenziale);
-        const pacCapacity = this._splitBudget(pacBudget, quotaMinAderente, quotaDatorePotenziale);
-        const recommendedCapacity = this._splitBudget(recommendedBudget, quotaMinAderente, quotaDatorePotenziale);
+        const fpAllocation = this._splitBudget(fpBudget, quotaMinAderente, quotaDatorePotenziale, fpPlan.firstEmployment);
+        const pacCapacity = this._splitBudget(pacBudget, quotaMinAderente, quotaDatorePotenziale, pacPlan.firstEmployment);
+        const recommendedCapacity = this._splitBudget(
+          recommendedBudget,
+          quotaMinAderente,
+          quotaDatorePotenziale,
+          recommendedPlan.firstEmployment
+        );
         const recommendedAllocation = this._optimizeRecommendedAllocation({
           budget: recommendedBudget,
           quotaMinAderente,
           quotaDatorePotenziale,
+          firstEmployment: recommendedPlan.firstEmployment,
           reddito,
           addizionaliPerc,
           ulterioriDetrazioni,
@@ -62,7 +77,8 @@ export class FinancialModel {
           fpAllocation.quotaDeducibile,
           fpAllocation.quotaDatore,
           addizionaliPerc,
-          ulterioriDetrazioni
+          ulterioriDetrazioni,
+          this._getTotalDeductionLimit(fpPlan.firstEmployment)
         );
         const risparmioRecommendedAnno = recommendedAllocation.risparmio;
 
@@ -74,6 +90,11 @@ export class FinancialModel {
           rPAC,
           reinvestiRisparmio
         });
+        this._consumeFirstEmploymentAllowance(
+          fpPlan.firstEmployment,
+          fpAllocation.quotaDeducibile,
+          fpAllocation.quotaDatore
+        );
 
         this._applyYearGrowth(pacPlan, {
           fpContributo: 0,
@@ -83,6 +104,7 @@ export class FinancialModel {
           rPAC,
           reinvestiRisparmio
         });
+        this._consumeFirstEmploymentAllowance(pacPlan.firstEmployment, 0, 0);
 
         this._applyYearGrowth(recommendedPlan, {
           fpContributo: recommendedAllocation.quotaFp + recommendedAllocation.quotaDatore,
@@ -92,6 +114,11 @@ export class FinancialModel {
           rPAC,
           reinvestiRisparmio
         });
+        this._consumeFirstEmploymentAllowance(
+          recommendedPlan.firstEmployment,
+          recommendedAllocation.quotaFp,
+          recommendedAllocation.quotaDatore
+        );
 
         const exitFP = this._calculateStrategyExit(fpPlan, tassazioneFP, reinvestiRisparmio);
         const exitPAC = this._calculateStrategyExit(pacPlan, tassazioneFP, reinvestiRisparmio);
@@ -168,24 +195,62 @@ export class FinancialModel {
       };
     }
 
-    _createStrategyState() {
+    _createStrategyState(firstEmploymentConfig = {}) {
       return {
         montanteFP: 0,
         contributiFP: 0,
         montantePAC: 0,
         investimentoPAC: 0,
         risparmioAccumulato: 0,
-        risparmioDaReinvestire: 0
+        risparmioDaReinvestire: 0,
+        firstEmployment: this._createFirstEmploymentState(firstEmploymentConfig)
       };
     }
 
-    _splitBudget(budget, quotaMinAderente, quotaDatorePotenziale) {
+    _createFirstEmploymentState({ enabled = false, extraRemaining = 0, yearsRemaining = 0 } = {}) {
+      return {
+        enabled: Boolean(enabled),
+        extraRemaining: Math.max(extraRemaining, 0),
+        yearsRemaining: Math.max(Math.floor(yearsRemaining), 0)
+      };
+    }
+
+    _getTotalDeductionLimit(firstEmployment = {}) {
+      const ordinaryLimit = FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP;
+      if (!firstEmployment.enabled || firstEmployment.yearsRemaining <= 0 || firstEmployment.extraRemaining <= 0) {
+        return ordinaryLimit;
+      }
+
+      return ordinaryLimit + Math.min(
+        firstEmployment.extraRemaining,
+        FINANCIAL_CONSTANTS.MAGGIORAZIONE_PRIMA_OCCUPAZIONE_ANNUA
+      );
+    }
+
+    _getAvailableDeductionLimit(firstEmployment, quotaDatore = 0) {
+      return Math.max(this._getTotalDeductionLimit(firstEmployment) - quotaDatore, 0);
+    }
+
+    _consumeFirstEmploymentAllowance(firstEmployment, quotaFp, quotaDatore) {
+      if (!firstEmployment.enabled || firstEmployment.yearsRemaining <= 0) return;
+
+      const extraUsed = Math.min(
+        Math.max(quotaFp + quotaDatore - FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP, 0),
+        FINANCIAL_CONSTANTS.MAGGIORAZIONE_PRIMA_OCCUPAZIONE_ANNUA,
+        firstEmployment.extraRemaining
+      );
+
+      firstEmployment.extraRemaining = Math.max(firstEmployment.extraRemaining - extraUsed, 0);
+      firstEmployment.yearsRemaining = Math.max(firstEmployment.yearsRemaining - 1, 0);
+    }
+
+    _splitBudget(budget, quotaMinAderente, quotaDatorePotenziale, firstEmployment) {
       if (budget <= 0) {
         return { quotaDeducibile: 0, quotaExtraPac: 0, quotaDatore: 0 };
       }
 
       const quotaDatore = budget >= quotaMinAderente ? quotaDatorePotenziale : 0;
-      const limiteDeduzione = Math.max(FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP - quotaDatore, 0);
+      const limiteDeduzione = this._getAvailableDeductionLimit(firstEmployment, quotaDatore);
       const quotaDeducibile = Math.min(budget, limiteDeduzione);
 
       return {
@@ -199,6 +264,7 @@ export class FinancialModel {
       budget,
       quotaMinAderente,
       quotaDatorePotenziale,
+      firstEmployment,
       reddito,
       addizionaliPerc,
       ulterioriDetrazioni,
@@ -212,10 +278,10 @@ export class FinancialModel {
       }
 
       const candidates = new Set([0]);
-      const maxWithoutEmployer = Math.min(budget, FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP);
+      const maxWithoutEmployer = Math.min(budget, this._getAvailableDeductionLimit(firstEmployment, 0));
       const maxWithEmployer = Math.min(
         budget,
-        Math.max(FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP - quotaDatorePotenziale, 0)
+        this._getAvailableDeductionLimit(firstEmployment, quotaDatorePotenziale)
       );
 
       for (let amount = 0; amount <= Math.floor(maxWithoutEmployer); amount++) {
@@ -230,7 +296,7 @@ export class FinancialModel {
       for (const candidate of candidates) {
         const quotaFp = Math.max(candidate, 0);
         const quotaDatore = quotaFp >= quotaMinAderente ? quotaDatorePotenziale : 0;
-        const limiteDeduzione = Math.max(FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP - quotaDatore, 0);
+        const limiteDeduzione = this._getAvailableDeductionLimit(firstEmployment, quotaDatore);
 
         if (quotaFp > budget || quotaFp > limiteDeduzione) continue;
 
@@ -241,13 +307,14 @@ export class FinancialModel {
             quotaFp,
             quotaDatore,
             addizionaliPerc,
-            ulterioriDetrazioni
+            ulterioriDetrazioni,
+            this._getTotalDeductionLimit(firstEmployment)
           )
           : 0;
         const fpContributo = quotaFp + quotaDatore;
         const fpMontante = fpContributo * Math.pow(1 + rFP, anniResidui);
         const fpNetto = fpMontante - (fpContributo * tassazioneFP) + risparmio;
-        const pacMontante = quotaPac * Math.pow(1 + rPAC, anniResidui);
+        const pacMontante = this._projectPacContribution(quotaPac, rPAC, anniResidui);
         const pacNetto = this._calculatePacExit(pacMontante, quotaPac);
         const totaleNetto = fpNetto + pacNetto;
 
@@ -275,10 +342,23 @@ export class FinancialModel {
     }) {
       state.montanteFP = (state.montanteFP + fpContributo) * (1 + rFP);
       state.contributiFP += fpContributo;
-      state.montantePAC = (state.montantePAC + pacContributo) * (1 + rPAC);
+      state.montantePAC = this._applyPacAnnualGrowth(state.montantePAC, pacContributo, rPAC);
       state.investimentoPAC += pacContributo;
       state.risparmioAccumulato += risparmioAnno;
       state.risparmioDaReinvestire = reinvestiRisparmio ? risparmioAnno : 0;
+    }
+
+    _applyPacAnnualGrowth(montante, contributo, rendimento) {
+      const lordo = (montante + contributo) * (1 + rendimento);
+      return Math.max(lordo * (1 - FINANCIAL_CONSTANTS.IMPOSTA_BOLLO_PAC), 0);
+    }
+
+    _projectPacContribution(contributo, rendimento, anni) {
+      let montante = 0;
+      for (let i = 0; i < anni; i++) {
+        montante = this._applyPacAnnualGrowth(montante, i === 0 ? contributo : 0, rendimento);
+      }
+      return montante;
     }
 
     _calculateStrategyExit(state, tassazioneFP, reinvestiRisparmio) {
@@ -383,10 +463,11 @@ export class FinancialModel {
       investimento,
       quotaDatoreFp,
       addizionaliPerc = 0,
-      ulterioriDetrazioni = 0
+      ulterioriDetrazioni = 0,
+      limiteDeduzioneTotale = FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP
     ) {
       const redditoImponibile = reddito * (1 - FINANCIAL_CONSTANTS.TASSAZIONE_INPS);
-      const limiteDeduzione = Math.max(FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP - quotaDatoreFp, 0);
+      const limiteDeduzione = Math.max(limiteDeduzioneTotale - quotaDatoreFp, 0);
 
       // La deduzione è il minimo tra investimento e limite di deduzione
       const deduzione = Math.min(investimento, limiteDeduzione);

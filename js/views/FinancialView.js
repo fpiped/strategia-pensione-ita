@@ -178,6 +178,99 @@ export class FinancialView {
       }
     }
 
+    updateResultExplanation(results) {
+      const summary = document.getElementById('result-explanation-summary');
+      const grid = document.getElementById('result-explanation-grid');
+      if (!summary || !grid || !results.length) return;
+
+      const lastResult = results[results.length - 1];
+      const exits = [
+        { key: 'FP', label: 'FP deducibile', value: lastResult['Exit FP'] || 0 },
+        { key: 'PAC', label: 'Tutto PAC', value: lastResult['Exit PAC'] || 0 },
+        { key: 'MIX', label: 'Mix', value: lastResult['Exit Mix'] || 0 }
+      ].sort((a, b) => b.value - a.value);
+
+      const best = exits[0];
+      const runnerUp = exits[1];
+      const delta = Math.max(0, best.value - runnerUp.value);
+
+      const totals = results.reduce((acc, row) => {
+        acc.fp += row['FP Cons'] || 0;
+        acc.pac += row['PAC Cons'] || 0;
+        acc.datore += row['Datore'] || 0;
+        acc.risparmio += row['Risparmio'] || 0;
+        return acc;
+      }, { fp: 0, pac: 0, datore: 0, risparmio: 0 });
+
+      const yearsByChoice = results.reduce((acc, row) => {
+        const choice = row.Scelta || 'MIX';
+        acc[choice] = (acc[choice] || 0) + 1;
+        return acc;
+      }, {});
+
+      const choiceSummary = ['FP', 'PAC', 'MIX']
+        .filter(choice => yearsByChoice[choice])
+        .map(choice => `${yearsByChoice[choice]} anni ${choice}`)
+        .join(' · ');
+
+      summary.textContent = delta > 0
+        ? `${best.label} chiude a ${this.formatMoney(Math.round(best.value))}, circa ${this.formatMoney(Math.round(delta))} sopra la seconda alternativa.`
+        : `${best.label} e ${runnerUp.label} arrivano sostanzialmente alla pari nello scenario impostato.`;
+
+      const cards = [
+        {
+          icon: 'fa-trophy',
+          label: 'Risultato finale',
+          value: best.label,
+          detail: `Exit finale ${this.formatMoney(Math.round(best.value))}`
+        },
+        {
+          icon: 'fa-route',
+          label: 'Allocazione mix',
+          value: `${this.formatMoney(Math.round(totals.fp))} FP`,
+          detail: `${this.formatMoney(Math.round(totals.pac))} PAC lungo la simulazione`
+        },
+        {
+          icon: 'fa-hand-holding-dollar',
+          label: 'Spinta fiscale e datore',
+          value: this.formatMoney(Math.round(totals.datore + totals.risparmio)),
+          detail: `${this.formatMoney(Math.round(totals.datore))} datore + ${this.formatMoney(Math.round(totals.risparmio))} risparmio fiscale`
+        },
+        {
+          icon: 'fa-calendar-check',
+          label: 'Scelte annuali',
+          value: choiceSummary || 'Nessuna scelta',
+          detail: 'Il PAC pesa di più quando ha abbastanza anni per capitalizzare; il FP pesa di più quando incentivi fiscali e datore dominano.'
+        }
+      ];
+
+      grid.replaceChildren(...cards.map(card => {
+        const item = document.createElement('article');
+        item.className = 'result-explanation-card';
+
+        const icon = document.createElement('i');
+        icon.className = `fas ${card.icon}`;
+
+        const content = document.createElement('div');
+
+        const label = document.createElement('div');
+        label.className = 'result-explanation-label';
+        label.textContent = card.label;
+
+        const value = document.createElement('div');
+        value.className = 'result-explanation-value';
+        value.textContent = card.value;
+
+        const detail = document.createElement('div');
+        detail.className = 'result-explanation-detail';
+        detail.textContent = card.detail;
+
+        content.append(label, value, detail);
+        item.append(icon, content);
+        return item;
+      }));
+    }
+
     updateInputWarnings(warnings) {
       const container = document.getElementById('input-warnings');
       if (!container) return;

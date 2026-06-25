@@ -26,6 +26,10 @@ export class FinancialController {
       document.getElementById('input-form').addEventListener('input', () => this.updateResults());
       document.getElementById('input-form').addEventListener('change', () => this.updateResults()); // Per checkbox
       document.getElementById("download-csv").addEventListener("click", () => this.downloadCsv());
+      document.getElementById('primaOccupazionePost2006').addEventListener('change', () => {
+        this.updateFirstEmploymentFields();
+        this.updateResults();
+      });
       document.querySelectorAll('[data-table-view]').forEach((button) => {
         button.addEventListener('click', () => {
           this.tableView = button.dataset.tableView;
@@ -71,6 +75,7 @@ export class FinancialController {
       // Imposta lo stato iniziale dei campi rendimento (bloccati perché i default non sono "custom")
       document.getElementById('rendimentoAnnualeFpPerc').disabled = true;
       document.getElementById('rendimentoAnnualePacPerc').disabled = true;
+      this.updateFirstEmploymentFields();
     }
   
     /**
@@ -101,7 +106,12 @@ export class FinancialController {
         // Assunzioni fisse del modello
         reinvestiRisparmio: true,
         modalitaCumulativa: true,
-        riscattoAnticipato: document.getElementById('riscattoAnticipato').checked
+        riscattoAnticipato: document.getElementById('riscattoAnticipato').checked,
+
+        // Maggiorazione deduzione per prima occupazione post 2006
+        primaOccupazionePost2006: document.getElementById('primaOccupazionePost2006').checked,
+        plafondExtraPrimaOccupazione: readNumber('plafondExtraPrimaOccupazione'),
+        anniResiduiMaggiorazione: readNumber('anniResiduiMaggiorazione', 20)
       };
   
       // Calcola i risultati usando il model
@@ -112,6 +122,7 @@ export class FinancialController {
       this.view.createTable(results.results, this.tableView);
       this.view.updateMetricsDashboard(results.results);
       this.view.updateChoiceSequence(results.results);
+      this.view.updateResultExplanation(results.results);
       this.view.updateInputWarnings(buildInputWarnings(config));
       this.view.updateChart(results.results);
 
@@ -120,6 +131,12 @@ export class FinancialController {
 
       // Aggiorna il contenuto CSV per il download
       this.csvContent = this.model.convertToCSV(results.results);
+    }
+
+    updateFirstEmploymentFields() {
+      const enabled = document.getElementById('primaOccupazionePost2006').checked;
+      document.getElementById('plafondExtraPrimaOccupazione').disabled = !enabled;
+      document.getElementById('anniResiduiMaggiorazione').disabled = !enabled;
     }
 
     /**

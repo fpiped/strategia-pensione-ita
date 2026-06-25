@@ -85,6 +85,25 @@
                                         <input type="number" id="ulterioriDetrazioni" class="form-control" value="0" min="0" step="100">
                                     </div>
                                 </div>
+                                <div class="form-row options-row">
+                                    <div class="form-group full-width">
+                                        <label class="toggle-label">
+                                            <input type="checkbox" id="primaOccupazionePost2006">
+                                            <span class="toggle-switch"></span>
+                                            <span class="help-trigger" data-help="primaOccupazionePost2006">Prima occupazione post 2006</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-row" id="prima-occupazione-fields">
+                                    <div class="form-group">
+                                        <label for="plafondExtraPrimaOccupazione"><span class="help-trigger" data-help="plafondExtraPrimaOccupazione">Plafond extra residuo (€)</span></label>
+                                        <input type="number" id="plafondExtraPrimaOccupazione" class="form-control" value="0" min="0" max="25822.85" step="100" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="anniResiduiMaggiorazione"><span class="help-trigger" data-help="anniResiduiMaggiorazione">Anni residui maggiorazione</span></label>
+                                        <input type="number" id="anniResiduiMaggiorazione" class="form-control" value="20" min="0" max="20" step="1" disabled>
+                                    </div>
+                                </div>
                                 <div class="info-box" id="info-contributo-datore">
                                     <i class="fas fa-info-circle"></i>
                                     <span>Per ottenere il contributo datore devi investire almeno <strong id="min-investimento-display">300 €</strong>/anno</span>
@@ -187,6 +206,18 @@
                         <div class="metric-subtitle" id="metric-sequence-subtitle">Intervalli consigliati per anno</div>
                     </div>
                 </div>
+
+                <section class="result-explanation" aria-labelledby="result-explanation-title">
+                    <div class="result-explanation-header">
+                        <div>
+                            <h3 id="result-explanation-title">Perché questo risultato</h3>
+                            <p id="result-explanation-summary">Inserisci i parametri per leggere la sintesi della simulazione.</p>
+                        </div>
+                    </div>
+                    <div class="result-explanation-grid" id="result-explanation-grid">
+                        <!-- Explanation inserted by JavaScript -->
+                    </div>
+                </section>
 
                 <!-- Results Table -->
                 <div class="results-section">
@@ -416,10 +447,17 @@ Risparmio fiscale stimato anno 1: ~€960</pre>
                     <p><strong>Attenzione:</strong> il risparmio fiscale dipende dalla tua capienza fiscale. Se hai molte altre detrazioni, il beneficio effettivo può scendere.</p>
 
                     <h3>Limite deduzione</h3>
-                    <p>Puoi dedurre max €5.164/anno, ma il contributo datore conta nel limite.</p>
-<pre>Limite totale: €5.164
+                    <p>Puoi dedurre max €5.164,57/anno, ma il contributo datore conta nel limite.</p>
+<pre>Limite totale: €5.164,57
 - Datore:      €450
-= Per te:      €4.714</pre>
+= Per te:      €4.714,57</pre>
+
+                    <h3>Maggiorazione prima occupazione post 2006</h3>
+                    <p>Se la tua prima occupazione è successiva al 31/12/2006, puoi recuperare nei 20 anni successivi ai primi 5 anni di partecipazione la deduzione non usata nei primi 5 anni. Il recupero extra massimo è €2.582,29/anno, entro il plafond residuo disponibile.</p>
+<pre>Plafond teorico primi 5 anni: 5.164,57 × 5 = 25.822,85
+Plafond extra residuo: 25.822,85 - contributi versati nei primi 5 anni
+Limite annuo massimo: 5.164,57 + min(plafond residuo, 2.582,29)</pre>
+                    <p>Nel calcolatore questa opzione va attivata manualmente, inserendo il plafond extra residuo e gli anni residui di maggiorazione. Il plafond viene consumato anno per anno solo per la parte di contributi FP che supera il limite ordinario.</p>
 
                     <h3>Vantaggi FP e reinvestimento</h3>
 <pre>Mario versa nel FP:          €3.000
@@ -438,12 +476,12 @@ Risparmio fiscale stimato anno 1: ~€960</pre>
 ETF globale:          5-8% annuo ipotizzato</pre>
 
                     <h3>Tassazione più efficiente</h3>
-                    <p>Il FP tassa i rendimenti ogni anno. L'ETF solo alla vendita.</p>
+                    <p>Il FP tassa i rendimenti ogni anno. L'ETF tassa le plusvalenze alla vendita e sconta anche l'imposta di bollo annua sul montante.</p>
 <pre>FP: tassa rendimenti OGNI ANNO al 12.5-20%
     → Il montante cresce più lentamente
 
 ETF: tassa rendimenti SOLO ALLA VENDITA al 26%
-     → L'interesse composto lavora su tutto</pre>
+     + imposta di bollo annua 0,2% sul montante</pre>
 
                     <p><strong>Esempio:</strong> €10.000 che crescono del 5%</p>
 <pre>FP:  Rendimento €500, tasse €100 → crescono €10.400
@@ -598,7 +636,7 @@ A 55 anni, orizzonte 10 anni:
                     <h2 id="options">Le opzioni del calcolatore</h2>
 
                     <h3>Rendimenti</h3>
-                    <p>Scegli un comparto FP e un ETF PAC per usare valori predefiniti, oppure seleziona Personalizzato e inserisci manualmente i rendimenti ipotizzati. Sono ipotesi di simulazione, non previsioni.</p>
+                    <p>Scegli un comparto FP e un ETF PAC per usare valori predefiniti, oppure seleziona Personalizzato e inserisci manualmente i rendimenti ipotizzati. Sono ipotesi di simulazione, non previsioni. Il PAC applica sempre anche l'imposta di bollo annua dello 0,2% sul montante.</p>
 
                     <h3>Assunzioni fisse</h3>
                     <ul>
@@ -617,6 +655,7 @@ A 55 anni, orizzonte 10 anni:
                     <ul>
                         <li><strong>Addizionali stimate:</strong> percentuale manuale per approssimare addizionale regionale e comunale. Il default è una stima generica.</li>
                         <li><strong>Ulteriori detrazioni:</strong> importo annuo di bonus o detrazioni personali che riducono l'imposta netta. Non sono deduzioni e non riducono il reddito imponibile.</li>
+                        <li><strong>Prima occupazione post 2006:</strong> abilita la maggiorazione del limite deducibile se hai plafond extra residuo da recuperare. Ogni strategia consuma il proprio plafond in base ai contributi FP simulati.</li>
                     </ul>
                     <p>Questi campi servono a rendere la stima più realistica senza mantenere un database aggiornato di aliquote locali e casi fiscali personali.</p>
 
@@ -642,7 +681,7 @@ A 55 anni, orizzonte 10 anni:
                     <table>
                         <tr><th>Card</th><th>Significato</th></tr>
                         <tr><td>FP deducibile</td><td>Netto finale mettendo nel FP solo la quota deducibile e nel PAC l'eventuale eccedenza</td></tr>
-                        <tr><td>Tutto PAC</td><td>Netto finale mettendo tutto il budget nel PAC</td></tr>
+                        <tr><td>Tutto PAC</td><td>Netto finale mettendo tutto il budget nel PAC, con tassazione plusvalenze e bollo annuo 0,2%</td></tr>
                         <tr><td>Mix consigliato</td><td>Netto finale dell'allocazione anno per anno consigliata</td></tr>
                         <tr><td>Sequenza mix</td><td>Intervalli di anni in cui il mix sceglie PAC, FP o MIX</td></tr>
                     </table>
@@ -653,6 +692,10 @@ A 55 anni, orizzonte 10 anni:
 Orizzonte lungo → spesso PAC sulla quota deducibile
 Caso intermedio → possibile MIX
 Quota oltre deduzione → sempre PAC</pre>
+
+                    <h3>Perché questo risultato</h3>
+                    <p>Il pannello sotto le card sintetizza cosa sta guidando la simulazione: quale scenario chiude più alto, quanta quota complessiva finisce nel FP e nel PAC, quanto incidono contributo datore e risparmio fiscale, e per quanti anni il mix sceglie FP, PAC o una divisione tra i due.</p>
+                    <p>Serve a evitare una lettura “a scatola chiusa”: se il mix passa al FP negli ultimi anni, di solito significa che il rendimento composto del PAC ha poco tempo per recuperare il vantaggio immediato di deduzione fiscale e contributo datore.</p>
 
                     <h3>Le colonne della tabella</h3>
                     <table>
@@ -667,7 +710,7 @@ Quota oltre deduzione → sempre PAC</pre>
                         <tr><td>Quota FP</td><td>Quota del budget annuo allocata nel FP dal mix, sempre entro il limite deducibile</td></tr>
                         <tr><td>Quota PAC</td><td>Quota del budget annuo allocata nel PAC dal mix: include eccedenza non deducibile e parte deducibile se conviene PAC</td></tr>
                         <tr><td>Scelta</td><td>FP, PAC o MIX per indicare l'allocazione consigliata di quell'anno</td></tr>
-                        <tr><td>Exit</td><td>Netto se esci a quell'anno</td></tr>
+                        <tr><td>Exit</td><td>Netto se esci a quell'anno, dopo fiscalità FP/PAC e bollo PAC</td></tr>
                     </table>
 
                     <h3>Tassazione FP all'uscita</h3>
@@ -697,7 +740,7 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
                         <tr>
                             <td>Deducibilità FP</td>
                             <td><a href="https://www.gazzettaufficiale.it/atto/serie_generale/caricaArticolo?art.codiceRedazionale=005G0278&amp;art.dataPubblicazioneGazzetta=2005-12-13&amp;art.flagTipoArticolo=0&amp;art.idArticolo=8&amp;art.idGruppo=0&amp;art.idSottoArticolo=1&amp;art.idSottoArticolo1=10&amp;art.progressivo=0&amp;art.versione=1" target="_blank" rel="noopener">D.Lgs. 5 dicembre 2005, n. 252, art. 8</a></td>
-                            <td>Limite di deduzione annua dei contributi a previdenza complementare.</td>
+                            <td>Limite ordinario di deduzione annua e maggiorazione per lavoratori di prima occupazione successiva al 31/12/2006.</td>
                         </tr>
                         <tr>
                             <td>Tassazione uscita FP</td>
@@ -761,6 +804,7 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
                         <li>Le addizionali regionali e comunali sono stimate con una percentuale manuale, non recuperate automaticamente dal Comune o dalla Regione.</li>
                         <li>Le ulteriori detrazioni sono un campo sintetico: il calcolatore non ricostruisce tutti i bonus fiscali personali.</li>
                         <li>I rendimenti FP e PAC sono ipotesi costanti anno per anno; nella realtà i mercati oscillano e l'ordine dei rendimenti conta.</li>
+                        <li>Il PAC applica imposta di bollo annua dello 0,2% sul montante e tassazione delle plusvalenze al 26% in uscita.</li>
                         <li>Costi, commissioni, fiscalità personale, cambi normativi e condizioni specifiche del singolo fondo possono modificare il risultato reale.</li>
                     </ul>
 
