@@ -64,6 +64,8 @@ export class FinancialView {
           { key: 'Anno', label: 'Anno' },
           { key: 'Entro Ded', label: 'Quota FP' },
           { key: 'Extra Ded', label: 'Quota PAC extra' },
+          { key: 'FP Busta', label: 'FP busta' },
+          { key: 'FP Bonifico', label: 'FP bonifico' },
           { key: 'Datore', label: 'Datore' },
           { key: 'Risparmio', label: 'Risparmio fiscale' },
           { key: 'Exit FP', label: 'Exit FP' }
@@ -78,6 +80,8 @@ export class FinancialView {
           { key: 'Scelta', label: 'Scelta' },
           { key: 'FP Cons', label: 'Quota FP' },
           { key: 'PAC Cons', label: 'Quota PAC' },
+          { key: 'FP Busta', label: 'FP busta' },
+          { key: 'FP Bonifico', label: 'FP bonifico' },
           { key: 'Datore', label: 'Datore' },
           { key: 'Risparmio', label: 'Risparmio fiscale' },
           { key: 'Exit Mix', label: 'Exit Mix' }

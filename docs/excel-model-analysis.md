@@ -135,20 +135,21 @@ FN4 = 2.213,79
 | Feature | Excel 2022 | Nostro modello | Priorita' |
 |---|---|---|---|
 | Confronto FP/PAC a parita' di budget lordo | Parziale | Si | Gia' presente |
-| Confronto a parita' di sacrificio netto | Si | No | Alta |
+| Confronto a parita' di sacrificio netto | Si | Si | Gia' presente |
 | Quota oltre deduzione sempre ETF/PAC | Si | Si | Gia' presente |
 | Mix FP+ETF/PAC | Si | Si, ottimizzato anno per anno | Gia' presente |
 | Limite deduzione ordinario | 5.165 2022 | 5.164,57 attuale | Gia' presente |
 | Maggiorazione prima occupazione post 2006 | Non evidente nella prima lettura | Si | Gia' aggiunta |
 | Contributo datore | Si | Si | Gia' presente |
-| Contributo datore su imponibile TFR/minimo retributivo | Si | No, usa RAL | Media |
-| Adesione minima su imponibile TFR/minimo retributivo | Si | No, usa RAL | Media |
+| Contributo datore su imponibile TFR/minimo retributivo | Si | Si, base annua alternativa | Gia' aggiunta |
+| Adesione minima su imponibile TFR/minimo retributivo | Si | Si, base annua alternativa | Gia' aggiunta |
 | INPS | Si, con massimale e IVS aggiuntivo | Semplificato | Media |
 | IRPEF | 2022 dettagliata | 2025 aggiornata | Gia' presente, piu' attuale |
 | Addizionali regionali/comunali a scaglioni | Si | Percentuale manuale | Bassa/media |
 | Ulteriori detrazioni manuali | Non come nostro campo sintetico | Si | Gia' presente |
-| Bonus ex Renzi / trattamento integrativo | Si | No, gestibile manualmente | Bassa |
-| Detrazione aggiuntiva lavoro dipendente | Si | No, gestibile manualmente | Bassa |
+| Versamento FP in busta paga vs bonifico | Si | Si, modalita' controllabile | Gia' aggiunta |
+| Bonus ex Renzi / trattamento integrativo | Si | Si, stima semplificata con soglie manuali | Gia' aggiunta |
+| Detrazione aggiuntiva lavoro dipendente | Si | Si, tramite detrazioni lavoro dipendente aggiornate | Gia' aggiunta |
 | Rendimento FP lordo/netto | Si | Ipotesi gia' netta | Media |
 | Tassazione annua rendimenti FP 12,5%-20% | Si | Assorbita nel rendimento FP | Media |
 | Costi annui FP | Si | No | Alta |
@@ -180,12 +181,11 @@ L'Excel risponde anche:
 A parita' di impatto sul reddito netto, quanto posso investire in PAC rispetto al FP?
 ```
 
-Implementazione consigliata:
+Implementazione portata nel modello:
 
-- tenere la modalita' attuale come default semplice;
-- aggiungere una modalita' avanzata "confronta a parita' di sacrificio netto";
-- in quella modalita', calcolare il reddito netto senza FP e con FP;
-- usare la differenza come capitale PAC comparabile.
+- la modalita' attuale `Budget lordo annuo` resta il default semplice;
+- la modalita' `Sacrificio netto equivalente` usa il costo netto del versamento FP come budget PAC comparabile;
+- in questa modalita' il risparmio fiscale riduce il costo effettivo e non viene reinvestito una seconda volta.
 
 ### 2. Bollo PAC/ETF
 
@@ -240,8 +240,7 @@ Noi oggi usiamo RAL. Si puo' aggiungere una selezione avanzata, ma non e' urgent
 
 1. Aggiungere costi annui FP/PAC.
 2. Aggiungere output "rendimento PAC di pareggio".
-3. Aggiungere modalita' avanzata "parita' di sacrificio netto".
-4. Solo dopo valutare base contributiva datore/minimo retributivo.
+3. Solo dopo valutare base contributiva datore/minimo retributivo.
 
 ## Nota sul file Excel
 
