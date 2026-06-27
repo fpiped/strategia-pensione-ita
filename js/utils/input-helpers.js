@@ -12,12 +12,16 @@ export function resolveRendimentoPac(etfId, fallback = 0) {
 
 export function buildInputWarnings(config) {
   const warnings = [];
+  const redditoTotale = config.reddito + Math.max(config.premiStraordinari || 0, 0);
   const baseContributivaFp = config.baseContributivaFpTipo !== 'ral' && config.baseContributivaFp > 0
     ? config.baseContributivaFp
     : config.reddito;
+  const baseDatoreFp = config.baseDatoreFpTipo && config.baseDatoreFpTipo !== 'same' && config.baseDatoreFpTipo !== 'ral' && config.baseDatoreFp > 0
+    ? config.baseDatoreFp
+    : baseContributivaFp;
   const investimentoMinimoDatore = baseContributivaFp * config.quotaMinAderentePerc;
 
-  if (config.investimento > config.reddito * 0.5 && config.reddito > 0) {
+  if (config.investimento > redditoTotale * 0.5 && redditoTotale > 0) {
     warnings.push('Investimento annuo molto alto rispetto al reddito: verifica che sia sostenibile e netto di altre esigenze.');
   }
 
@@ -34,7 +38,15 @@ export function buildInputWarnings(config) {
   }
 
   if (config.baseContributivaFpTipo !== 'ral' && config.baseContributivaFp > config.reddito) {
-    warnings.push('La base contributi FP alternativa non può superare la RAL: il calcolo la limita alla RAL.');
+    warnings.push('La base quota aderente alternativa non può superare la RAL: il calcolo la limita alla RAL.');
+  }
+
+  if (config.baseDatoreFpTipo && config.baseDatoreFpTipo !== 'same' && config.baseDatoreFpTipo !== 'ral' && config.baseDatoreFp <= 0) {
+    warnings.push('Hai selezionato una base datore alternativa ma non hai inserito un valore annuo: il calcolo usa la RAL.');
+  }
+
+  if (config.baseDatoreFpTipo && config.baseDatoreFpTipo !== 'same' && config.baseDatoreFpTipo !== 'ral' && config.baseDatoreFp > config.reddito) {
+    warnings.push('La base datore alternativa non può superare la RAL: il calcolo la limita alla RAL.');
   }
 
   if (config.variazioneBaseContributivaFrequenza > 0 && config.variazioneBaseContributivaValore < 0) {
@@ -56,6 +68,10 @@ export function buildInputWarnings(config) {
     warnings.push('Con questi input non raggiungi la quota minima per ottenere il contributo del datore.');
   }
 
+  if (baseDatoreFp !== baseContributivaFp && config.quotaDatoreFpPerc > 0) {
+    warnings.push('Quota aderente e contributo datore usano basi diverse: verifica che questa impostazione corrisponda al tuo fondo/CCNL.');
+  }
+
   if (config.rendimentoAnnualePacPerc < config.rendimentoAnnualeFpPerc) {
     warnings.push('Il rendimento PAC ipotizzato è più basso del rendimento FP: in questo scenario il confronto perde senso, perché il PAC non ha un vantaggio di rendimento atteso.');
   }
@@ -72,12 +88,8 @@ export function buildInputWarnings(config) {
     warnings.push('Ulteriori detrazioni elevate possono ridurre molto la capienza fiscale e quindi il beneficio della deduzione.');
   }
 
-  if (config.trattamentoIntegrativoAttivo && config.trattamentoIntegrativoSogliaMax <= config.trattamentoIntegrativoSogliaMin) {
-    warnings.push('Le soglie del trattamento integrativo non sono coerenti: la soglia massima deve essere maggiore della minima.');
-  }
-
   if (config.modalitaVersamentoFp === 'tuttoBonifico') {
-    warnings.push('Con versamento FP tutto via bonifico il modello non attribuisce effetti aggiuntivi su detrazioni lavoro dipendente o trattamento integrativo.');
+    warnings.push('Con versamento FP tutto via bonifico il modello non attribuisce effetti aggiuntivi su detrazioni lavoro dipendente o ex Bonus Renzi.');
   }
 
   if (config.primaOccupazionePost2006 && config.plafondExtraPrimaOccupazione <= 0) {

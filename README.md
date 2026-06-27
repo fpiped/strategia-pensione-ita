@@ -4,7 +4,7 @@ https://pippo995.github.io/calcolatore-fondo-pensione-vs-pac/
 
 Confronta **Fondo Pensione** e **PAC in ETF** nel contesto fiscale italiano.
 
-Assunzione principale: il modello è pensato per un **lavoratore dipendente** e usa RAL, contributi INPS stimati, detrazioni da lavoro dipendente e possibile contributo del datore.
+Assunzione principale: il modello è pensato per un **lavoratore dipendente** e usa RAL ordinaria, eventuali premi/bonus imponibili, contributi INPS stimati, detrazioni da lavoro dipendente e possibile contributo del datore.
 
 ## Cosa fa
 
@@ -14,7 +14,7 @@ Assunzione principale: il modello è pensato per un **lavoratore dipendente** e 
 - Ottimizza la quota deducibile tra FP e PAC anno per anno
 - Considera la quota oltre deduzione sempre nel PAC
 - Supporta la maggiorazione per prima occupazione post 31/12/2006, se inserisci plafond extra residuo e anni residui
-- Distingue versamenti FP in busta paga e via bonifico per stimare detrazioni lavoro dipendente e trattamento integrativo
+- Distingue versamenti FP in busta paga e via bonifico per stimare detrazioni lavoro dipendente, ex Bonus Renzi e bonus cuneo fiscale
 - Applica al PAC l'imposta di bollo annua dello 0,2% sul montante
 
 ## Opzioni
@@ -32,15 +32,16 @@ La UI ha due livelli:
 | Prima occupazione post 2006 | Aggiunge al limite ordinario il recupero extra, max 2.582,29 €/anno entro plafond residuo |
 | Modalità confronto | Budget lordo annuo oppure sacrificio netto equivalente |
 | Variazioni periodiche | Aumenti o riduzioni di reddito e budget annuo in percentuale o euro |
-| Base contributi FP | RAL oppure base annua alternativa per quota minima aderente e contributo datore, con variazione periodica opzionale |
+| Premi/bonus imponibili | Aumentano reddito fiscale/previdenziale ma non la base FP/datore |
+| Basi contributi FP | RAL, minimo retributivo annuo o importo manuale; base quota aderente e base datore possono coincidere o essere distinte |
 | Addizionali locali | Modalità manuale oppure calcolo da Regione e Comune; il Comune è cercabile e forza la Regione dalla provincia |
-| Contributo datore | Percentuale sulla base contributiva, importo fisso annuo o somma delle due componenti |
+| Contributo datore | Percentuale sulla base datore, importo fisso annuo o somma delle due componenti |
 | Parametri INPS | Aliquota lavoratore, massimale contributivo e IVS aggiuntivo sopra soglia |
 | Versamento FP | Quota minima in busta + extra via bonifico, tutto busta o tutto bonifico |
-| Trattamento integrativo | Stima opzionale con importo e soglie manuali |
+| Bonus fiscali lavoro dipendente | Ex Bonus Renzi e bonus cuneo fiscale 2025/2026 calcolati automaticamente |
 | Viste tabella | Mix, confronto scenari o dettaglio completo |
 
-Il calcolo è sempre cumulativo. In modalità `Budget lordo annuo` il risparmio fiscale stimato viene reinvestito l'anno successivo; in modalità `Sacrificio netto equivalente` riduce il costo effettivo del versamento FP e non viene reinvestito una seconda volta.
+Il calcolo è sempre cumulativo. I versamenti annui sono trattati come investiti nell'anno di versamento. In modalità `Budget lordo annuo` il risparmio fiscale stimato viene reinvestito l'anno successivo; in modalità `Sacrificio netto equivalente` riduce il costo effettivo del versamento FP e non viene reinvestito una seconda volta.
 
 Le aliquote regionali e comunali sono dati MEF 2026 importati nel dataset locale. Il repo non include una pipeline di scraping: committa il dataset normalizzato usato dall'app, non i PDF/file sorgente.
 

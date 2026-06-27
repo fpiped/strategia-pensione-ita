@@ -65,9 +65,13 @@
                             </div>
                             <div class="card-body">
                                 <div class="form-row">
-                                    <div class="form-group full-width">
-                                        <label for="reddito"><span class="help-trigger" data-help="reddito">Reddito Annuale (€)</span></label>
+                                    <div class="form-group">
+                                        <label for="reddito"><span class="help-trigger" data-help="reddito">RAL ordinaria (€)</span></label>
                                         <input type="number" id="reddito" class="form-control" value="30000" min="0" step="1000">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="premiStraordinari"><span class="help-trigger" data-help="premiStraordinari">Premi/bonus imponibili (€)</span></label>
+                                        <input type="number" id="premiStraordinari" class="form-control" value="0" min="0" step="100">
                                     </div>
                                 </div>
                                 <div class="form-row">
@@ -197,7 +201,7 @@
                                 </div>
                                 <div class="info-box">
                                     <i class="fas fa-triangle-exclamation"></i>
-                                    <span>I rendimenti sono ipotesi di simulazione. Il PAC include anche il bollo annuo dello 0,2%.</span>
+                                    <span>I rendimenti sono ipotesi di simulazione. Inserisci il rendimento FP già netto di costi e tassazione annuale; il PAC include anche il bollo annuo dello 0,2%.</span>
                                 </div>
                                 <div class="input-warnings" id="input-warnings" aria-live="polite"></div>
                             </div>
@@ -258,23 +262,37 @@
                             <div class="card-body">
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="contributoDatoreFisso"><span class="help-trigger" data-help="contributoDatoreFisso">Datore fisso annuo (€)</span></label>
-                                        <input type="number" id="contributoDatoreFisso" class="form-control" value="0" min="0" step="50">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="baseContributivaFpTipo"><span class="help-trigger" data-help="baseContributivaFpTipo">Base contributi FP</span></label>
+                                        <label for="baseContributivaFpTipo"><span class="help-trigger" data-help="baseContributivaFpTipo">Base quota aderente</span></label>
                                         <select id="baseContributivaFpTipo" class="form-control">
                                             <option value="ral" selected>RAL</option>
-                                            <option value="baseTfr">Base TFR / imponibile TFR annuo</option>
+                                            <option value="minimoRetributivo">Minimo retributivo annuo</option>
+                                            <option value="manuale">Importo annuo manuale</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="baseDatoreFpTipo"><span class="help-trigger" data-help="baseDatoreFpTipo">Base contributo datore</span></label>
+                                        <select id="baseDatoreFpTipo" class="form-control">
+                                            <option value="same" selected>Uguale alla quota aderente</option>
+                                            <option value="ral">RAL</option>
                                             <option value="minimoRetributivo">Minimo retributivo annuo</option>
                                             <option value="manuale">Importo annuo manuale</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="form-row">
-                                    <div class="form-group full-width">
-                                        <label for="baseContributivaFp"><span class="help-trigger" data-help="baseContributivaFp">Base annua alternativa (€)</span></label>
+                                    <div class="form-group">
+                                        <label for="baseContributivaFp"><span class="help-trigger" data-help="baseContributivaFp">Base quota annua (€)</span></label>
                                         <input type="number" id="baseContributivaFp" class="form-control" value="0" min="0" step="100" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="baseDatoreFp"><span class="help-trigger" data-help="baseDatoreFp">Base datore annua (€)</span></label>
+                                        <input type="number" id="baseDatoreFp" class="form-control" value="0" min="0" step="100" disabled>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="contributoDatoreFisso"><span class="help-trigger" data-help="contributoDatoreFisso">Datore fisso annuo (€)</span></label>
+                                        <input type="number" id="contributoDatoreFisso" class="form-control" value="0" min="0" step="50">
                                     </div>
                                 </div>
                                 <div class="variation-grid contribution-base-variation" aria-disabled="true">
@@ -337,28 +355,9 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label class="toggle-label">
-                                            <input type="checkbox" id="trattamentoIntegrativoAttivo">
-                                            <span class="toggle-switch"></span>
-                                            <span class="help-trigger" data-help="trattamentoIntegrativoAttivo">Stima trattamento integrativo</span>
-                                        </label>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="trattamentoIntegrativoImporto"><span class="help-trigger" data-help="trattamentoIntegrativoImporto">Importo annuo (€)</span></label>
-                                        <input type="number" id="trattamentoIntegrativoImporto" class="form-control" value="1200" min="0" step="100">
-                                    </div>
-                                </div>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="trattamentoIntegrativoSogliaMin"><span class="help-trigger" data-help="trattamentoIntegrativoSogliaMin">Soglia min (€)</span></label>
-                                        <input type="number" id="trattamentoIntegrativoSogliaMin" class="form-control" value="8500" min="0" step="100">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="trattamentoIntegrativoSogliaMax"><span class="help-trigger" data-help="trattamentoIntegrativoSogliaMax">Soglia max trattamento (€)</span></label>
-                                        <input type="number" id="trattamentoIntegrativoSogliaMax" class="form-control" value="15000" min="0" step="100">
-                                    </div>
+                                <div class="info-box">
+                                    <i class="fas fa-scale-balanced"></i>
+                                    <span>Bonus ex Renzi e bonus cuneo fiscale 2025/2026 sono calcolati automaticamente con le regole attuali sul reddito complessivo.</span>
                                 </div>
                             </div>
                         </div>
@@ -397,7 +396,7 @@
                                 </div>
                                 <div class="info-box">
                                     <i class="fas fa-briefcase"></i>
-                                    <span>Il modello è pensato per lavoratori dipendenti: usa RAL, contributi INPS, detrazioni da lavoro dipendente e possibile contributo datore.</span>
+                                    <span>Il modello è pensato per lavoratori dipendenti: usa RAL, premi/bonus imponibili, contributi INPS, detrazioni da lavoro dipendente e possibile contributo datore.</span>
                                 </div>
                             </div>
                         </div>
@@ -521,7 +520,7 @@
                     <h2 id="introduction">Il problema: FP o PAC?</h2>
 
                     <div class="highlight">
-                        <strong>Assunzione principale:</strong> il calcolatore è costruito per un <strong>lavoratore dipendente</strong>. Usa RAL, contributi INPS stimati, detrazioni da lavoro dipendente, addizionali e possibile contributo del datore. Non è pensato per lavoratori autonomi, partite IVA, regimi sostitutivi o situazioni senza datore di lavoro.
+                        <strong>Assunzione principale:</strong> il calcolatore è costruito per un <strong>lavoratore dipendente</strong>. Usa RAL ordinaria, eventuali premi/bonus imponibili, contributi INPS stimati, detrazioni da lavoro dipendente, addizionali e possibile contributo del datore. Non è pensato per lavoratori autonomi, partite IVA, regimi sostitutivi o situazioni senza datore di lavoro.
                     </div>
 
                     <p>Vuoi investire per il futuro. Hai due opzioni:</p>
@@ -639,7 +638,7 @@
                     <p><small>*L'aliquota parte dal 15% e scende dello 0.3% per ogni anno oltre il 15°, fino al minimo del 9% (con 35+ anni di iscrizione).</small></p>
 
                     <div class="highlight">
-                        <strong>Esempio usato in questa guida:</strong> Mario, 35 anni, reddito €30.000, investe €3.000/anno. Il datore versa 1.5% se Mario versa almeno 1%. Addizionali stimate: 2%. Ulteriori detrazioni: €0. Rendimento FP ipotizzato: 4%. Rendimento PAC ipotizzato: 8%.
+                        <strong>Esempio usato in questa guida:</strong> Mario, 35 anni, RAL ordinaria €30.000, premi/bonus imponibili €0, investe €3.000/anno. Il datore versa 1.5% se Mario versa almeno 1%. Addizionali stimate: 2%. Ulteriori detrazioni: €0. Rendimento FP ipotizzato: 4%. Rendimento PAC ipotizzato: 8%.
                     </div>
 
                     <h2 id="step1">Step 1: I vantaggi del FP</h2>
@@ -658,7 +657,8 @@ Mario versa €3.000 → l'azienda aggiunge €450 gratis</pre>
                     <p><small>Le addizionali regionali/comunali sono stimate con una percentuale manuale. Le ulteriori detrazioni riducono l'imposta netta e servono a simulare bonus o detrazioni personali non modellati nel dettaglio.</small></p>
 <pre>Step fiscale con i parametri default:
 
-RAL:                     €30.000
+RAL ordinaria:           €30.000
+Premi/bonus imponibili:  €0
 - INPS ordinaria 9.19%:  €2.757
 = Imponibile fiscale:    ~€27.243
 
@@ -674,7 +674,7 @@ Quota via bonifico:      €2.700
 Risparmio fiscale stimato anno 1: ~€777</pre>
 
                     <p><strong>Attenzione:</strong> il risparmio fiscale dipende dalla tua capienza fiscale. Se hai molte altre detrazioni, il beneficio effettivo può scendere.</p>
-                    <p><strong>Busta paga vs bonifico:</strong> tutta la quota deducibile riduce l'imponibile IRPEF, ma nel modello solo la quota versata tramite busta paga riduce anche la base usata per stimare detrazioni da lavoro dipendente e trattamento integrativo. Il default assume quota minima in busta paga ed extra via bonifico.</p>
+                    <p><strong>Busta paga vs bonifico:</strong> tutta la quota deducibile riduce l'imponibile IRPEF, ma nel modello solo la quota versata tramite busta paga riduce anche la base usata per stimare detrazioni da lavoro dipendente, ex Bonus Renzi e bonus cuneo fiscale. Il default assume quota minima in busta paga ed extra via bonifico.</p>
 
                     <h3>Limite deduzione</h3>
                     <p>Puoi dedurre max €5.164,57/anno, ma il contributo datore conta nel limite.</p>
@@ -865,7 +865,7 @@ A 55 anni, orizzonte 10 anni:
 
                     <h2 id="options">Le opzioni del calcolatore</h2>
 
-                    <p>La plancia ha due livelli. <strong>Semplice</strong> tiene visibili i dati necessari per una simulazione ordinaria: RAL, durata, budget, contributo datore, quota aderente, addizionali, anzianità FP, rendimenti e riscatto. <strong>Avanzata</strong> espone i parametri tecnici: variazioni nel tempo, base contributiva diversa dalla RAL, contributo datore fisso, INPS, massimale, IVS, busta/bonifico, trattamento integrativo e maggiorazione prima occupazione.</p>
+                    <p>La plancia ha due livelli. <strong>Semplice</strong> tiene visibili i dati necessari per una simulazione ordinaria: RAL, premi/bonus imponibili, durata, budget, contributo datore, quota aderente, addizionali, anzianità FP, rendimenti e riscatto. <strong>Avanzata</strong> espone i parametri tecnici: variazioni nel tempo, basi contributive diverse dalla RAL, contributo datore fisso, INPS, massimale, IVS, busta/bonifico, bonus fiscali e maggiorazione prima occupazione.</p>
 
                     <h3>Rendimenti</h3>
                     <p>Scegli un comparto FP e un ETF PAC per usare valori predefiniti, oppure seleziona Personalizzato e inserisci manualmente i rendimenti ipotizzati. Sono ipotesi di simulazione, non previsioni. Il PAC applica sempre anche l'imposta di bollo annua dello 0,2% sul montante.</p>
@@ -884,15 +884,17 @@ Anni 4-6: valore iniziale + 5%
 Anni 7-9: nuovo + 5%
 
 Freq. 0 o valore 0: nessuna variazione</pre>
-                    <p>La variazione del reddito modifica nel tempo il risparmio fiscale stimato e, se la base contributi FP è RAL, anche contributo datore e quota minima aderente. La variazione dell'investimento modifica il budget annuo usato dal confronto. Se usi una base contributiva alternativa, puoi applicare una variazione separata anche a quella base.</p>
+                    <p>La variazione del reddito modifica nel tempo il risparmio fiscale stimato e, se le basi contributi FP sono RAL, anche contributo datore e quota minima aderente. La variazione dell'investimento modifica il budget annuo usato dal confronto. Se usi basi alternative, puoi applicare una variazione separata anche a quelle basi.</p>
 
                     <h3>Base contributi FP</h3>
-                    <p>La percentuale minima aderente e il contributo datore non sono sempre calcolati sulla RAL. Alcuni fondi usano una base TFR, l'imponibile TFR, i minimi contrattuali o una base definita dal CCNL. Seleziona RAL quando non conosci una base diversa; altrimenti inserisci la base annua indicata dal tuo fondo o dalla busta paga.</p>
+                    <p>La percentuale minima aderente e il contributo datore non sono sempre calcolati sulla RAL. Alcuni fondi usano i minimi contrattuali o una base definita dal CCNL. Di default la base del contributo datore coincide con quella della quota aderente; in avanzata puoi separarle se il tuo fondo usa basi diverse.</p>
+                    <p>Premi, straordinari e bonus imponibili aumentano il reddito usato per INPS, IRPEF e addizionali, ma non aumentano la base contributi FP/datore nel modello.</p>
                     <p>Il contributo datore può essere percentuale, fisso annuo o una somma delle due componenti. Nel calcolo viene riconosciuto solo se raggiungi la quota minima aderente e conta nel limite di deducibilità del fondo pensione.</p>
 
                     <h3>Assunzioni fisse</h3>
                     <ul>
                         <li><strong>Calcolo cumulativo:</strong> il budget annuo viene versato ogni anno per tutta la durata della simulazione.</li>
+                        <li><strong>Timing versamenti:</strong> i contributi annui sono trattati come investiti nell'anno di versamento, quindi partecipano al rendimento di quell'anno.</li>
                         <li><strong>Trattamento deduzione:</strong> in Budget lordo il risparmio fiscale stimato viene reinvestito l'anno successivo; in Sacrificio netto riduce il costo effettivo del versamento FP.</li>
                     </ul>
 
@@ -909,8 +911,8 @@ Freq. 0 o valore 0: nessuna variazione</pre>
                         <li><strong>Da località:</strong> Regione e Comune stimano automaticamente addizionale regionale e comunale. Il Comune è cercabile per nome, provincia o codice catastale e imposta in automatico la Regione.</li>
                         <li><strong>Addizionali stimate:</strong> in modalità manuale è modificabile; in modalità da località mostra l'aliquota media effettiva calcolata sul reddito impostato.</li>
                         <li><strong>Ulteriori detrazioni:</strong> importo annuo di bonus o detrazioni personali che riducono l'imposta netta. Non sono deduzioni e non riducono il reddito imponibile.</li>
-                        <li><strong>Versamento FP:</strong> controlla se la quota FP viene trattata come busta paga, bonifico o mix. La deduzione IRPEF vale in entrambi i casi, ma gli effetti su detrazioni lavoro dipendente e trattamento integrativo vengono stimati solo sulla parte in busta paga.</li>
-                        <li><strong>Trattamento integrativo:</strong> stima opzionale e semplificata con soglie manuali. È disattivata di default perché la regola reale può dipendere da capienza e condizioni personali.</li>
+                        <li><strong>Versamento FP:</strong> controlla se la quota FP viene trattata come busta paga, bonifico o mix. La deduzione IRPEF vale in entrambi i casi, ma gli effetti su detrazioni lavoro dipendente, ex Bonus Renzi e bonus cuneo vengono stimati solo sulla parte in busta paga.</li>
+                        <li><strong>Bonus fiscali da lavoro dipendente:</strong> ex Bonus Renzi e bonus cuneo fiscale sono calcolati automaticamente. Nel modello la quota FP in busta riduce anche il reddito complessivo usato per il bonus cuneo; la quota via bonifico incide solo come deduzione fiscale.</li>
                         <li><strong>Prima occupazione post 2006:</strong> abilita la maggiorazione del limite deducibile se hai plafond extra residuo da recuperare. Ogni strategia consuma il proprio plafond in base ai contributi FP simulati.</li>
                     </ul>
                     <p>Le aliquote regionali e comunali sono dati MEF 2026 importati nel dataset locale. Il repo non include una pipeline di scraping: usa direttamente il dataset normalizzato, non i PDF/file sorgente.</p>
@@ -1007,7 +1009,7 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
                     </table>
 
                     <h3>Fonti informative sui rendimenti</h3>
-                    <p>I rendimenti dei fondi pensione sono ipotesi ispirate ai dati storici pubblicati da <a href="https://www.covip.it/" target="_blank" rel="noopener">COVIP</a>. Nel modello sono trattati come rendimenti già al netto della tassazione annuale dei rendimenti, ma non sono rendimenti futuri garantiti.</p>
+                    <p>I rendimenti dei fondi pensione sono ipotesi ispirate ai dati storici pubblicati da <a href="https://www.covip.it/" target="_blank" rel="noopener">COVIP</a>. Nel modello sono trattati come rendimenti già al netto dei costi e della tassazione annuale dei rendimenti, ma non sono rendimenti futuri garantiti.</p>
 
                     <p>Gli ETF indicati sotto sono esempi comuni per costruire un PAC globale. Non sono raccomandazioni di acquisto: servono a dare riferimenti concreti agli scenari del calcolatore.</p>
                     <table>
@@ -1061,6 +1063,7 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
                         <li>Le addizionali regionali e comunali possono essere stimate dai selettori locali; casi speciali, detrazioni comunali/regionali e note personali restano semplificati.</li>
                         <li>Le ulteriori detrazioni sono un campo sintetico: il calcolatore non ricostruisce tutti i bonus fiscali personali.</li>
                         <li>I rendimenti FP e PAC sono ipotesi costanti anno per anno; nella realtà i mercati oscillano e l'ordine dei rendimenti conta.</li>
+                        <li>I versamenti sono trattati come investiti nell'anno di versamento: il modello non espone uno switch tra capitalizzazione anticipata e posticipata.</li>
                         <li>Il PAC applica imposta di bollo annua dello 0,2% sul montante e tassazione delle plusvalenze al 26% in uscita.</li>
                         <li>Costi, commissioni, fiscalità personale, cambi normativi e condizioni specifiche del singolo fondo possono modificare il risultato reale.</li>
                     </ul>

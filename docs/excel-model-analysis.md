@@ -141,14 +141,14 @@ FN4 = 2.213,79
 | Limite deduzione ordinario | 5.165 2022 | 5.164,57 attuale | Gia' presente |
 | Maggiorazione prima occupazione post 2006 | Non evidente nella prima lettura | Si | Gia' aggiunta |
 | Contributo datore | Si | Si | Gia' presente |
-| Contributo datore su imponibile TFR/minimo retributivo | Si | Si, base annua alternativa | Gia' aggiunta |
-| Adesione minima su imponibile TFR/minimo retributivo | Si | Si, base annua alternativa | Gia' aggiunta |
+| Contributo datore su base diversa | Si | Si, base datore separabile dalla base quota aderente | Aggiornata |
+| Adesione minima su base diversa | Si | Si, base quota aderente separabile dalla base datore | Aggiornata |
 | INPS | Si, con massimale e IVS aggiuntivo | Semplificato | Media |
 | IRPEF | 2022 dettagliata | 2025 aggiornata | Gia' presente, piu' attuale |
 | Addizionali regionali/comunali a scaglioni | Si | Percentuale manuale | Bassa/media |
 | Ulteriori detrazioni manuali | Non come nostro campo sintetico | Si | Gia' presente |
 | Versamento FP in busta paga vs bonifico | Si | Si, modalita' controllabile | Gia' aggiunta |
-| Bonus ex Renzi / trattamento integrativo | Si | Si, stima semplificata con soglie manuali | Gia' aggiunta |
+| Bonus ex Renzi / trattamento integrativo | Si | Si, calcolo automatico con regole 2025/2026 | Aggiornata |
 | Detrazione aggiuntiva lavoro dipendente | Si | Si, tramite detrazioni lavoro dipendente aggiornate | Gia' aggiunta |
 | Rendimento FP lordo/netto | Si | Ipotesi gia' netta | Media |
 | Tassazione annua rendimenti FP 12,5%-20% | Si | Assorbita nel rendimento FP | Media |
@@ -220,27 +220,20 @@ Questo spiega meglio "quanto deve rendere il PAC per vincere".
 
 ### 5. Base contributo datore piu' flessibile
 
-L'Excel consente di calcolare datore e adesione minima su:
-
-- RAL;
-- imponibile TFR;
-- minimo retributivo.
-
-Noi oggi usiamo RAL. Si puo' aggiungere una selezione avanzata, ma non e' urgente quanto bollo/sacrificio netto.
+Recepito: il calcolatore consente di distinguere base quota aderente e base contributo datore. Di default coincidono; in avanzata possono usare RAL, minimo retributivo annuo o importo manuale.
 
 ## Cose da non portare subito
 
 - Fiscalita' 2022: e' superata.
-- Bonus ex Renzi dettagliato: meglio campo manuale "ulteriori detrazioni" salvo esigenze specifiche.
-- Addizionali locali automatiche: alta manutenzione.
+- Addizionali manuali progressive: meglio usare dataset locale 2026 e fallback percentuale.
 - Rendimenti casuali: rischiano di complicare troppo la UI.
 - Macro Excel e solver VBA: meglio riscrivere in JS con funzioni pure.
 
 ## Proposta priorita'
 
-1. Aggiungere costi annui FP/PAC.
-2. Aggiungere output "rendimento PAC di pareggio".
-3. Solo dopo valutare base contributiva datore/minimo retributivo.
+1. Tenere aggiornate le basi fiscali/normative.
+2. Valutare solo in futuro output "rendimento PAC di pareggio".
+3. Evitare ulteriori controlli Excel-like se non servono a un caso reale frequente.
 
 ## Nota sul file Excel
 

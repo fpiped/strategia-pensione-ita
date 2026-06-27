@@ -48,11 +48,21 @@ export class FinancialController {
         this.updateContributionBaseFields();
         this.updateResults();
       });
+      document.getElementById('baseDatoreFpTipo').addEventListener('change', () => {
+        this.updateContributionBaseFields();
+        this.updateResults();
+      });
       document.getElementById('baseContributivaFp').addEventListener('input', () => {
+        this.updateContributionBaseFields();
+      });
+      document.getElementById('baseDatoreFp').addEventListener('input', () => {
         this.updateContributionBaseFields();
       });
       document.getElementById('reddito').addEventListener('input', () => {
         this.updateContributionBaseFields();
+        this.updateLocalTaxFields();
+      });
+      document.getElementById('premiStraordinari').addEventListener('input', () => {
         this.updateLocalTaxFields();
       });
       document.querySelectorAll('[data-local-tax-mode]').forEach((button) => {
@@ -164,6 +174,7 @@ export class FinancialController {
       const config = {
         durata: readNumber('durata', 1),
         reddito: readNumber('reddito'),
+        premiStraordinari: readNumber('premiStraordinari'),
         investimento: readNumber('investimento'),
         modalitaConfronto: document.getElementById('modalitaConfronto').value,
         variazioneRedditoTipo: readRadio('variazioneRedditoTipo', 'percentuale'),
@@ -179,6 +190,8 @@ export class FinancialController {
         quotaMinAderentePerc: readNumber('quotaMinAderentePerc') / 100,
         baseContributivaFpTipo: document.getElementById('baseContributivaFpTipo').value,
         baseContributivaFp: readNumber('baseContributivaFp'),
+        baseDatoreFpTipo: document.getElementById('baseDatoreFpTipo').value,
+        baseDatoreFp: readNumber('baseDatoreFp'),
         variazioneBaseContributivaTipo: readRadio('variazioneBaseContributivaTipo', 'percentuale'),
         variazioneBaseContributivaFrequenza: readNumber('variazioneBaseContributivaFrequenza'),
         variazioneBaseContributivaValore: readNumber('variazioneBaseContributivaValore'),
@@ -189,10 +202,6 @@ export class FinancialController {
         addizionaliPerc: readNumber('addizionaliPerc') / 100,
         ulterioriDetrazioni: readNumber('ulterioriDetrazioni'),
         modalitaVersamentoFp: document.getElementById('modalitaVersamentoFp').value,
-        trattamentoIntegrativoAttivo: document.getElementById('trattamentoIntegrativoAttivo').checked,
-        trattamentoIntegrativoImporto: readNumber('trattamentoIntegrativoImporto', 1200),
-        trattamentoIntegrativoSogliaMin: readNumber('trattamentoIntegrativoSogliaMin', 8500),
-        trattamentoIntegrativoSogliaMax: readNumber('trattamentoIntegrativoSogliaMax', 15000),
 
         // Tassi di rendimento
         rendimentoAnnualeFpPerc: readNumber('rendimentoAnnualeFpPerc') / 100,
@@ -242,12 +251,20 @@ export class FinancialController {
 
     updateContributionBaseFields() {
       const isRal = document.getElementById('baseContributivaFpTipo').value === 'ral';
+      const isDatoreSame = document.getElementById('baseDatoreFpTipo').value === 'same';
+      const isDatoreRal = document.getElementById('baseDatoreFpTipo').value === 'ral';
       const reddito = parseFloat(document.getElementById('reddito').value) || 0;
       const baseInput = document.getElementById('baseContributivaFp');
+      const baseDatoreInput = document.getElementById('baseDatoreFp');
       baseInput.disabled = isRal;
+      baseDatoreInput.disabled = isDatoreSame || isDatoreRal;
       baseInput.max = String(Math.max(reddito, 0));
+      baseDatoreInput.max = String(Math.max(reddito, 0));
       if (!isRal && parseFloat(baseInput.value) > reddito) {
         baseInput.value = String(Math.max(reddito, 0));
+      }
+      if (!baseDatoreInput.disabled && parseFloat(baseDatoreInput.value) > reddito) {
+        baseDatoreInput.value = String(Math.max(reddito, 0));
       }
       document.querySelector('.contribution-base-variation').setAttribute('aria-disabled', String(isRal));
       document.querySelectorAll(
@@ -377,7 +394,7 @@ export class FinancialController {
       }
 
       const selected = calculateLocalTaxRate({
-        reddito: readNumber('reddito'),
+        reddito: readNumber('reddito') + Math.max(readNumber('premiStraordinari'), 0),
         regionId: regionSelect.value,
         municipalityCode: municipalityInput.value
       });

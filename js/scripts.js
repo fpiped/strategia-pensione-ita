@@ -128,8 +128,12 @@ function setupMobileTooltips() {
     // Definizione help content
     const helpContent = {
         reddito: {
-            title: 'Il tuo stipendio lordo',
-            text: 'Il tuo Reddito Annuo Lordo (RAL) da lavoratore dipendente. Il modello usa contributi INPS stimati, detrazioni da lavoro dipendente e possibile contributo del datore. Non è pensato per autonomi, partite IVA o regimi sostitutivi.'
+            title: 'RAL ordinaria',
+            text: 'La tua retribuzione annua lorda ordinaria da lavoratore dipendente. Il modello la usa anche come base FP quando selezioni RAL. Non è pensato per autonomi, partite IVA o regimi sostitutivi.'
+        },
+        premiStraordinari: {
+            title: 'Premi, straordinari e bonus',
+            text: 'Altri compensi annui imponibili INPS/IRPEF. Aumentano il reddito fiscale e previdenziale, ma non la base usata per quota minima FP e contributo datore.'
         },
         variazioneReddito: {
             title: 'Variazione reddito',
@@ -152,16 +156,24 @@ function setupMobileTooltips() {
             text: 'Budget lordo confronta lo stesso importo annuo allocato tra FP e PAC e reinveste il risparmio fiscale l’anno successivo. Sacrificio netto confronta invece a parità di impatto sul reddito netto: il PAC investe il costo netto equivalente del versamento FP, senza reinvestire di nuovo il risparmio fiscale.'
         },
         baseContributivaFpTipo: {
-            title: 'Base contributi FP',
-            text: 'Base annua su cui calcolare quota minima aderente e contributo datore. Può essere RAL, base TFR/imponibile TFR, minimo retributivo annuo o un importo manuale indicato dal tuo CCNL/fondo.'
+            title: 'Base quota aderente',
+            text: 'Base annua su cui calcolare la quota minima che devi versare per ottenere il contributo del datore.'
         },
         baseContributivaFp: {
-            title: 'Base annua alternativa',
-            text: 'Inserisci il valore annuo della base contributiva se il fondo non usa la RAL. Per esempio imponibile TFR annuo o minimo retributivo mensile moltiplicato per le mensilità previste. Il valore viene limitato alla RAL.'
+            title: 'Base quota annua',
+            text: 'Inserisci il valore annuo della base per la quota aderente se il fondo non usa la RAL. Per esempio il minimo retributivo mensile moltiplicato per le mensilità previste. Il valore viene limitato alla RAL ordinaria.'
+        },
+        baseDatoreFpTipo: {
+            title: 'Base contributo datore',
+            text: 'Base annua su cui calcolare il contributo percentuale del datore. Di default coincide con la base quota aderente; cambiala solo se fondo o CCNL indicano una base diversa.'
+        },
+        baseDatoreFp: {
+            title: 'Base datore annua',
+            text: 'Inserisci il valore annuo della base del contributo datore se è diversa dalla base quota aderente e non usa la RAL.'
         },
         variazioneBaseContributiva: {
             title: 'Variazione base contributi',
-            text: 'Simula aumenti periodici della base alternativa usata per contributo datore e quota minima. Se la base è RAL, questa variazione resta disattivata perché si usa già la variazione reddito.'
+            text: 'Simula aumenti periodici delle basi alternative. Se la base quota aderente è RAL, questa variazione resta disattivata perché si usa già la variazione reddito.'
         },
         contribuzioneDatoreFpPerc: {
             title: 'Contributo datore di lavoro',
@@ -209,23 +221,7 @@ function setupMobileTooltips() {
         },
         modalitaVersamentoFp: {
             title: 'Versamento FP',
-            text: 'Decide quanta quota FP viene trattata come versamento tramite busta paga. Tutta la quota deducibile riduce l’imponibile IRPEF, ma solo la quota in busta paga riduce la base usata per stimare detrazioni da lavoro dipendente e trattamento integrativo.'
-        },
-        trattamentoIntegrativoAttivo: {
-            title: 'Trattamento integrativo',
-            text: 'Stima opzionale e semplificata dell’ex Bonus Renzi. Se attivo, il modello riconosce l’importo annuo quando la base per detrazioni rientra tra soglia minima e massima.'
-        },
-        trattamentoIntegrativoImporto: {
-            title: 'Importo trattamento',
-            text: 'Importo annuo da riconoscere quando il reddito stimato rientra nelle soglie indicate. Modificalo se vuoi simulare una regola diversa.'
-        },
-        trattamentoIntegrativoSogliaMin: {
-            title: 'Soglia minima trattamento',
-            text: 'Soglia sotto la quale il trattamento integrativo non viene stimato. È configurabile perché le regole fiscali possono cambiare.'
-        },
-        trattamentoIntegrativoSogliaMax: {
-            title: 'Soglia massima trattamento',
-            text: 'Soglia sopra la quale il trattamento integrativo non viene stimato nel modello semplificato. La quota FP in busta paga può abbassare la base usata per questo controllo.'
+            text: 'Decide quanta quota FP viene trattata come versamento tramite busta paga. Tutta la quota deducibile riduce l’imponibile IRPEF, ma solo la quota in busta paga riduce la base usata per stimare detrazioni da lavoro dipendente, ex Bonus Renzi e bonus cuneo fiscale.'
         },
         anzianitaPregressaFp: {
             title: 'Anzianità pregressa FP',
@@ -253,7 +249,7 @@ function setupMobileTooltips() {
         },
         rendimentoAnnualeFpPerc: {
             title: 'Rendimento fondo pensione ipotizzato',
-            text: 'Rendimento annuo usato nella simulazione FP. Il modello lo considera già netto dalla tassazione annuale dei rendimenti. Prova più valori: questo input influenza molto il mix consigliato.'
+            text: 'Rendimento annuo usato nella simulazione FP. Il modello lo considera già netto da costi e tassazione annuale dei rendimenti. Prova più valori: questo input influenza molto il mix consigliato.'
         },
         rendimentoAnnualePacPerc: {
             title: 'Rendimento ETF ipotizzato',

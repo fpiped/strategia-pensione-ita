@@ -190,6 +190,36 @@ test('le ulteriori detrazioni riducono il beneficio fiscale se manca capienza', 
   assert.equal(Math.round(model._calculateTaxSavings(12000, 3000, 0, undefined, undefined, undefined, undefined, 0, 2000)), 0);
 });
 
+test('calcola il bonus cuneo fiscale 2025-2026 sul reddito complessivo', () => {
+  const model = new FinancialModel();
+
+  assert.equal(Math.round(model._calculateBonusCuneoFiscale(8000)), 568);
+  assert.equal(Math.round(model._calculateBonusCuneoFiscale(12000)), 636);
+  assert.equal(Math.round(model._calculateBonusCuneoFiscale(18000)), 864);
+  assert.equal(Math.round(model._calculateBonusCuneoFiscale(30000)), 1000);
+  assert.equal(Math.round(model._calculateBonusCuneoFiscale(36000)), 500);
+  assert.equal(model._calculateBonusCuneoFiscale(41000), 0);
+});
+
+test('la quota FP in busta incide sul bonus cuneo, quella via bonifico no', () => {
+  const model = new FinancialModel();
+  const args = [40700, 1000, 0, 0, 1000000, 1000000, 0, 0, 0, 0];
+
+  assert.equal(model._calculateBonusCuneoFiscale(40700), 0);
+  assert.equal(model._calculateBonusCuneoFiscale(39700), 37.5);
+  assert.equal(Math.round(model._calculateTaxSavings(...args, 'tuttoBonifico')), 350);
+  assert.equal(Math.round(model._calculateTaxSavings(...args, 'tuttoBusta')), 474);
+});
+
+test('calcola ex Bonus Renzi con soglie e capienza', () => {
+  const model = new FinancialModel();
+
+  assert.equal(model._calculateTrattamentoIntegrativo(12000, 1000, 900, 0), 1200);
+  assert.equal(model._calculateTrattamentoIntegrativo(12000, 900, 1000, 0), 0);
+  assert.equal(model._calculateTrattamentoIntegrativo(20000, 3000, 2600, 800), 400);
+  assert.equal(model._calculateTrattamentoIntegrativo(29000, 5000, 2000, 0), 0);
+});
+
 test('calcola imponibile IRPEF con massimale INPS e IVS aggiuntivo', () => {
   const model = new FinancialModel();
 
@@ -259,7 +289,7 @@ test('usa una base contributiva FP alternativa e variabile', () => {
   assert.equal(model._resolveContributionBase({
     redditoAnno: 30000,
     anno: 4,
-    baseContributivaFpTipo: 'baseTfr',
+    baseContributivaFpTipo: 'minimoRetributivo',
     baseContributivaFp: 20000,
     variazioneBaseContributivaTipo: 'percentuale',
     variazioneBaseContributivaFrequenza: 3,
@@ -269,7 +299,7 @@ test('usa una base contributiva FP alternativa e variabile', () => {
   const result = model.calculateResults({
     ...baseConfig,
     durata: 4,
-    baseContributivaFpTipo: 'baseTfr',
+    baseContributivaFpTipo: 'minimoRetributivo',
     baseContributivaFp: 20000,
     variazioneBaseContributivaTipo: 'percentuale',
     variazioneBaseContributivaFrequenza: 3,
@@ -281,6 +311,41 @@ test('usa una base contributiva FP alternativa e variabile', () => {
   assert.equal(result.results[0]['Entro Min'], 200);
   assert.equal(result.results[3].Datore, 330);
   assert.equal(result.results[3]['Entro Min'], 220);
+});
+
+test('puo usare basi diverse per quota aderente e contributo datore', () => {
+  const model = new FinancialModel();
+  const result = model.calculateResults({
+    ...baseConfig,
+    durata: 1,
+    baseContributivaFpTipo: 'minimoRetributivo',
+    baseContributivaFp: 20000,
+    baseDatoreFpTipo: 'ral'
+  });
+
+  assert.equal(result.quotaDatoreFp, 450);
+  assert.equal(result.results[0]['Entro Min'], 200);
+  assert.equal(result.results[0].Datore, 450);
+});
+
+test('premi e bonus aumentano il reddito fiscale ma non la base FP su RAL', () => {
+  const model = new FinancialModel();
+  const baseResult = model.calculateResults({
+    ...baseConfig,
+    durata: 1,
+    addizionaliPerc: 0.02
+  });
+  const bonusResult = model.calculateResults({
+    ...baseConfig,
+    durata: 1,
+    premiStraordinari: 5000,
+    addizionaliPerc: 0.02
+  });
+
+  assert.equal(bonusResult.quotaDatoreFp, baseResult.quotaDatoreFp);
+  assert.equal(bonusResult.results[0].Datore, baseResult.results[0].Datore);
+  assert.equal(bonusResult.results[0]['Entro Min'], baseResult.results[0]['Entro Min']);
+  assert.ok(bonusResult.results[0].Risparmio > baseResult.results[0].Risparmio);
 });
 
 test('manda sempre nel PAC la quota oltre deduzione', () => {
