@@ -1,4 +1,4 @@
-import { MUNICIPAL_TAX_2025, REGIONAL_TAX_2026 } from '../constants/local-tax-data.js';
+import { MUNICIPAL_TAX_2026, REGIONAL_TAX_2026 } from '../constants/local-tax-data.js';
 
 const IRPEF_BRACKET_LIMITS = [15000, 28000, 50000, Infinity];
 
@@ -11,14 +11,14 @@ export function findRegionByProvince(provinceCode) {
 }
 
 export function findMunicipalityByCode(municipalityCode) {
-  return MUNICIPAL_TAX_2025.find((municipality) => municipality.code === municipalityCode) || null;
+  return MUNICIPAL_TAX_2026.find((municipality) => municipality.code === municipalityCode) || null;
 }
 
 export function searchMunicipalities(query, limit = 20) {
   const normalizedQuery = normalizeSearchText(query);
   if (!normalizedQuery) return [];
 
-  return MUNICIPAL_TAX_2025
+  return MUNICIPAL_TAX_2026
     .map((municipality) => ({
       municipality,
       score: scoreMunicipality(municipality, normalizedQuery)

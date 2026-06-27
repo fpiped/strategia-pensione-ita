@@ -1,7 +1,7 @@
 import { FinancialModel } from '../models/FinancialModel.js';
 import { FinancialView } from '../views/FinancialView.js';
 import { COMPARTI_FP, ETF_PRESETS } from '../constants/financial-constants.js';
-import { MUNICIPAL_TAX_2025, REGIONAL_TAX_2026 } from '../constants/local-tax-data.js';
+import { REGIONAL_TAX_2026 } from '../constants/local-tax-data.js';
 import {
   calculateLocalTaxRate,
   findMunicipalityByCode,

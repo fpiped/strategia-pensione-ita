@@ -22,7 +22,7 @@ export const REGIONAL_TAX_2026 = [
   { id: 'veneto', name: 'Veneto', provinceCodes: ['BL', 'PD', 'RO', 'TV', 'VE', 'VI', 'VR'], rate: 1.23 }
 ];
 
-export const MUNICIPAL_TAX_2025 = [
+export const MUNICIPAL_TAX_2026 = [
   { code: "A001", name: "Abano Terme", province: "PD", rate: 0.8, exemption: 12000 },
   { code: "A004", name: "Abbadia Cerreto", province: "LO", rate: 0.7, exemption: 10000 },
   { code: "A005", name: "Abbadia Lariana", province: "LC", brackets: [{ upTo: 28000, rate: 0.76 }, { upTo: 50000, rate: 0.77 }, { upTo: Infinity, rate: 0.8 }], exemption: 15000 },
@@ -7922,9 +7922,9 @@ export const MUNICIPAL_TAX_2025 = [
 ];
 
 export const MUNICIPAL_TAX_SOURCE = {
-  year: 2025,
-  label: 'CSV MEF addizionale comunale IRPEF 2025, aggiornato quotidianamente',
-  url: 'https://www1.finanze.gov.it/finanze2/dipartimentopolitichefiscali/fiscalitalocale/nuova_addcomirpef/download/download.php?anno=2025',
+  year: 2026,
+  label: 'Dati MEF addizionale comunale IRPEF 2026 importati nel dataset locale',
+  url: 'https://www1.finanze.gov.it/finanze2/dipartimentopolitichefiscali/fiscalitalocale/nuova_addcomirpef/download/download.php?anno=2026',
   count: 7896,
   isPartial: false
 };

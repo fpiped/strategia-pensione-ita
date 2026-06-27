@@ -42,7 +42,7 @@ La UI ha due livelli:
 
 Il calcolo è sempre cumulativo. In modalità `Budget lordo annuo` il risparmio fiscale stimato viene reinvestito l'anno successivo; in modalità `Sacrificio netto equivalente` riduce il costo effettivo del versamento FP e non viene reinvestito una seconda volta.
 
-Le aliquote regionali sono importate dal CSV MEF 2026. Le aliquote comunali sono importate dal CSV MEF 2025 e includono tutti i comuni presenti nell'elenco ufficiale.
+Le aliquote regionali e comunali sono dati MEF 2026 importati nel dataset locale. Il repo non include una pipeline di scraping: committa il dataset normalizzato usato dall'app, non i PDF/file sorgente.
 
 ## Avvio locale
 
