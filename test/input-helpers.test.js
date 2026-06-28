@@ -1,21 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {
-  buildInputWarnings,
-  resolveRendimentoFp,
-  resolveRendimentoPac
-} from '../js/utils/input-helpers.js';
-
-test('risolve i rendimenti dei preset FP e PAC', () => {
-  assert.equal(resolveRendimentoFp('garantito'), 2);
-  assert.equal(resolveRendimentoFp('dinamico'), 4);
-  assert.equal(resolveRendimentoFp('non-esiste', 1.5), 1.5);
-
-  assert.equal(resolveRendimentoPac('lifeStrategy40'), 4);
-  assert.equal(resolveRendimentoPac('msciWorld'), 8);
-  assert.equal(resolveRendimentoPac('non-esiste', 6), 6);
-});
+import { buildInputWarnings } from '../js/utils/input-helpers.js';
 
 test('genera warning per input potenzialmente fuorvianti', () => {
   const warnings = buildInputWarnings({
@@ -31,7 +17,7 @@ test('genera warning per input potenzialmente fuorvianti', () => {
 
   assert.equal(warnings.length, 4);
   assert.match(warnings[0], /Investimento annuo molto alto/);
-  assert.match(warnings[1], /rendimento ipotizzato molto più alto/);
+  assert.match(warnings[1], /rendimento netto ipotizzato molto più alto/);
   assert.match(warnings[2], /Addizionali sopra il 4%/);
   assert.match(warnings[3], /Ulteriori detrazioni elevate/);
 });
@@ -49,7 +35,43 @@ test('segnala rendimento PAC inferiore al rendimento FP', () => {
   });
 
   assert.deepEqual(warnings, [
-    'Il rendimento PAC ipotizzato è più basso del rendimento FP: in questo scenario il confronto perde senso, perché il PAC non ha un vantaggio di rendimento atteso.'
+    'Il rendimento netto PAC è più basso del rendimento netto FP: verifica l’ipotesi, perché in questo scenario il PAC non ha un vantaggio di rendimento atteso.'
+  ]);
+});
+
+test('segnala minimo retributivo superiore alla RAL senza bloccare il valore', () => {
+  const warnings = buildInputWarnings({
+    reddito: 30000,
+    investimento: 3000,
+    quotaDatoreFpPerc: 0.015,
+    quotaMinAderentePerc: 0.01,
+    baseContributivaFpTipo: 'minimoRetributivo',
+    baseContributivaFp: 35000,
+    rendimentoAnnualeFpPerc: 0.04,
+    rendimentoAnnualePacPerc: 0.058,
+    addizionaliPerc: 0.02,
+    ulterioriDetrazioni: 0
+  });
+
+  assert.ok(warnings.includes('Minimo retributivo annuo superiore alla RAL: è insolito, verifica che il valore sia corretto.'));
+});
+
+test('segnala rendimento netto PAC inferiore al netto FP calcolato', () => {
+  const warnings = buildInputWarnings({
+    reddito: 30000,
+    investimento: 3000,
+    quotaDatoreFpPerc: 0.015,
+    quotaMinAderentePerc: 0.01,
+    rendimentoAnnualeFpPerc: 0.04,
+    rendimentoAnnualePacPerc: 0.08,
+    rendimentoNettoFpEffettivo: 0.05,
+    rendimentoNettoPacEffettivo: 0.045,
+    addizionaliPerc: 0.02,
+    ulterioriDetrazioni: 0
+  });
+
+  assert.deepEqual(warnings, [
+    'Il rendimento netto PAC è più basso del rendimento netto FP: verifica l’ipotesi, perché in questo scenario il PAC non ha un vantaggio di rendimento atteso.'
   ]);
 });
 

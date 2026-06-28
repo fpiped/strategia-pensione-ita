@@ -42,17 +42,13 @@
                 <form id="input-form">
                     <div class="calculator-mode-panel" aria-label="Modalità controlli">
                         <div>
-                            <div class="mode-title">Controlli calcolatore</div>
-                            <div class="mode-subtitle">Usa la modalità semplice per una simulazione rapida. Passa ad avanzata per CCNL, fiscalità e variazioni nel tempo.</div>
+                            <div class="mode-title">Configura la simulazione</div>
+                            <div class="mode-subtitle">Compila le card tematiche oppure usa la guida passo passo se vuoi esempi e indicazioni su dove trovare i dati.</div>
                         </div>
-                        <div class="mode-toggle" role="group" aria-label="Seleziona modalità controlli">
-                            <button type="button" class="mode-button active" data-input-mode="simple">
-                                <i class="fas fa-bolt"></i>
-                                Semplice
-                            </button>
-                            <button type="button" class="mode-button" data-input-mode="advanced">
-                                <i class="fas fa-sliders"></i>
-                                Avanzata
+                        <div class="mode-actions">
+                            <button type="button" class="btn guided-cta" id="open-guided-mode">
+                                <i class="fas fa-list-check"></i>
+                                Compilazione guidata
                             </button>
                         </div>
                     </div>
@@ -61,38 +57,349 @@
                         <div class="param-card">
                             <div class="card-header">
                                 <i class="fas fa-user-clock"></i>
-                                Scenario
+                                Scenario e budget
                             </div>
                             <div class="card-body">
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="reddito"><span class="help-trigger" data-help="reddito">RAL ordinaria (€)</span></label>
-                                        <input type="number" id="reddito" class="form-control" value="30000" min="0" step="1000">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="premiStraordinari"><span class="help-trigger" data-help="premiStraordinari">Premi/bonus imponibili (€)</span></label>
-                                        <input type="number" id="premiStraordinari" class="form-control" value="0" min="0" step="100">
-                                    </div>
-                                </div>
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label for="durata"><span class="help-trigger" data-help="durata">Durata (anni)</span></label>
                                         <input type="number" id="durata" class="form-control" value="30" min="1" max="50">
                                     </div>
                                     <div class="form-group">
-                                        <label for="investimento"><span class="help-trigger" data-help="investimento">Budget annuo (€)</span></label>
+                                        <label for="anzianitaPregressaFp"><span class="help-trigger" data-help="anzianitaPregressaFp">Anzianità FP già maturata (anni)</span></label>
+                                        <input type="number" id="anzianitaPregressaFp" class="form-control" value="0" min="0" max="50" step="1">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="reddito"><span class="help-trigger" data-help="reddito">RAL ordinaria (€)</span></label>
+                                        <input type="number" id="reddito" class="form-control" value="30000" min="0" step="1000">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="minimoRetributivoAnnuo"><span class="help-trigger" data-help="baseContributivaFp">Minimo retributivo annuo (€)</span></label>
+                                        <input type="number" id="minimoRetributivoAnnuo" class="form-control" value="30000" min="0" step="100">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="premiStraordinari"><span class="help-trigger" data-help="premiStraordinari">Premi/bonus imponibili (€)</span></label>
+                                        <input type="number" id="premiStraordinari" class="form-control" value="0" min="0" step="100">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="investimento"><span class="help-trigger" data-help="investimento">Investimento annuo (€)</span></label>
                                         <input type="number" id="investimento" class="form-control" value="3000" min="0" step="100">
                                     </div>
                                 </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="modalitaConfronto"><span class="help-trigger" data-help="modalitaConfronto">Modalità confronto</span></label>
+                                        <select id="modalitaConfronto" class="form-control">
+                                            <option value="budgetLordo" selected>Budget lordo annuo</option>
+                                            <option value="sacrificioNetto">Sacrificio netto equivalente</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="control-section-heading">
+                                    <h4>Variazioni nel tempo</h4>
+                                </div>
+                                <div class="form-row">
+                                    <div class="variation-grid">
+                                        <div class="variation-header">
+                                            <span class="help-trigger" data-help="variazioneReddito">Aumento reddito</span>
+                                            <div class="variation-toggle" aria-label="Tipo variazione reddito">
+                                                <label><input type="radio" name="variazioneRedditoTipo" value="percentuale" checked> %</label>
+                                                <label><input type="radio" name="variazioneRedditoTipo" value="euro"> €</label>
+                                                <button type="button" class="variation-reset" data-reset-variation="reddito">Reset</button>
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="variazioneRedditoFrequenza">Ogni anni</label>
+                                                <input type="number" id="variazioneRedditoFrequenza" class="form-control" value="0" min="0" max="50" step="1">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="variazioneRedditoValore">Aumento</label>
+                                                <input type="number" id="variazioneRedditoValore" class="form-control" value="0" step="0.1">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="variation-grid">
+                                        <div class="variation-header">
+                                            <span class="help-trigger" data-help="variazioneInvestimento">Aumento investimento</span>
+                                            <div class="variation-toggle" aria-label="Tipo variazione investimento">
+                                                <label><input type="radio" name="variazioneInvestimentoTipo" value="percentuale" checked> %</label>
+                                                <label><input type="radio" name="variazioneInvestimentoTipo" value="euro"> €</label>
+                                                <button type="button" class="variation-reset" data-reset-variation="investimento">Reset</button>
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="variazioneInvestimentoFrequenza">Ogni anni</label>
+                                                <input type="number" id="variazioneInvestimentoFrequenza" class="form-control" value="0" min="0" max="50" step="1">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="variazioneInvestimentoValore">Aumento</label>
+                                                <input type="number" id="variazioneInvestimentoValore" class="form-control" value="0" step="0.1">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="variation-grid contribution-base-variation">
+                                    <div class="variation-header">
+                                        <span class="help-trigger" data-help="variazioneBaseContributiva">Aumento minimo retributivo</span>
+                                        <div class="variation-toggle" aria-label="Tipo variazione minimo retributivo">
+                                            <label><input type="radio" name="variazioneBaseContributivaTipo" value="percentuale" checked> %</label>
+                                            <label><input type="radio" name="variazioneBaseContributivaTipo" value="euro"> €</label>
+                                            <button type="button" class="variation-reset" data-reset-variation="baseContributiva">Reset</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="variazioneBaseContributivaFrequenza">Ogni anni</label>
+                                            <input type="number" id="variazioneBaseContributivaFrequenza" class="form-control" value="0" min="0" max="50" step="1">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="variazioneBaseContributivaValore">Aumento</label>
+                                            <input type="number" id="variazioneBaseContributivaValore" class="form-control" value="0" step="0.1">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="param-card">
+                            <div class="card-header">
+                                <i class="fas fa-building-columns"></i>
+                                Fondo pensione e contratto
+                            </div>
+                            <div class="card-body">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="contribuzioneDatoreFpPerc"><span class="help-trigger" data-help="contribuzioneDatoreFpPerc">Contributo datore (%)</span></label>
+                                        <input type="number" id="contribuzioneDatoreFpPerc" class="form-control" value="1.5" min="0" max="100" step="0.1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="quotaMinAderentePerc"><span class="help-trigger" data-help="quotaMinAderentePerc">Quota aderente (%)</span></label>
+                                        <input type="number" id="quotaMinAderentePerc" class="form-control" value="1" min="0" max="100" step="0.1">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="baseContributivaFpTipo"><span class="help-trigger" data-help="baseContributivaFpTipo">Base quota aderente</span></label>
+                                        <select id="baseContributivaFpTipo" class="form-control">
+                                            <option value="ral" selected>RAL</option>
+                                            <option value="minimoRetributivo">Minimo retributivo annuo</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="baseDatoreFpTipo"><span class="help-trigger" data-help="baseDatoreFpTipo">Base contributo datore</span></label>
+                                        <select id="baseDatoreFpTipo" class="form-control">
+                                            <option value="ral" selected>RAL</option>
+                                            <option value="minimoRetributivo">Minimo retributivo annuo</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="modalitaVersamentoFp"><span class="help-trigger" data-help="modalitaVersamentoFp">Versamento FP</span></label>
+                                        <select id="modalitaVersamentoFp" class="form-control">
+                                            <option value="ottimizza" selected>Ottimizza busta/bonifico</option>
+                                            <option value="quotaMinimaBusta">Quota minima in busta, extra via bonifico</option>
+                                            <option value="tuttoBusta">Tutta la quota FP in busta paga</option>
+                                            <option value="tuttoBonifico">Tutta la quota FP via bonifico</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="baseContributivaFp" value="0">
+                                <input type="hidden" id="baseDatoreFp" value="0">
+                                <input type="hidden" id="contributoDatoreFisso" value="0">
+                                <div class="summary-year-control">
+                                    <label for="contribution-summary-year">Riepilogo anno</label>
+                                    <select id="contribution-summary-year" class="form-control"></select>
+                                </div>
+                                <div class="guided-live-summary fp-contract-summary" aria-live="polite">
+                                    <div>
+                                        <span>Quota minima aderente</span>
+                                        <strong id="quota-minima-display">-</strong>
+                                    </div>
+                                    <div>
+                                        <span>Contributo datore stimato</span>
+                                        <strong id="contributo-datore-display">-</strong>
+                                    </div>
+                                    <div>
+                                        <span>Quota FP consigliata</span>
+                                        <strong id="quota-fp-consigliata-display">-</strong>
+                                    </div>
+                                    <div>
+                                        <span>Quota FP in busta</span>
+                                        <strong id="quota-busta-display">-</strong>
+                                    </div>
+                                    <div>
+                                        <span>% da indicare in busta</span>
+                                        <strong id="quota-busta-perc-display">-</strong>
+                                    </div>
+                                    <div>
+                                        <span>Quota FP via bonifico</span>
+                                        <strong id="quota-bonifico-display">-</strong>
+                                    </div>
+                                    <div>
+                                        <span>Beneficio extra busta</span>
+                                        <strong id="ottimizzazione-busta-display">-</strong>
+                                    </div>
+                                    <div>
+                                        <span>Versamento richiesto</span>
+                                        <strong id="versamento-operativo-display">-</strong>
+                                    </div>
+                                </div>
+                                <div class="info-box" id="info-contributo-datore">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Al primo anno, per ottenere il contributo datore devi investire almeno <strong id="min-investimento-display">300 €</strong>/anno</span>
+                                </div>
+                                <div class="info-box">
+                                    <i class="fas fa-circle-exclamation"></i>
+                                    <span>Il calcolo non include il TFR: confronta solo il budget annuo aggiuntivo tra FP, contributo datore, deduzione fiscale e PAC.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="param-card">
+                            <div class="card-header">
+                                <i class="fas fa-building-columns"></i>
+                                Rendimento fondo pensione
+                            </div>
+                            <div class="card-body compact-card-body">
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="rendimentoAnnualeFpPerc"><span class="help-trigger" data-help="rendimentoAnnualeFpPerc">Rendimento FP (%)</span></label>
+                                        <input type="number" id="rendimentoAnnualeFpPerc" class="form-control" value="4" min="0" max="20" step="0.1">
+                                    </div>
+                                </div>
+                                <div class="info-box">
+                                    <i class="fas fa-circle-info"></i>
+                                    <span>Puoi usare un rendimento netto già stimato, per esempio basandoti sui rendimenti COVIP del comparto scelto e adattandoli alla tua ipotesi.</span>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="rendimentoFpMode"><span class="help-trigger" data-help="rendimentoFpMode">Tipo rendimento FP</span></label>
+                                        <select id="rendimentoFpMode" class="form-control">
+                                            <option value="netto" selected>Netto già stimato</option>
+                                            <option value="lordo">Lordo: applica costi e tasse</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="return-gross-fields" data-return-extra="fp" hidden>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="costiAnnuiFpPerc"><span class="help-trigger" data-help="costiAnnuiFpPerc">Costi annui FP (%)</span></label>
+                                            <input type="number" id="costiAnnuiFpPerc" class="form-control" value="0" min="0" max="5" step="0.01">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="quotaAgevolataFpPerc"><span class="help-trigger" data-help="quotaAgevolataFpPerc">Quota FP agevolata 12,5% (%)</span></label>
+                                            <input type="number" id="quotaAgevolataFpPerc" class="form-control" value="0" min="0" max="100" step="1">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Tassa effettiva rendimenti FP</label>
+                                            <output class="computed-output" id="tassaEffettivaFp">20,00%</output>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Rendimento netto calcolato FP</label>
+                                            <output class="computed-output" id="rendimentoNettoFp">4,00%</output>
+                                        </div>
+                                    </div>
+                                    <div class="info-box">
+                                        <i class="fas fa-circle-info"></i>
+                                        <span>Se il rendimento FP è lordo, il modello sottrae costi annui e tassa i rendimenti ogni anno. Quota agevolata = parte tassata al 12,5%; il resto è tassato al 20%.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="param-card">
+                            <div class="card-header">
+                                <i class="fas fa-chart-line"></i>
+                                Rendimento PAC
+                            </div>
+                            <div class="card-body compact-card-body">
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="rendimentoAnnualePacPerc"><span class="help-trigger" data-help="rendimentoAnnualePacPerc">Rendimento PAC (%)</span></label>
+                                        <input type="number" id="rendimentoAnnualePacPerc" class="form-control" value="6" min="0" max="20" step="0.1">
+                                    </div>
+                                </div>
+                                <div class="info-box">
+                                    <i class="fas fa-circle-info"></i>
+                                    <span>Inserisci direttamente la tua ipotesi di rendimento PAC. Se è netto, puoi averlo stimato a parte includendo TER, bollo, fiscalità attesa e altri costi.</span>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="rendimentoPacMode"><span class="help-trigger" data-help="rendimentoPacMode">Tipo rendimento PAC</span></label>
+                                        <select id="rendimentoPacMode" class="form-control">
+                                            <option value="netto" selected>Netto già stimato</option>
+                                            <option value="lordo">Lordo: applica costi e tasse</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="return-gross-fields" data-return-extra="pac" hidden>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="costiAnnuiPacPerc"><span class="help-trigger" data-help="costiAnnuiPacPerc">Costi annui PAC (%)</span></label>
+                                            <input type="number" id="costiAnnuiPacPerc" class="form-control" value="0" min="0" max="5" step="0.01">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="quotaAgevolataPacPerc"><span class="help-trigger" data-help="quotaAgevolataPacPerc">Quota PAC agevolata 12,5% (%)</span></label>
+                                            <input type="number" id="quotaAgevolataPacPerc" class="form-control" value="0" min="0" max="100" step="1">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Tassa effettiva plusvalenze PAC</label>
+                                            <output class="computed-output" id="tassaEffettivaPac">26,00%</output>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Rendimento netto calcolato PAC</label>
+                                            <output class="computed-output" id="rendimentoNettoPac">5,80%</output>
+                                        </div>
+                                    </div>
+                                    <div class="info-box">
+                                        <i class="fas fa-circle-info"></i>
+                                        <span>Se il rendimento PAC è lordo, il modello sottrae costi annui durante la crescita e tassa le plusvalenze solo alla exit. Quota agevolata = parte tassata al 12,5%; il resto è tassato al 26%.</span>
+                                    </div>
+                                </div>
+                                <div class="info-box" data-return-net-note="pac">
+                                    <i class="fas fa-circle-info"></i>
+                                    <span>Con rendimento netto il calcolatore usa direttamente il valore inserito: non applica altri costi o tasse al PAC.</span>
+                                </div>
+                                <div class="info-box">
+                                    <i class="fas fa-triangle-exclamation"></i>
+                                    <span>I rendimenti sono ipotesi, non previsioni. Cambiali per capire quanto il risultato dipende dal differenziale FP/PAC.</span>
+                                </div>
+                                <div class="input-warnings" id="input-warnings" aria-live="polite"></div>
+                            </div>
+                        </div>
+
+                        <div class="param-card">
+                            <div class="card-header">
+                                <i class="fas fa-receipt"></i>
+                                Fiscalità
+                            </div>
+                            <div class="card-body">
                                 <div class="local-tax-panel" id="local-tax-panel" data-local-tax-mode-current="manual">
                                     <div class="local-tax-panel-header">
                                         <div>
                                             <div class="local-tax-title">Addizionali locali</div>
-                                            <div class="local-tax-subtitle">Usa una stima manuale oppure calcola da Regione e Comune.</div>
+                                            <div class="local-tax-subtitle">Manuale: regionale media + comunale media. Da località: Regione e Comune.</div>
                                         </div>
                                         <div class="local-tax-mode-toggle" role="group" aria-label="Modalità addizionali">
                                             <button type="button" class="local-tax-mode-button active" data-local-tax-mode="manual" aria-pressed="true">Manuale</button>
                                             <button type="button" class="local-tax-mode-button" data-local-tax-mode="auto" aria-pressed="false">Da località</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-row local-tax-manual-fields">
+                                        <div class="form-group full-width">
+                                            <label for="addizionaliPerc"><span class="help-trigger" data-help="addizionaliPerc">Addizionali manuali (%)</span></label>
+                                            <input type="number" id="addizionaliPerc" class="form-control" value="2" min="0" max="10" step="0.1">
                                         </div>
                                     </div>
                                     <div class="form-row local-tax-auto-fields" aria-hidden="true">
@@ -112,34 +419,19 @@
                                         <span id="addizionali-auto-summary">Seleziona regione e, se disponibile, comune. Il Comune imposta automaticamente la Regione.</span>
                                     </div>
                                 </div>
+
+                                <div class="control-section-heading">
+                                    <h4>Detrazioni</h4>
+                                </div>
                                 <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="addizionaliPerc"><span class="help-trigger" data-help="addizionaliPerc">Addizionali stimate (%)</span></label>
-                                        <input type="number" id="addizionaliPerc" class="form-control" value="2" min="0" max="10" step="0.1">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="anzianitaPregressaFp"><span class="help-trigger" data-help="anzianitaPregressaFp">Anzianità FP (anni)</span></label>
-                                        <input type="number" id="anzianitaPregressaFp" class="form-control" value="0" min="0" max="50" step="1">
+                                    <div class="form-group full-width">
+                                        <label for="ulterioriDetrazioni"><span class="help-trigger" data-help="ulterioriDetrazioni">Ulteriori detrazioni (€)</span></label>
+                                        <input type="number" id="ulterioriDetrazioni" class="form-control" value="0" min="0" step="100">
                                     </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <div class="param-card">
-                            <div class="card-header">
-                                <i class="fas fa-building-columns"></i>
-                                Fondo pensione
-                            </div>
-                            <div class="card-body">
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="contribuzioneDatoreFpPerc"><span class="help-trigger" data-help="contribuzioneDatoreFpPerc">Contributo datore (%)</span></label>
-                                        <input type="number" id="contribuzioneDatoreFpPerc" class="form-control" value="1.5" min="0" max="100" step="0.1">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="quotaMinAderentePerc"><span class="help-trigger" data-help="quotaMinAderentePerc">Quota aderente (%)</span></label>
-                                        <input type="number" id="quotaMinAderentePerc" class="form-control" value="1" min="0" max="100" step="0.1">
-                                    </div>
+                                <div class="control-section-heading">
+                                    <h4>Uscita fondo pensione</h4>
                                 </div>
                                 <div class="form-row options-row">
                                     <div class="form-group full-width">
@@ -150,232 +442,28 @@
                                         </label>
                                     </div>
                                 </div>
-                                <div class="info-box" id="info-contributo-datore">
-                                    <i class="fas fa-info-circle"></i>
-                                    <span>Al primo anno, per ottenere il contributo datore devi investire almeno <strong id="min-investimento-display">300 €</strong>/anno</span>
-                                </div>
-                                <div class="info-box">
-                                    <i class="fas fa-circle-exclamation"></i>
-                                    <span>Il calcolo non include il TFR: confronta solo il budget annuo aggiuntivo tra FP, contributo datore, deduzione fiscale e PAC.</span>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="param-card param-card-full">
-                            <div class="card-header">
-                                <i class="fas fa-chart-line"></i>
-                                Rendimenti
-                            </div>
-                            <div class="card-body compact-card-body">
-                                <div class="form-row form-row-4">
-                                    <div class="form-group">
-                                        <label for="compartoFp"><span class="help-trigger" data-help="compartoFp">Comparto FP</span></label>
-                                        <select id="compartoFp" class="form-control">
-                                            <option value="dinamico" selected>Dinamico (~4%)</option>
-                                            <option value="bilanciato">Bilanciato (~3%)</option>
-                                            <option value="prudente">Prudente (~2.5%)</option>
-                                            <option value="garantito">Garantito (~2%)</option>
-                                            <option value="custom">Personalizzato</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="rendimentoAnnualeFpPerc"><span class="help-trigger" data-help="rendimentoAnnualeFpPerc">Rendimento FP (%)</span></label>
-                                        <input type="number" id="rendimentoAnnualeFpPerc" class="form-control" value="4" min="0" max="20" step="0.1">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="etfPreset"><span class="help-trigger" data-help="etfPreset">ETF PAC</span></label>
-                                        <select id="etfPreset" class="form-control">
-                                            <option value="msciWorld" selected>MSCI World (~8%)</option>
-                                            <option value="ftseAllWorld">FTSE All-World (~7%)</option>
-                                            <option value="lifeStrategy80">LifeStrategy 80% (~6%)</option>
-                                            <option value="lifeStrategy60">LifeStrategy 60% (~5%)</option>
-                                            <option value="lifeStrategy40">LifeStrategy 40% (~4%)</option>
-                                            <option value="lifeStrategy20">LifeStrategy 20% (~3%)</option>
-                                            <option value="custom">Personalizzato</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="rendimentoAnnualePacPerc"><span class="help-trigger" data-help="rendimentoAnnualePacPerc">Rendimento PAC (%)</span></label>
-                                        <input type="number" id="rendimentoAnnualePacPerc" class="form-control" value="8" min="0" max="20" step="0.1">
-                                    </div>
-                                </div>
-                                <div class="info-box">
-                                    <i class="fas fa-triangle-exclamation"></i>
-                                    <span>I rendimenti sono ipotesi di simulazione. Inserisci il rendimento FP già netto di costi e tassazione annuale; il PAC include anche il bollo annuo dello 0,2%.</span>
-                                </div>
-                                <div class="input-warnings" id="input-warnings" aria-live="polite"></div>
-                            </div>
-                        </div>
-
-                        <div class="param-card advanced-only">
-                            <div class="card-header">
-                                <i class="fas fa-arrow-trend-up"></i>
-                                Variazioni nel tempo
-                            </div>
-                            <div class="card-body">
-                                <div class="variation-grid">
-                                    <div class="variation-header">
-                                        <span class="help-trigger" data-help="variazioneReddito">Var. reddito</span>
-                                        <div class="variation-toggle" aria-label="Tipo variazione reddito">
-                                            <label><input type="radio" name="variazioneRedditoTipo" value="percentuale" checked> %</label>
-                                            <label><input type="radio" name="variazioneRedditoTipo" value="euro"> €</label>
-                                        </div>
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="form-group">
-                                            <label for="variazioneRedditoFrequenza">Freq.</label>
-                                            <input type="number" id="variazioneRedditoFrequenza" class="form-control" value="0" min="0" max="50" step="1">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="variazioneRedditoValore">Valore</label>
-                                            <input type="number" id="variazioneRedditoValore" class="form-control" value="0" step="0.1">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="variation-grid">
-                                    <div class="variation-header">
-                                        <span class="help-trigger" data-help="variazioneInvestimento">Var. investimento</span>
-                                        <div class="variation-toggle" aria-label="Tipo variazione investimento">
-                                            <label><input type="radio" name="variazioneInvestimentoTipo" value="percentuale" checked> %</label>
-                                            <label><input type="radio" name="variazioneInvestimentoTipo" value="euro"> €</label>
-                                        </div>
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="form-group">
-                                            <label for="variazioneInvestimentoFrequenza">Freq.</label>
-                                            <input type="number" id="variazioneInvestimentoFrequenza" class="form-control" value="0" min="0" max="50" step="1">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="variazioneInvestimentoValore">Valore</label>
-                                            <input type="number" id="variazioneInvestimentoValore" class="form-control" value="0" step="0.1">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="param-card advanced-only">
-                            <div class="card-header">
-                                <i class="fas fa-file-contract"></i>
-                                Contratto e base contributiva
-                            </div>
-                            <div class="card-body">
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="baseContributivaFpTipo"><span class="help-trigger" data-help="baseContributivaFpTipo">Base quota aderente</span></label>
-                                        <select id="baseContributivaFpTipo" class="form-control">
-                                            <option value="ral" selected>RAL</option>
-                                            <option value="minimoRetributivo">Minimo retributivo annuo</option>
-                                            <option value="manuale">Importo annuo manuale</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="baseDatoreFpTipo"><span class="help-trigger" data-help="baseDatoreFpTipo">Base contributo datore</span></label>
-                                        <select id="baseDatoreFpTipo" class="form-control">
-                                            <option value="same" selected>Uguale alla quota aderente</option>
-                                            <option value="ral">RAL</option>
-                                            <option value="minimoRetributivo">Minimo retributivo annuo</option>
-                                            <option value="manuale">Importo annuo manuale</option>
-                                        </select>
-                                    </div>
+                                <div class="control-section-heading">
+                                    <h4>Contributi INPS</h4>
                                 </div>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="baseContributivaFp"><span class="help-trigger" data-help="baseContributivaFp">Base quota annua (€)</span></label>
-                                        <input type="number" id="baseContributivaFp" class="form-control" value="0" min="0" step="100" disabled>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="baseDatoreFp"><span class="help-trigger" data-help="baseDatoreFp">Base datore annua (€)</span></label>
-                                        <input type="number" id="baseDatoreFp" class="form-control" value="0" min="0" step="100" disabled>
-                                    </div>
-                                </div>
-                                <div class="form-row">
-                                    <div class="form-group full-width">
-                                        <label for="contributoDatoreFisso"><span class="help-trigger" data-help="contributoDatoreFisso">Datore fisso annuo (€)</span></label>
-                                        <input type="number" id="contributoDatoreFisso" class="form-control" value="0" min="0" step="50">
-                                    </div>
-                                </div>
-                                <div class="variation-grid contribution-base-variation" aria-disabled="true">
-                                    <div class="variation-header">
-                                        <span class="help-trigger" data-help="variazioneBaseContributiva">Var. base contributi</span>
-                                        <div class="variation-toggle" aria-label="Tipo variazione base contributi">
-                                            <label><input type="radio" name="variazioneBaseContributivaTipo" value="percentuale" checked disabled> %</label>
-                                            <label><input type="radio" name="variazioneBaseContributivaTipo" value="euro" disabled> €</label>
-                                        </div>
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="form-group">
-                                            <label for="variazioneBaseContributivaFrequenza">Freq.</label>
-                                            <input type="number" id="variazioneBaseContributivaFrequenza" class="form-control" value="0" min="0" max="50" step="1" disabled>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="variazioneBaseContributivaValore">Valore</label>
-                                            <input type="number" id="variazioneBaseContributivaValore" class="form-control" value="0" step="0.1" disabled>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="param-card param-card-full advanced-only">
-                            <div class="card-header">
-                                <i class="fas fa-receipt"></i>
-                                Fiscalità avanzata
-                            </div>
-                            <div class="card-body">
-                                <div class="form-row form-row-4">
-                                    <div class="form-group">
-                                        <label for="contributiInpsPerc"><span class="help-trigger" data-help="contributiInpsPerc">Contributi INPS (%)</span></label>
-                                        <input type="number" id="contributiInpsPerc" class="form-control" value="9.19" min="0" max="20" step="0.01">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="massimaleContributivoInps"><span class="help-trigger" data-help="massimaleContributivoInps">Massimale INPS (€)</span></label>
-                                        <input type="number" id="massimaleContributivoInps" class="form-control" value="120607" min="0" step="1000">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="sogliaIvsAggiuntivo"><span class="help-trigger" data-help="sogliaIvsAggiuntivo">Soglia IVS +1% (€)</span></label>
-                                        <input type="number" id="sogliaIvsAggiuntivo" class="form-control" value="55448" min="0" step="1000">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="aliquotaIvsAggiuntivaPerc"><span class="help-trigger" data-help="aliquotaIvsAggiuntivaPerc">Aliquota IVS extra (%)</span></label>
-                                        <input type="number" id="aliquotaIvsAggiuntivaPerc" class="form-control" value="1" min="0" max="5" step="0.1">
-                                    </div>
-                                </div>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="ulterioriDetrazioni"><span class="help-trigger" data-help="ulterioriDetrazioni">Ulteriori detrazioni (€)</span></label>
-                                        <input type="number" id="ulterioriDetrazioni" class="form-control" value="0" min="0" step="100">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="modalitaVersamentoFp"><span class="help-trigger" data-help="modalitaVersamentoFp">Versamento FP</span></label>
-                                        <select id="modalitaVersamentoFp" class="form-control">
-                                            <option value="quotaMinimaBusta" selected>Quota minima in busta, extra via bonifico</option>
-                                            <option value="tuttoBusta">Tutta la quota FP in busta paga</option>
-                                            <option value="tuttoBonifico">Tutta la quota FP via bonifico</option>
+                                        <label for="contributiInpsPreset"><span class="help-trigger" data-help="contributiInpsPerc">Aliquota INPS lavoratore</span></label>
+                                        <select id="contributiInpsPreset" class="form-control">
+                                            <option value="9.19" selected>9,19% - dipendente ordinario</option>
+                                            <option value="9.49">9,49% - aliquota ordinaria maggiorata</option>
+                                            <option value="manuale">Manuale</option>
                                         </select>
                                     </div>
-                                </div>
-                                <div class="info-box">
-                                    <i class="fas fa-scale-balanced"></i>
-                                    <span>Bonus ex Renzi e bonus cuneo fiscale 2025/2026 sono calcolati automaticamente con le regole attuali sul reddito complessivo.</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="param-card param-card-full advanced-only">
-                            <div class="card-header">
-                                <i class="fas fa-asterisk"></i>
-                                Deduzioni speciali e metodo confronto
-                            </div>
-                            <div class="card-body">
-                                <div class="form-row">
                                     <div class="form-group">
-                                        <label for="modalitaConfronto"><span class="help-trigger" data-help="modalitaConfronto">Modalità confronto</span></label>
-                                        <select id="modalitaConfronto" class="form-control">
-                                            <option value="budgetLordo" selected>Budget lordo annuo</option>
-                                            <option value="sacrificioNetto">Sacrificio netto equivalente</option>
-                                        </select>
+                                        <label for="contributiInpsPerc"><span class="help-trigger" data-help="contributiInpsPercManuale">Aliquota manuale (%)</span></label>
+                                        <input type="number" id="contributiInpsPerc" class="form-control" value="9.19" min="0" max="20" step="0.01" disabled>
                                     </div>
+                                </div>
+                                <div class="control-section-heading">
+                                    <h4>Deducibilità speciale</h4>
+                                </div>
+                                <div class="form-row">
                                     <div class="form-group">
                                         <label class="toggle-label">
                                             <input type="checkbox" id="primaOccupazionePost2006">
@@ -394,12 +482,27 @@
                                         <input type="number" id="anniResiduiMaggiorazione" class="form-control" value="20" min="0" max="20" step="1" disabled>
                                     </div>
                                 </div>
+                                <input type="hidden" id="massimaleContributivoInps" value="120607">
+                                <input type="hidden" id="sogliaIvsAggiuntivo" value="55448">
+                                <input type="hidden" id="aliquotaIvsAggiuntivaPerc" value="1">
                                 <div class="info-box">
-                                    <i class="fas fa-briefcase"></i>
-                                    <span>Il modello è pensato per lavoratori dipendenti: usa RAL, premi/bonus imponibili, contributi INPS, detrazioni da lavoro dipendente e possibile contributo datore.</span>
+                                    <i class="fas fa-scale-balanced"></i>
+                                    <span>Bonus ex Renzi, bonus cuneo fiscale 2025/2026, soglia IVS +1%, scaglioni IRPEF e detrazioni lavoro dipendente sono assunzioni normative automatiche del modello.</span>
                                 </div>
+                                <details class="assumptions-details">
+                                    <summary>Assunzioni normative usate</summary>
+                                    <ul>
+                                        <li>Massimale contributivo INPS: €120.607</li>
+                                        <li>Soglia IVS aggiuntivo +1%: €55.448</li>
+                                        <li>Limite deduzione fondo pensione: €5.164,57 annui</li>
+                                        <li>Rendimenti FP/PAC: netti già stimati oppure lordi con costi annui e fiscalità modellata</li>
+                                        <li>Tassazione prestazione FP: dal 15% al 9%, salvo riscatto anticipato al 23%</li>
+                                        <li>Addizionali regionali/comunali: dataset locale MEF 2026</li>
+                                    </ul>
+                                </details>
                             </div>
                         </div>
+
                     </div>
                 </form>
 
@@ -500,6 +603,336 @@
 
             </div>
 
+            <div class="guided-modal" id="guided-modal" aria-hidden="true">
+                <div class="guided-backdrop" data-guided-close></div>
+                <div class="guided-dialog" role="dialog" aria-modal="true" aria-labelledby="guided-title">
+                    <div class="guided-header">
+                        <div>
+                            <div class="guided-eyebrow" id="guided-step-counter">Step 1 di 6</div>
+                            <h2 id="guided-title">Compilazione guidata</h2>
+                        </div>
+                        <button type="button" class="icon-button" data-guided-close aria-label="Chiudi compilazione guidata">
+                            <i class="fas fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div class="guided-progress" aria-hidden="true">
+                        <span id="guided-progress-bar"></span>
+                    </div>
+                    <div class="guided-body">
+                        <section class="guided-step active" data-guided-step="0">
+                            <h3>Profilo e reddito</h3>
+                            <p>Usa la RAL ordinaria da contratto o busta paga. Premi, straordinari e bonus imponibili vanno separati: nel modello aumentano reddito fiscale e previdenziale, ma non la base su cui si calcolano quota minima FP e contributo datore.</p>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="guided-reddito">RAL ordinaria (€)</label>
+                                    <input type="number" id="guided-reddito" class="form-control" min="0" step="1000">
+                                </div>
+                                <div class="form-group">
+                                    <label for="guided-premi">Premi/bonus imponibili (€)</label>
+                                    <input type="number" id="guided-premi" class="form-control" min="0" step="100">
+                                </div>
+                            </div>
+                            <div class="variation-grid">
+                                <div class="variation-header">
+                                    <span>Aumento RAL ordinaria</span>
+                                    <div class="variation-toggle" aria-label="Tipo aumento RAL ordinaria">
+                                        <label><input type="radio" name="guided-variazione-reddito-tipo" value="percentuale" checked> %</label>
+                                        <label><input type="radio" name="guided-variazione-reddito-tipo" value="euro"> €</label>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="guided-variazione-reddito-frequenza">Ogni anni</label>
+                                        <input type="number" id="guided-variazione-reddito-frequenza" class="form-control" min="0" max="50" step="1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="guided-variazione-reddito-valore">Aumento</label>
+                                        <input type="number" id="guided-variazione-reddito-valore" class="form-control" step="0.1">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="guided-note">
+                                <strong>Dove trovarli:</strong> la RAL ordinaria è nel contratto/lettera di assunzione o nel riepilogo annuo. Premi e straordinari sono voci imponibili separate in busta paga o CU. Esempio: RAL €30.000 + premio €2.000 → reddito fiscale €32.000, ma quota minima aderente e contributo datore continuano a essere calcolati su €30.000. Se prevedi scatti o aumenti, usa “aumento RAL” ogni N anni.
+                            </div>
+                        </section>
+                        <section class="guided-step" data-guided-step="1">
+                            <h3>Budget, orizzonte e metodo</h3>
+                            <p>Inserisci solo il budget annuo aggiuntivo: il TFR resta escluso. Qui scegli anche il metodo di confronto, perché dipende da come ragioni sul budget disponibile.</p>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="guided-investimento">Investimento annuo (€)</label>
+                                    <input type="number" id="guided-investimento" class="form-control" min="0" step="100">
+                                </div>
+                                <div class="form-group">
+                                    <label for="guided-minimo-retributivo">Minimo retributivo annuo (€)</label>
+                                    <input type="number" id="guided-minimo-retributivo" class="form-control" value="30000" min="0" step="100">
+                                </div>
+                                <div class="form-group">
+                                    <label for="guided-durata">Durata simulazione (anni)</label>
+                                    <input type="number" id="guided-durata" class="form-control" min="1" max="50">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="guided-anzianita">Anzianità FP già maturata (anni)</label>
+                                    <input type="number" id="guided-anzianita" class="form-control" min="0" max="50" step="1">
+                                </div>
+                                <div class="form-group full-width">
+                                    <label for="guided-modalita-confronto">Modalità confronto</label>
+                                    <select id="guided-modalita-confronto" class="form-control">
+                                        <option value="budgetLordo">Budget lordo annuo: investo lo stesso importo e reinvesto il risparmio fiscale</option>
+                                        <option value="sacrificioNetto">Sacrificio netto equivalente: confronto il PAC con il costo netto del FP</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="variation-grid">
+                                <div class="variation-header">
+                                    <span>Aumento investimento annuo</span>
+                                    <div class="variation-toggle" aria-label="Tipo aumento budget annuo">
+                                        <label><input type="radio" name="guided-variazione-investimento-tipo" value="percentuale" checked> %</label>
+                                        <label><input type="radio" name="guided-variazione-investimento-tipo" value="euro"> €</label>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="guided-variazione-investimento-frequenza">Ogni anni</label>
+                                        <input type="number" id="guided-variazione-investimento-frequenza" class="form-control" min="0" max="50" step="1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="guided-variazione-investimento-valore">Aumento</label>
+                                        <input type="number" id="guided-variazione-investimento-valore" class="form-control" step="0.1">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="variation-grid">
+                                <div class="variation-header">
+                                    <span>Aumento minimo retributivo</span>
+                                    <div class="variation-toggle" aria-label="Tipo aumento minimo retributivo">
+                                        <label><input type="radio" name="guided-variazione-base-tipo" value="percentuale" checked> %</label>
+                                        <label><input type="radio" name="guided-variazione-base-tipo" value="euro"> €</label>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="guided-variazione-base-frequenza">Ogni anni</label>
+                                        <input type="number" id="guided-variazione-base-frequenza" class="form-control" min="0" max="50" step="1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="guided-variazione-base-valore">Aumento</label>
+                                        <input type="number" id="guided-variazione-base-valore" class="form-control" step="0.1">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="guided-note">
+                                <strong>Scelta pratica:</strong> usa budget lordo se parti da “ho €3.000/anno da allocare”. Usa sacrificio netto se vuoi confrontare il PAC con l'effettivo impatto in busta del versamento FP. Il minimo retributivo serve solo se quota aderente o contributo datore sono calcolati sul minimo tabellare del CCNL.
+                            </div>
+                        </section>
+                        <section class="guided-step" data-guided-step="2">
+                            <h3>Fondo, quota minima e base di calcolo</h3>
+                            <p>Questi dati stanno nella scheda del fondo, nel CCNL o nell'accordo aziendale. Se il CCNL parla di minimo retributivo, paga base o minimo tabellare, usa il valore mensile moltiplicato per le mensilità.</p>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="guided-quota-min">Quota minima aderente (%)</label>
+                                    <input type="number" id="guided-quota-min" class="form-control" min="0" max="100" step="0.1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="guided-datore-perc">Contributo datore (%)</label>
+                                    <input type="number" id="guided-datore-perc" class="form-control" min="0" max="100" step="0.1">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="guided-base-tipo">Base quota aderente</label>
+                                    <select id="guided-base-tipo" class="form-control">
+                                        <option value="ral">RAL</option>
+                                        <option value="minimoRetributivo">Minimo retributivo annuo</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="guided-base-datore-tipo">Base contributo datore</label>
+                                    <select id="guided-base-datore-tipo" class="form-control">
+                                        <option value="ral">RAL</option>
+                                        <option value="minimoRetributivo">Minimo retributivo annuo</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="guided-live-summary" aria-live="polite">
+                                <div>
+                                    <span>Quota minima per avere il datore</span>
+                                    <strong id="guided-min-contribution">-</strong>
+                                </div>
+                                <div>
+                                    <span>Contributo datore stimato</span>
+                                    <strong id="guided-employer-contribution">-</strong>
+                                </div>
+                                <div>
+                                    <span>Esito con il budget indicato</span>
+                                    <strong id="guided-employer-status">-</strong>
+                                </div>
+                            </div>
+                            <div class="guided-note">
+                                <strong>Controllo di coerenza:</strong> se il minimo retributivo annuo supera la RAL, il calcolatore mostra un avviso perché è insolito. Non corregge automaticamente il valore.
+                            </div>
+                        </section>
+                        <section class="guided-step" data-guided-step="3">
+                            <h3>Fiscalità locale e busta paga</h3>
+                            <p>Qui imposti come stimare le addizionali locali e come viene versata la quota FP. Sono insieme perché incidono sulla stima del risparmio fiscale e dei bonus da lavoro dipendente.</p>
+                            <div class="local-tax-mode-toggle guided-tax-toggle" role="group" aria-label="Modalità addizionali guidata">
+                                <button type="button" class="local-tax-mode-button active" data-guided-tax-mode="manual" aria-pressed="true">Manuale</button>
+                                <button type="button" class="local-tax-mode-button" data-guided-tax-mode="auto" aria-pressed="false">Da località</button>
+                            </div>
+                            <div class="form-row guided-tax-manual-fields">
+                                <div class="form-group full-width">
+                                    <label for="guided-addizionali">Addizionali manuali (%)</label>
+                                    <input type="number" id="guided-addizionali" class="form-control" min="0" max="10" step="0.1">
+                                </div>
+                            </div>
+                            <div class="form-row guided-tax-auto-fields" aria-hidden="true">
+                                <div class="form-group">
+                                    <label for="guided-regione-addizionali">Regione addizionali</label>
+                                    <select id="guided-regione-addizionali" class="form-control"></select>
+                                </div>
+                                <div class="form-group autocomplete-group">
+                                    <label for="guided-comune-addizionali-search">Comune addizionali</label>
+                                    <input type="search" id="guided-comune-addizionali-search" class="form-control" placeholder="Digita comune, provincia o codice catastale" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="guided-comune-addizionali-results">
+                                    <input type="hidden" id="guided-comune-addizionali">
+                                    <div id="guided-comune-addizionali-results" class="autocomplete-results" role="listbox"></div>
+                                </div>
+                            </div>
+                            <div class="info-box guided-tax-auto-fields" aria-hidden="true">
+                                <i class="fas fa-location-dot"></i>
+                                <span id="guided-addizionali-summary">Seleziona Regione e, se disponibile, Comune. Il Comune imposta automaticamente la Regione.</span>
+                            </div>
+                            <div class="guided-note">
+                                <strong>Esempio manuale:</strong> regionale media 1,73% + comunale media 0,80% → addizionali manuali 2,53%.
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group full-width">
+                                    <label for="guided-modalita-versamento">Versamento FP</label>
+                                    <select id="guided-modalita-versamento" class="form-control">
+                                        <option value="ottimizza">Ottimizza busta/bonifico</option>
+                                        <option value="quotaMinimaBusta">Quota minima in busta, extra via bonifico</option>
+                                        <option value="tuttoBusta">Tutta la quota FP in busta paga</option>
+                                        <option value="tuttoBonifico">Tutta la quota FP via bonifico</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="guided-live-summary guided-live-summary-2" aria-live="polite">
+                                <div>
+                                    <span>Quota FP deducibile stimata</span>
+                                    <strong id="guided-fp-contribution">-</strong>
+                                </div>
+                                <div>
+                                    <span>In busta paga</span>
+                                    <strong id="guided-payroll-contribution">-</strong>
+                                </div>
+                                <div>
+                                    <span>% da indicare in busta</span>
+                                    <strong id="guided-payroll-percentage">-</strong>
+                                </div>
+                                <div>
+                                    <span>Via bonifico</span>
+                                    <strong id="guided-bank-transfer-contribution">-</strong>
+                                </div>
+                            </div>
+                            <div class="guided-note">
+                                <strong>Dove verificarlo:</strong> controlla scheda fondo, portale payroll o istruzioni del fondo. Default consigliato: lascia ottimizzare al simulatore e forza una modalità solo se il tuo datore o il fondo non permettono la ripartizione suggerita. La percentuale in busta è calcolata sulla base quota aderente scelta: RAL oppure minimo retributivo annuo.
+                            </div>
+                        </section>
+                        <section class="guided-step" data-guided-step="4">
+                            <h3>Deducibilità speciale</h3>
+                            <p>Se sei un lavoratore di prima occupazione successiva al 31/12/2006, puoi avere un plafond extra di deducibilità da usare dopo i primi anni. È una regola fiscale, quindi nella plancia sta dentro Fiscalità.</p>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="toggle-label">
+                                        <input type="checkbox" id="guided-prima-occupazione">
+                                        <span class="toggle-switch"></span>
+                                        Prima occupazione post 2006
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="guided-plafond-extra">Plafond extra residuo (€)</label>
+                                    <input type="number" id="guided-plafond-extra" class="form-control" min="0" max="25822.85" step="100">
+                                </div>
+                                <div class="form-group">
+                                    <label for="guided-anni-maggiorazione">Anni residui maggiorazione</label>
+                                    <input type="number" id="guided-anni-maggiorazione" class="form-control" min="0" max="20" step="1">
+                                </div>
+                            </div>
+                            <div class="guided-note">
+                                <strong>Come leggerlo:</strong> se non rientri in questa casistica, lascia disattivato. Se rientri, usa il plafond residuo indicato dalla tua posizione fiscale o calcolato dai contributi non dedotti nei primi anni.
+                            </div>
+                        </section>
+                        <section class="guided-step" data-guided-step="5">
+                            <h3>Rendimenti ipotizzati</h3>
+                            <p>Scegli valori prudenti e modificabili. Puoi inserire rendimenti già netti oppure rendimenti lordi facendo applicare al modello costi annui e tassazione.</p>
+                            <div class="control-section-heading">
+                                <h4>Fondo pensione</h4>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="guided-rendimento-fp">Rendimento FP (%)</label>
+                                    <input type="number" id="guided-rendimento-fp" class="form-control" min="0" max="20" step="0.1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="guided-rendimento-fp-mode">Tipo rendimento FP</label>
+                                    <select id="guided-rendimento-fp-mode" class="form-control">
+                                        <option value="netto">Netto già stimato</option>
+                                        <option value="lordo">Lordo: applica costi e tasse</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="guided-costi-fp">Costi annui FP (%)</label>
+                                    <input type="number" id="guided-costi-fp" class="form-control" min="0" max="5" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label for="guided-quota-agevolata-fp">Quota FP agevolata 12,5% (%)</label>
+                                    <input type="number" id="guided-quota-agevolata-fp" class="form-control" min="0" max="100" step="1">
+                                </div>
+                            </div>
+                            <div class="control-section-heading">
+                                <h4>PAC ETF</h4>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="guided-rendimento-pac">Rendimento PAC (%)</label>
+                                    <input type="number" id="guided-rendimento-pac" class="form-control" min="0" max="20" step="0.1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="guided-rendimento-pac-mode">Tipo rendimento PAC</label>
+                                    <select id="guided-rendimento-pac-mode" class="form-control">
+                                        <option value="netto">Netto già stimato</option>
+                                        <option value="lordo">Lordo: applica costi e tasse</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="guided-costi-pac">Costi annui PAC (%)</label>
+                                    <input type="number" id="guided-costi-pac" class="form-control" min="0" max="5" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label for="guided-quota-agevolata-pac">Quota PAC agevolata 12,5% (%)</label>
+                                    <input type="number" id="guided-quota-agevolata-pac" class="form-control" min="0" max="100" step="1">
+                                </div>
+                            </div>
+                            <div class="guided-note">
+                                <strong>Come sceglierli:</strong> per il FP puoi basarti sui rendimenti COVIP del comparto e adattarli alla tua ipotesi. Per il PAC puoi usare un rendimento netto calcolato a parte. Se usi lordo, la quota agevolata è la parte riferibile a strumenti tassati al 12,5%; il resto è tassato al 20% nel FP e al 26% nel PAC.
+                            </div>
+                        </section>
+                    </div>
+                    <div class="guided-footer">
+                        <button type="button" class="btn btn-secondary" id="guided-prev">Indietro</button>
+                        <button type="button" class="btn btn-primary" id="guided-next">Avanti</button>
+                        <button type="button" class="btn btn-primary" id="guided-finish">Applica e calcola</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Documentation Section -->
             <div class="tab-content" id="documentation-content">
                 <div class="docs-section">
@@ -535,6 +968,10 @@
                         <strong>Regola chiave del calcolatore:</strong> la quota oltre il limite deducibile non viene mai consigliata nel FP. Va sempre nel PAC, perché fuori deduzione il fondo pensione perde il suo vantaggio principale.
                     </div>
 
+                    <h3>Come usare questo strumento</h3>
+                    <p>Non è solo un calcolatore finale. È pensato per farti vedere quali leve cambiano il risultato: reddito, deduzione, contributo datore, base contrattuale, addizionali, modalità di versamento, rendimenti, costi e fiscalità. La plancia modifica i numeri; la guida spiega perché quei numeri contano.</p>
+                    <p>Un buon modo per usarlo è partire dai default, leggere la sequenza del mix, poi cambiare una variabile alla volta. Per esempio: prima il rendimento PAC, poi il contributo datore, poi la modalità netto/lordo dei rendimenti. Così capisci quali ipotesi stanno davvero guidando la scelta.</p>
+
                     <h2 id="tfr-escluso">Cosa non include: il TFR</h2>
 
                     <p>Questo calcolatore <strong>non include il TFR</strong>. Parte dal presupposto che tu abbia già accesso al fondo pensione e possa fare versamenti volontari. Quindi l'adesione al fondo e l'eventuale scelta di destinare il TFR al fondo sono considerate decisioni già fatte a monte, non parte della simulazione.</p>
@@ -544,7 +981,7 @@
                         <li>eventuale contributo del datore;</li>
                         <li>risparmio fiscale della deduzione;</li>
                         <li>rendimento e tassazione del fondo pensione;</li>
-                        <li>rendimento e tassazione del PAC in ETF.</li>
+                        <li>rendimento, costi e tassazione del PAC in ETF.</li>
                     </ul>
 
                     <p>Il TFR è escluso perché ha una logica diversa: matura in base alla retribuzione, può restare in azienda o essere destinato al fondo pensione, segue una rivalutazione legale se resta fuori dal FP e ha una tassazione separata. Mescolarlo nello stesso calcolo renderebbe il confronto meno leggibile.</p>
@@ -593,7 +1030,7 @@
                         <tr>
                             <td>Tassa sui rendimenti</td>
                             <td>Ogni anno (12.5-20%)</td>
-                            <td>Solo alla vendita (26%)</td>
+                            <td>Alla vendita/exit se usi rendimento lordo; già inclusa se usi rendimento netto</td>
                         </tr>
                         <tr>
                             <td>Contributo datore</td>
@@ -638,7 +1075,7 @@
                     <p><small>*L'aliquota parte dal 15% e scende dello 0.3% per ogni anno oltre il 15°, fino al minimo del 9% (con 35+ anni di iscrizione).</small></p>
 
                     <div class="highlight">
-                        <strong>Esempio usato in questa guida:</strong> Mario, 35 anni, RAL ordinaria €30.000, premi/bonus imponibili €0, investe €3.000/anno. Il datore versa 1.5% se Mario versa almeno 1%. Addizionali stimate: 2%. Ulteriori detrazioni: €0. Rendimento FP ipotizzato: 4%. Rendimento PAC ipotizzato: 8%.
+                        <strong>Esempio usato in questa guida:</strong> Mario, 35 anni, RAL ordinaria €30.000, premi/bonus imponibili €0, investe €3.000/anno. Il datore versa 1.5% se Mario versa almeno 1%. Addizionali manuali: 2%. Ulteriori detrazioni: €0. Rendimento FP ipotizzato: 4%. Rendimento PAC netto ipotizzato: 5,8%.
                     </div>
 
                     <h2 id="step1">Step 1: I vantaggi del FP</h2>
@@ -652,9 +1089,9 @@ Mario versa €3.000 → l'azienda aggiunge €450 gratis</pre>
 
                     <h3>Deduzione fiscale</h3>
                     <p>I versamenti si deducono dal reddito → paghi meno imposte oggi.</p>
-                    <p><small>Nota: il calcolatore deduce prima i contributi INPS dal reddito lordo per ottenere il reddito imponibile: aliquota ordinaria fino al massimale e IVS aggiuntivo sopra soglia. Poi calcola IRPEF, addizionali stimate e detrazioni.</small></p>
-                    <p><small>Scaglioni IRPEF 2025 usati, aggiornati alla Legge 30 dicembre 2024, n. 207: 23% fino a €28.000, 35% da €28.001 a €50.000, 43% oltre €50.000.</small></p>
-                    <p><small>Le addizionali regionali/comunali sono stimate con una percentuale manuale. Le ulteriori detrazioni riducono l'imposta netta e servono a simulare bonus o detrazioni personali non modellati nel dettaglio.</small></p>
+                    <p><small>Nota: il calcolatore deduce prima i contributi INPS dal reddito lordo per ottenere il reddito imponibile: aliquota ordinaria fino al massimale e IVS aggiuntivo sopra soglia. Poi calcola IRPEF, addizionali locali e detrazioni.</small></p>
+                    <p><small>Scaglioni IRPEF 2025/2026 usati, aggiornati alla Legge 30 dicembre 2024, n. 207: 23% fino a €28.000, 35% da €28.001 a €50.000, 43% oltre €50.000.</small></p>
+                    <p><small>Le addizionali regionali/comunali possono essere stimate manualmente o calcolate da Regione e Comune. Le ulteriori detrazioni riducono l'imposta netta e servono a simulare bonus o detrazioni personali non modellati nel dettaglio.</small></p>
 <pre>Step fiscale con i parametri default:
 
 RAL ordinaria:           €30.000
@@ -666,7 +1103,7 @@ Massimale e IVS extra non incidono in questo esempio,
 perché la RAL è sotto la soglia IVS.
 
 Deduzione FP anno 1:     €3.000
-Addizionali stimate:     2%
+Addizionali manuali:     2%
 Ulteriori detrazioni:    €0
 Quota in busta:          €300
 Quota via bonifico:      €2.700
@@ -674,7 +1111,7 @@ Quota via bonifico:      €2.700
 Risparmio fiscale stimato anno 1: ~€777</pre>
 
                     <p><strong>Attenzione:</strong> il risparmio fiscale dipende dalla tua capienza fiscale. Se hai molte altre detrazioni, il beneficio effettivo può scendere.</p>
-                    <p><strong>Busta paga vs bonifico:</strong> tutta la quota deducibile riduce l'imponibile IRPEF, ma nel modello solo la quota versata tramite busta paga riduce anche la base usata per stimare detrazioni da lavoro dipendente, ex Bonus Renzi e bonus cuneo fiscale. Il default assume quota minima in busta paga ed extra via bonifico.</p>
+                    <p><strong>Busta paga vs bonifico:</strong> tutta la quota deducibile riduce l'imponibile IRPEF, ma nel modello solo la quota versata tramite busta paga riduce anche la base usata per stimare detrazioni da lavoro dipendente, ex Bonus Renzi e bonus cuneo fiscale. Il default ottimizza la ripartizione tra busta e bonifico e la tabella mostra la quota consigliata anno per anno. La plancia mostra anche la percentuale da indicare in busta, calcolata sulla base quota aderente scelta: RAL o minimo retributivo annuo.</p>
 
                     <h3>Limite deduzione</h3>
                     <p>Puoi dedurre max €5.164,57/anno, ma il contributo datore conta nel limite.</p>
@@ -703,15 +1140,17 @@ Limite annuo massimo: 5.164,57 + min(plafond residuo, 2.582,29)</pre>
                     <h3>Rendimento potenziale più alto</h3>
                     <p>Gli ETF azionari globali possono avere un rendimento atteso più alto, ma anche oscillazioni più forti. I valori inseriti nel calcolatore sono ipotesi: servono a simulare scenari, non a prevedere il futuro.</p>
 <pre>FP prudente/dinamico: 2-4% annuo ipotizzato
-ETF globale:          5-8% annuo ipotizzato</pre>
+ETF globale:          5-6% annuo netto ipotizzato</pre>
 
-                    <h3>Tassazione più efficiente</h3>
-                    <p>Il FP tassa i rendimenti ogni anno. L'ETF tassa le plusvalenze alla vendita e sconta anche l'imposta di bollo annua sul montante.</p>
+                    <h3>Rendimenti netti o lordi</h3>
+                    <p>Per FP e PAC puoi scegliere come inserire il rendimento. La modalità più semplice è usare un rendimento netto già stimato. Se invece vuoi esplicitare costi e fiscalità, apri “Altre opzioni” nel singolo riquadro e passa a rendimento lordo.</p>
 <pre>FP: tassa rendimenti OGNI ANNO al 12.5-20%
-    → Il montante cresce più lentamente
+    → puoi usare rendimento FP netto oppure lordo + costi/tasse
 
-ETF: tassa rendimenti SOLO ALLA VENDITA al 26%
-     + imposta di bollo annua 0,2% sul montante</pre>
+ETF/PAC: può avere fiscalità e costi diversi
+         → puoi usare rendimento PAC netto oppure lordo + costi/tasse</pre>
+
+                    <p>Nel caso lordo, il FP tassa i rendimenti ogni anno: quota agevolata al 12,5%, resto al 20%. Il PAC sottrae i costi annui durante la crescita e tassa le plusvalenze solo alla exit: quota agevolata al 12,5%, resto al 26%. Il calcolatore mostra direttamente l’aliquota effettiva risultante.</p>
 
                     <p><strong>Esempio:</strong> €10.000 che crescono del 5%</p>
 <pre>FP:  Rendimento €500, tasse €100 → crescono €10.400
@@ -730,13 +1169,13 @@ Risparmio fiscale      €777            €0
 Tassa uscita            9-15%           Nessuna
 ───────────────────────────────────────────────────────
 Tassa rendimenti        Ogni anno       Solo vendita
-Aliquota                12.5-20%        26%</pre>
+Aliquota                già nel rendimento già nel rendimento</pre>
 
                     <p>Il FP parte con un vantaggio lordo stimato di €1.227 (€450 del datore + circa €777 di risparmio fiscale). L'ETF può recuperare se il rendimento netto composto resta più alto per abbastanza anni.</p>
 
                     <h2 id="step4">Step 4: Simulazione anno per anno</h2>
 
-                    <p>Questa simulazione usa i parametri default del calcolatore: FP 4%, PAC 8%, addizionali stimate 2%, reinvestimento della deduzione attivo. È uno scenario centrale, non una previsione.</p>
+                    <p>Questa simulazione usa i parametri default del calcolatore: FP 4%, PAC netto 5,8%, addizionali manuali 2%, reinvestimento della deduzione attivo. È uno scenario centrale, non una previsione.</p>
                     <p>Il mix consigliato guarda ogni euro con il suo orizzonte residuo: se mancano molti anni può preferire PAC, se mancano pochi anni può preferire FP perché il vantaggio fiscale pesa di più. Può anche dividere la quota deducibile: per esempio minimo nel FP per prendere il contributo datore, resto nel PAC. Alla fine confronta lo split con gli scenari puri e tiene il migliore sull'orizzonte scelto.</p>
 
                     <h3>Anno 1</h3>
@@ -827,7 +1266,7 @@ Mix consigliato: €307.954
                         <tr>
                             <td>Centrale</td>
                             <td>4%</td>
-                            <td>8%</td>
+                            <td>5,8%</td>
                             <td>1-25 MIX · 26-30 FP</td>
                             <td>€244.320</td>
                             <td>€283.955</td>
@@ -865,10 +1304,13 @@ A 55 anni, orizzonte 10 anni:
 
                     <h2 id="options">Le opzioni del calcolatore</h2>
 
-                    <p>La plancia ha due livelli. <strong>Semplice</strong> tiene visibili i dati necessari per una simulazione ordinaria: RAL, premi/bonus imponibili, durata, budget, contributo datore, quota aderente, addizionali, anzianità FP, rendimenti e riscatto. <strong>Avanzata</strong> espone i parametri tecnici: variazioni nel tempo, basi contributive diverse dalla RAL, contributo datore fisso, INPS, massimale, IVS, busta/bonifico, bonus fiscali e maggiorazione prima occupazione.</p>
+                    <p>La plancia è unica e organizzata per temi. Le card principali raccolgono scenario e budget, fondo pensione e contratto, rendimento fondo pensione, rendimento PAC e fiscalità. Non esiste una modalità avanzata globale: i dettagli tecnici stanno nel riquadro a cui appartengono. La compilazione guidata segue le stesse aree una alla volta, con esempi e indicazioni su dove recuperare i dati. Massimale INPS, IVS, IRPEF, bonus fiscali e tassazioni sono mostrati come assunzioni normative del modello.</p>
+
+                    <h3>Scenario, reddito e budget</h3>
+                    <p>RAL ordinaria, premi/bonus imponibili, durata e budget annuo definiscono la simulazione. Premi, straordinari e bonus aumentano reddito fiscale e previdenziale, ma non l'importo su cui si calcolano quota minima aderente e contributo datore. Il TFR resta escluso.</p>
 
                     <h3>Rendimenti</h3>
-                    <p>Scegli un comparto FP e un ETF PAC per usare valori predefiniti, oppure seleziona Personalizzato e inserisci manualmente i rendimenti ipotizzati. Sono ipotesi di simulazione, non previsioni. Il PAC applica sempre anche l'imposta di bollo annua dello 0,2% sul montante.</p>
+                    <p>FP e PAC hanno riquadri separati e richiedono un rendimento inserito direttamente. Per il FP puoi basarti sui dati COVIP del comparto; per il PAC puoi usare una stima calcolata a parte. In “Altre opzioni” puoi decidere se quel rendimento è netto o lordo; se è lordo, inserisci costi annui e quota dei rendimenti tassata al 12,5%.</p>
 
                     <h3>Modalità confronto</h3>
                     <ul>
@@ -877,19 +1319,19 @@ A 55 anni, orizzonte 10 anni:
                     </ul>
 
                     <h3>Variazioni periodiche</h3>
-                    <p>Reddito e budget annuo possono variare nel tempo. Per ciascuno puoi scegliere se applicare una variazione percentuale o in euro, ogni quanti anni applicarla e di quanto.</p>
-<pre>Freq. 3, valore 5%
+                    <p>Le variazioni sono dentro la card Scenario e budget: aumento reddito, aumento minimo retributivo e aumento budget. Per ciascuna puoi scegliere percentuale o euro, ogni quanti anni applicarla e di quanto; il pulsante reset riporta frequenza e aumento a 0.</p>
+<pre>Ogni 3 anni, aumento 5%
 Anni 1-3: valore iniziale
 Anni 4-6: valore iniziale + 5%
 Anni 7-9: nuovo + 5%
 
-Freq. 0 o valore 0: nessuna variazione</pre>
-                    <p>La variazione del reddito modifica nel tempo il risparmio fiscale stimato e, se le basi contributi FP sono RAL, anche contributo datore e quota minima aderente. La variazione dell'investimento modifica il budget annuo usato dal confronto. Se usi basi alternative, puoi applicare una variazione separata anche a quelle basi.</p>
+Ogni 0 anni o aumento 0: nessuna variazione</pre>
+                    <p>L'aumento reddito modifica nel tempo il risparmio fiscale stimato e, se le basi contributi FP sono RAL, anche contributo datore e quota minima aderente. L'aumento budget modifica il budget annuo usato dal confronto. L'aumento minimo retributivo incide solo se quota minima aderente o contributo datore sono calcolati sul minimo retributivo annuo.</p>
 
                     <h3>Base contributi FP</h3>
-                    <p>La percentuale minima aderente e il contributo datore non sono sempre calcolati sulla RAL. Alcuni fondi usano i minimi contrattuali o una base definita dal CCNL. Di default la base del contributo datore coincide con quella della quota aderente; in avanzata puoi separarle se il tuo fondo usa basi diverse.</p>
-                    <p>Premi, straordinari e bonus imponibili aumentano il reddito usato per INPS, IRPEF e addizionali, ma non aumentano la base contributi FP/datore nel modello.</p>
-                    <p>Il contributo datore può essere percentuale, fisso annuo o una somma delle due componenti. Nel calcolo viene riconosciuto solo se raggiungi la quota minima aderente e conta nel limite di deducibilità del fondo pensione.</p>
+                    <p>La percentuale minima aderente e il contributo datore non sono sempre calcolati sulla RAL. Alcuni fondi usano i minimi contrattuali: in quel caso inserisci un unico minimo retributivo annuo nella card Scenario e budget, poi scegli se quota aderente e contributo datore usano RAL o minimo.</p>
+                    <p>Premi, straordinari e bonus imponibili aumentano il reddito usato per INPS, IRPEF e addizionali, ma non aumentano l'importo su cui il modello calcola quota minima aderente e contributo datore.</p>
+                    <p>Il contributo datore è calcolato come percentuale della base scelta. Nel calcolo viene riconosciuto solo se raggiungi la quota minima aderente e conta nel limite di deducibilità del fondo pensione.</p>
 
                     <h3>Assunzioni fisse</h3>
                     <ul>
@@ -909,7 +1351,7 @@ Freq. 0 o valore 0: nessuna variazione</pre>
                     <ul>
                         <li><strong>Addizionali locali:</strong> puoi scegliere tra modalità manuale e calcolo da località.</li>
                         <li><strong>Da località:</strong> Regione e Comune stimano automaticamente addizionale regionale e comunale. Il Comune è cercabile per nome, provincia o codice catastale e imposta in automatico la Regione.</li>
-                        <li><strong>Addizionali stimate:</strong> in modalità manuale è modificabile; in modalità da località mostra l'aliquota media effettiva calcolata sul reddito impostato.</li>
+                        <li><strong>Addizionali manuali:</strong> inserisci una percentuale unica pari a aliquota media regionale + aliquota media comunale. Esempio: 1,73% + 0,80% = 2,53%.</li>
                         <li><strong>Ulteriori detrazioni:</strong> importo annuo di bonus o detrazioni personali che riducono l'imposta netta. Non sono deduzioni e non riducono il reddito imponibile.</li>
                         <li><strong>Versamento FP:</strong> controlla se la quota FP viene trattata come busta paga, bonifico o mix. La deduzione IRPEF vale in entrambi i casi, ma gli effetti su detrazioni lavoro dipendente, ex Bonus Renzi e bonus cuneo vengono stimati solo sulla parte in busta paga.</li>
                         <li><strong>Bonus fiscali da lavoro dipendente:</strong> ex Bonus Renzi e bonus cuneo fiscale sono calcolati automaticamente. Nel modello la quota FP in busta riduce anche il reddito complessivo usato per il bonus cuneo; la quota via bonifico incide solo come deduzione fiscale.</li>
@@ -939,7 +1381,7 @@ Freq. 0 o valore 0: nessuna variazione</pre>
                     <table>
                         <tr><th>Card</th><th>Significato</th></tr>
                         <tr><td>FP deducibile</td><td>Netto finale mettendo nel FP solo la quota deducibile e nel PAC l'eventuale eccedenza</td></tr>
-                        <tr><td>Tutto PAC</td><td>Netto finale mettendo tutto il budget nel PAC, con tassazione plusvalenze e bollo annuo 0,2%</td></tr>
+                        <tr><td>Tutto PAC</td><td>Netto finale mettendo tutto il budget nel PAC, usando la modalità rendimento PAC impostata</td></tr>
                         <tr><td>Mix consigliato</td><td>Netto finale dell'allocazione anno per anno consigliata</td></tr>
                         <tr><td>Sequenza mix</td><td>Intervalli di anni in cui il mix sceglie PAC, FP o MIX</td></tr>
                     </table>
@@ -968,7 +1410,7 @@ Quota oltre deduzione → sempre PAC</pre>
                         <tr><td>Quota FP</td><td>Quota del budget annuo allocata nel FP dal mix, sempre entro il limite deducibile</td></tr>
                         <tr><td>Quota PAC</td><td>Quota del budget annuo allocata nel PAC dal mix: include eccedenza non deducibile e parte deducibile se conviene PAC</td></tr>
                         <tr><td>Scelta</td><td>FP, PAC o MIX per indicare l'allocazione consigliata di quell'anno</td></tr>
-                        <tr><td>Exit</td><td>Netto se esci a quell'anno, dopo fiscalità FP/PAC e bollo PAC</td></tr>
+                        <tr><td>Exit</td><td>Netto se esci a quell'anno; per il PAC applica la modalità rendimento scelta, per il FP applica anche la tassazione in uscita sui contributi</td></tr>
                     </table>
 
                     <h3>Tassazione FP all'uscita</h3>
@@ -992,7 +1434,7 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
                             <th>Cosa usa il calcolatore</th>
                         </tr>
                         <tr>
-                            <td>IRPEF 2025</td>
+                            <td>IRPEF 2025/2026</td>
                             <td><a href="https://www.gazzettaufficiale.it/atto/serie_generale/caricaArticolo?art.codiceRedazionale=24G00229&amp;art.dataPubblicazioneGazzetta=2024-12-31&amp;art.flagTipoArticolo=0&amp;art.idArticolo=1&amp;art.idGruppo=1&amp;art.idSottoArticolo=1&amp;art.idSottoArticolo1=10&amp;art.progressivo=1&amp;art.versione=1" target="_blank" rel="noopener">Legge 30 dicembre 2024, n. 207</a></td>
                             <td>Scaglioni 23%, 35%, 43% e detrazione lavoro dipendente minima €1.955.</td>
                         </tr>
@@ -1006,10 +1448,20 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
                             <td><a href="https://www.gazzettaufficiale.it/atto/serie_generale/caricaArticolo?art.codiceRedazionale=005G0278&amp;art.dataPubblicazioneGazzetta=2005-12-13&amp;art.flagTipoArticolo=0&amp;art.idArticolo=11&amp;art.idGruppo=0&amp;art.idSottoArticolo=1&amp;art.idSottoArticolo1=10&amp;art.progressivo=0&amp;art.versione=1" target="_blank" rel="noopener">D.Lgs. 5 dicembre 2005, n. 252, art. 11</a></td>
                             <td>Aliquota 15%, riduzione progressiva fino al 9%, e simulazione del riscatto anticipato al 23%.</td>
                         </tr>
+                        <tr>
+                            <td>Addizionali locali 2026</td>
+                            <td><a href="https://www1.finanze.gov.it/finanze2/dipartimentopolitichefiscali/fiscalitalocale/" target="_blank" rel="noopener">MEF - Fiscalità locale</a></td>
+                            <td>Aliquote regionali e comunali importate nel dataset locale usato dai selettori Regione/Comune.</td>
+                        </tr>
+                        <tr>
+                            <td>Rendimenti finanziari</td>
+                            <td>Ipotesi modificabili dall'utente</td>
+                            <td>Modalità netta oppure lorda: quota agevolata 12,5%, ordinaria 20% nel FP e 26% nel PAC.</td>
+                        </tr>
                     </table>
 
                     <h3>Fonti informative sui rendimenti</h3>
-                    <p>I rendimenti dei fondi pensione sono ipotesi ispirate ai dati storici pubblicati da <a href="https://www.covip.it/" target="_blank" rel="noopener">COVIP</a>. Nel modello sono trattati come rendimenti già al netto dei costi e della tassazione annuale dei rendimenti, ma non sono rendimenti futuri garantiti.</p>
+                    <p>I rendimenti dei fondi pensione sono ipotesi ispirate ai dati storici pubblicati da <a href="https://www.covip.it/" target="_blank" rel="noopener">COVIP</a>. Se usi la modalità netta, sono trattati come già al netto di costi e tassazione annuale; se usi la modalità lorda, il modello applica costi annui e tassazione dei rendimenti. In ogni caso non sono rendimenti futuri garantiti.</p>
 
                     <p>Gli ETF indicati sotto sono esempi comuni per costruire un PAC globale. Non sono raccomandazioni di acquisto: servono a dare riferimenti concreti agli scenari del calcolatore.</p>
                     <table>
@@ -1064,7 +1516,7 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
                         <li>Le ulteriori detrazioni sono un campo sintetico: il calcolatore non ricostruisce tutti i bonus fiscali personali.</li>
                         <li>I rendimenti FP e PAC sono ipotesi costanti anno per anno; nella realtà i mercati oscillano e l'ordine dei rendimenti conta.</li>
                         <li>I versamenti sono trattati come investiti nell'anno di versamento: il modello non espone uno switch tra capitalizzazione anticipata e posticipata.</li>
-                        <li>Il PAC applica imposta di bollo annua dello 0,2% sul montante e tassazione delle plusvalenze al 26% in uscita.</li>
+                        <li>Se usi rendimento netto, costi e fiscalità devono essere già inclusi nella stima. Se usi rendimento lordo, il modello applica costi annui e tassazione secondo le aliquote impostate.</li>
                         <li>Costi, commissioni, fiscalità personale, cambi normativi e condizioni specifiche del singolo fondo possono modificare il risultato reale.</li>
                     </ul>
 
@@ -1080,7 +1532,7 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
     </a>
 
     <footer class="footer">
-        <p>© 2025 Calcolatore Fondo Pensione vs PAC | I calcoli sono stime, non consulenza finanziaria.</p>
+        <p>© 2026 Calcolatore Fondo Pensione vs PAC | I calcoli sono stime, non consulenza finanziaria.</p>
         <p class="github-link">
             <a href="https://github.com/pippo995/calcolatore-fondo-pensione-vs-pac" target="_blank" rel="noopener">
                 <i class="fab fa-github"></i> Ti è utile? Lascia una <i class="fas fa-star"></i> su GitHub!

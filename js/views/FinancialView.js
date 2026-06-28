@@ -66,6 +66,7 @@ export class FinancialView {
           { key: 'Extra Ded', label: 'Quota PAC extra' },
           { key: 'FP Busta', label: 'FP busta' },
           { key: 'FP Bonifico', label: 'FP bonifico' },
+          { key: 'Ott Busta', label: 'Extra busta' },
           { key: 'Datore', label: 'Datore' },
           { key: 'Risparmio', label: 'Risparmio fiscale' },
           { key: 'Exit FP', label: 'Exit FP' }
@@ -82,6 +83,7 @@ export class FinancialView {
           { key: 'PAC Cons', label: 'Quota PAC' },
           { key: 'FP Busta', label: 'FP busta' },
           { key: 'FP Bonifico', label: 'FP bonifico' },
+          { key: 'Ott Busta', label: 'Extra busta' },
           { key: 'Datore', label: 'Datore' },
           { key: 'Risparmio', label: 'Risparmio fiscale' },
           { key: 'Exit Mix', label: 'Exit Mix' }
@@ -187,6 +189,13 @@ export class FinancialView {
       const grid = document.getElementById('result-explanation-grid');
       if (!summary || !grid || !results.length) return;
 
+      const sum = (key) => results.reduce((total, row) => total + (row[key] || 0), 0);
+      const formatSignedMoney = (value) => `${value >= 0 ? '+' : '-'}${this.formatMoney(Math.abs(Math.round(value)))}`;
+      const formatPercent = (value) => `${value.toLocaleString('it-IT', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      })}%`;
+
       const lastResult = results[results.length - 1];
       const exits = [
         { key: 'FP', label: 'FP deducibile', value: lastResult['Exit FP'] || 0 },
@@ -197,14 +206,27 @@ export class FinancialView {
       const best = exits[0];
       const runnerUp = exits[1];
       const delta = Math.max(0, best.value - runnerUp.value);
+      const mixVsFp = (lastResult['Exit Mix'] || 0) - (lastResult['Exit FP'] || 0);
+      const mixVsPac = (lastResult['Exit Mix'] || 0) - (lastResult['Exit PAC'] || 0);
+      const firstRow = results[0];
+      const lastChoice = lastResult.Scelta || 'MIX';
 
-      const totals = results.reduce((acc, row) => {
-        acc.fp += row['FP Cons'] || 0;
-        acc.pac += row['PAC Cons'] || 0;
-        acc.datore += row['Datore'] || 0;
-        acc.risparmio += row['Risparmio'] || 0;
-        return acc;
-      }, { fp: 0, pac: 0, datore: 0, risparmio: 0 });
+      const totals = {
+        fp: sum('FP Cons'),
+        pac: sum('PAC Cons'),
+        datore: sum('Datore'),
+        risparmio: sum('Risparmio'),
+        ottimizzazioneBusta: sum('Ott Busta'),
+        fpBusta: sum('FP Busta'),
+        fpBonifico: sum('FP Bonifico'),
+        deducibile: sum('Entro Ded'),
+        extraPac: sum('Extra Ded')
+      };
+      const totalInvested = totals.fp + totals.pac;
+      const fpShare = totalInvested > 0 ? (totals.fp / totalInvested) * 100 : 0;
+      const pacShare = totalInvested > 0 ? (totals.pac / totalInvested) * 100 : 0;
+      const usedEmployerYears = results.filter(row => (row.Datore || 0) > 0).length;
+      const payrollShare = totals.fp > 0 ? (totals.fpBusta / totals.fp) * 100 : 0;
 
       const yearsByChoice = results.reduce((acc, row) => {
         const choice = row.Scelta || 'MIX';
@@ -217,34 +239,70 @@ export class FinancialView {
         .map(choice => `${yearsByChoice[choice]} anni ${choice}`)
         .join(' · ');
 
+      const firstSplitDetail = firstRow
+        ? `Anno 1: ${this.formatMoney(firstRow['FP Cons'] || 0)} FP e ${this.formatMoney(firstRow['PAC Cons'] || 0)} PAC`
+        : 'Nessuna quota allocata';
+      const bustaDetail = totals.fp > 0
+        ? `${this.formatMoney(Math.round(totals.fpBusta))} busta, ${this.formatMoney(Math.round(totals.fpBonifico))} bonifico`
+        : 'Nessun versamento FP nel mix';
+      const optimizationDetail = totals.ottimizzazioneBusta > 0
+        ? `${this.formatMoney(Math.round(totals.ottimizzazioneBusta))} di beneficio fiscale aggiuntivo rispetto a quota minima in busta + extra via bonifico.`
+        : totals.fpBonifico > 0
+          ? 'L’extra via bonifico resta competitivo: portarlo in busta non aggiunge beneficio fiscale netto nello scenario impostato.'
+          : 'Nessun beneficio extra da ripartizione: la quota FP in busta coincide con il minimo o con tutta la quota utile.';
+      const mixDetail = best.key === 'MIX'
+        ? `Rispetto a FP: ${formatSignedMoney(mixVsFp)} · rispetto a PAC: ${formatSignedMoney(mixVsPac)}`
+        : `Il mix resta ${formatSignedMoney((lastResult['Exit Mix'] || 0) - best.value)} dal migliore`;
+      const timingDetail = lastChoice === 'FP'
+        ? 'Negli ultimi anni pesa di più il vantaggio fiscale immediato del FP.'
+        : lastChoice === 'PAC'
+          ? 'Anche verso fine periodo il rendimento PAC resta sufficiente nello scenario impostato.'
+          : 'Lo split resta utile quando conviene prendere incentivi FP senza rinunciare del tutto al PAC.';
+
       summary.textContent = delta > 0
-        ? `${best.label} chiude a ${this.formatMoney(Math.round(best.value))}, circa ${this.formatMoney(Math.round(delta))} sopra la seconda alternativa.`
+        ? `${best.label} chiude a ${this.formatMoney(Math.round(best.value))}, circa ${this.formatMoney(Math.round(delta))} sopra ${runnerUp.label}. ${timingDetail}`
         : `${best.label} e ${runnerUp.label} arrivano sostanzialmente alla pari nello scenario impostato.`;
 
       const cards = [
         {
-          icon: 'fa-trophy',
-          label: 'Risultato finale',
+          icon: best.key === 'MIX' ? 'fa-route' : 'fa-trophy',
+          label: best.key === 'MIX' ? 'Mix vs alternative' : 'Scenario migliore',
           value: best.label,
-          detail: `Exit finale ${this.formatMoney(Math.round(best.value))}`
+          detail: mixDetail
         },
         {
-          icon: 'fa-route',
-          label: 'Allocazione mix',
-          value: `${this.formatMoney(Math.round(totals.fp))} FP`,
-          detail: `${this.formatMoney(Math.round(totals.pac))} PAC lungo la simulazione`
+          icon: 'fa-chart-pie',
+          label: 'Dove vanno i versamenti',
+          value: `${formatPercent(fpShare)} FP · ${formatPercent(pacShare)} PAC`,
+          detail: `${firstSplitDetail}. Extra oltre deduzione nel PAC: ${this.formatMoney(Math.round(totals.extraPac))}`
         },
         {
           icon: 'fa-hand-holding-dollar',
-          label: 'Spinta fiscale e datore',
+          label: 'Incentivi agganciati al FP',
           value: this.formatMoney(Math.round(totals.datore + totals.risparmio)),
-          detail: `${this.formatMoney(Math.round(totals.datore))} datore + ${this.formatMoney(Math.round(totals.risparmio))} risparmio fiscale`
+          detail: `${this.formatMoney(Math.round(totals.datore))} datore + ${this.formatMoney(Math.round(totals.risparmio))} beneficio fiscale. Datore preso per ${usedEmployerYears}/${results.length} anni`
+        },
+        {
+          icon: 'fa-file-invoice-dollar',
+          label: 'Ottimizzazione busta',
+          value: totals.ottimizzazioneBusta > 0
+            ? `+${this.formatMoney(Math.round(totals.ottimizzazioneBusta))}`
+            : totals.fp > 0
+              ? `${formatPercent(payrollShare)} FP in busta`
+              : 'Nessun FP',
+          detail: `${bustaDetail}. ${optimizationDetail}`
+        },
+        {
+          icon: 'fa-filter',
+          label: 'Limite deducibile',
+          value: this.formatMoney(Math.round(totals.deducibile)),
+          detail: 'Quota trattata dentro il perimetro deducibile; la parte fuori deduzione viene indirizzata al PAC.'
         },
         {
           icon: 'fa-calendar-check',
           label: 'Scelte annuali',
           value: choiceSummary || 'Nessuna scelta',
-          detail: 'Il PAC pesa di più quando ha abbastanza anni per capitalizzare; il FP pesa di più quando incentivi fiscali e datore dominano.'
+          detail: timingDetail
         }
       ];
 

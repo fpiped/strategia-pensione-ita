@@ -10,7 +10,7 @@ const baseConfig = {
   quotaDatoreFpPerc: 0.015,
   quotaMinAderentePerc: 0.01,
   rendimentoAnnualeFpPerc: 0.04,
-  rendimentoAnnualePacPerc: 0.08,
+  rendimentoAnnualePacPerc: 0.06,
   reinvestiRisparmio: true,
   modalitaCumulativa: true,
   riscattoAnticipato: false
@@ -38,10 +38,11 @@ test('calcola lo scenario cumulativo predefinito', () => {
     'PAC Cons': 2700,
     'FP Busta': 300,
     'FP Bonifico': 0,
+    'Ott Busta': 0,
     Scelta: 'MIX',
     'Exit FP': 3788,
-    'Exit PAC': 3173,
-    'Exit Mix': 3619
+    'Exit PAC': 3180,
+    'Exit Mix': 3626
   });
 
   assert.deepEqual(result.results.at(-1), {
@@ -57,10 +58,11 @@ test('calcola lo scenario cumulativo predefinito', () => {
     'PAC Cons': 0,
     'FP Busta': 300,
     'FP Bonifico': 3622,
+    'Ott Busta': 0,
     Scelta: 'FP',
     'Exit FP': 238957,
-    'Exit PAC': 283955,
-    'Exit Mix': 306750
+    'Exit PAC': 251405,
+    'Exit Mix': 276516
   });
 });
 
@@ -182,6 +184,85 @@ test('distingue beneficio fiscale tra versamento FP in busta e bonifico', () => 
   assert.ok(quotaMinimaBusta > tuttoBonifico);
 });
 
+test('ottimizza la ripartizione busta e bonifico della quota FP', () => {
+  const model = new FinancialModel();
+
+  const split = model._chooseBestPaymentSplit({
+    quotaFp: 3000,
+    quotaDatore: 450,
+    quotaMinAderente: 300,
+    modalitaVersamentoFp: 'ottimizza',
+    reddito: 30000,
+    contributiInpsPerc: undefined,
+    massimaleContributivoInps: undefined,
+    sogliaIvsAggiuntivo: undefined,
+    aliquotaIvsAggiuntivaPerc: undefined,
+    addizionaliPerc: 0.02,
+    ulterioriDetrazioni: 0,
+    limiteDeduzioneTotale: 5164.57
+  });
+
+  assert.equal(Math.round(split.quotaBusta), 3000);
+  assert.equal(Math.round(split.quotaBonifico), 0);
+  assert.equal(Math.round(split.risparmio), 960);
+});
+
+test('rispetta la modalita forzata extra via bonifico', () => {
+  const model = new FinancialModel();
+
+  const split = model._chooseBestPaymentSplit({
+    quotaFp: 3000,
+    quotaDatore: 450,
+    quotaMinAderente: 300,
+    modalitaVersamentoFp: 'quotaMinimaBusta',
+    reddito: 30000,
+    contributiInpsPerc: undefined,
+    massimaleContributivoInps: undefined,
+    sogliaIvsAggiuntivo: undefined,
+    aliquotaIvsAggiuntivaPerc: undefined,
+    addizionaliPerc: 0.02,
+    ulterioriDetrazioni: 0,
+    limiteDeduzioneTotale: 5164.57
+  });
+
+  assert.equal(Math.round(split.quotaBusta), 300);
+  assert.equal(Math.round(split.quotaBonifico), 2700);
+  assert.equal(Math.round(split.risparmio), 777);
+});
+
+test('ottimizza solo la quota FP sopra il minimo aderente', () => {
+  const model = new FinancialModel();
+  const candidates = model._getPaymentSplitCandidates(3000, 300, 'ottimizza');
+
+  assert.deepEqual(candidates, [
+    { quotaBusta: 300, quotaBonifico: 2700 },
+    { quotaBusta: 3000, quotaBonifico: 0 }
+  ]);
+});
+
+test('puo lasciare extra FP via bonifico quando la busta riduce bonus fiscali', () => {
+  const model = new FinancialModel();
+
+  const split = model._chooseBestPaymentSplit({
+    quotaFp: 3000,
+    quotaDatore: 450,
+    quotaMinAderente: 300,
+    modalitaVersamentoFp: 'ottimizza',
+    reddito: 8000,
+    contributiInpsPerc: undefined,
+    massimaleContributivoInps: undefined,
+    sogliaIvsAggiuntivo: undefined,
+    aliquotaIvsAggiuntivaPerc: undefined,
+    addizionaliPerc: 0.02,
+    ulterioriDetrazioni: 0,
+    limiteDeduzioneTotale: 5164.57
+  });
+
+  assert.equal(Math.round(split.quotaBusta), 300);
+  assert.equal(Math.round(split.quotaBonifico), 2700);
+  assert.equal(Math.round(split.extraRisparmioVersamento), 0);
+});
+
 test('le ulteriori detrazioni riducono il beneficio fiscale se manca capienza', () => {
   const model = new FinancialModel();
 
@@ -232,7 +313,7 @@ test('calcola imponibile IRPEF con massimale INPS e IVS aggiuntivo', () => {
   })), 138265);
 });
 
-test('applica il bollo annuo dello 0.2% al PAC', () => {
+test('usa il rendimento PAC come rendimento netto senza costi o tasse aggiuntive', () => {
   const model = new FinancialModel();
   const result = model.calculateResults({
     ...baseConfig,
@@ -241,8 +322,8 @@ test('applica il bollo annuo dello 0.2% al PAC', () => {
     rendimentoAnnualePacPerc: 0.08
   });
 
-  assert.equal(result.results[0]['Exit PAC'], 3173);
-  assert.ok(result.results[0]['Exit PAC'] < 3178);
+  assert.equal(result.results[0]['Exit PAC'], 3240);
+  assert.equal(result.results[0]['Exit PAC'], Math.round(3000 * 1.08));
 });
 
 test('la modalita sacrificio netto confronta il PAC con il costo netto del FP', () => {
@@ -257,7 +338,7 @@ test('la modalita sacrificio netto confronta il PAC con il costo netto del FP', 
   assert.equal(result.results[0].Risparmio, 777);
   assert.equal(result.results[0]['FP Cons'], 3000);
   assert.equal(result.results[0]['PAC Cons'], 0);
-  assert.equal(result.results[0]['Exit PAC'], 2351);
+  assert.equal(result.results[0]['Exit PAC'], 2356);
   assert.equal(result.results[0]['Exit Mix'], 3071);
 });
 
@@ -326,6 +407,25 @@ test('puo usare basi diverse per quota aderente e contributo datore', () => {
   assert.equal(result.quotaDatoreFp, 450);
   assert.equal(result.results[0]['Entro Min'], 200);
   assert.equal(result.results[0].Datore, 450);
+});
+
+test('applica la variazione base anche quando solo il datore usa il minimo retributivo', () => {
+  const model = new FinancialModel();
+  const result = model.calculateResults({
+    ...baseConfig,
+    durata: 4,
+    baseContributivaFpTipo: 'ral',
+    baseDatoreFpTipo: 'minimoRetributivo',
+    baseDatoreFp: 20000,
+    variazioneBaseContributivaTipo: 'percentuale',
+    variazioneBaseContributivaFrequenza: 3,
+    variazioneBaseContributivaValore: 10
+  });
+
+  assert.equal(result.results[0]['Entro Min'], 300);
+  assert.equal(result.results[0].Datore, 300);
+  assert.equal(result.results[3]['Entro Min'], 300);
+  assert.equal(result.results[3].Datore, 330);
 });
 
 test('premi e bonus aumentano il reddito fiscale ma non la base FP su RAL', () => {
@@ -428,7 +528,7 @@ test('converte i risultati in CSV con intestazione coerente', () => {
 
   assert.equal(
     model.convertToCSV(result.results),
-    'Anno,Entro Min,Extra Min,Entro Ded,Extra Ded,Aderente,Datore,Risparmio,FP Cons,PAC Cons,FP Busta,FP Bonifico,Scelta,Exit FP,Exit PAC,Exit Mix\r\n' +
-      '1,300,2700,3000,0,3000,450,717,3000,0,300,2700,FP,3788,3173,3788\r\n'
+    'Anno,Entro Min,Extra Min,Entro Ded,Extra Ded,Aderente,Datore,Risparmio,FP Cons,PAC Cons,FP Busta,FP Bonifico,Ott Busta,Scelta,Exit FP,Exit PAC,Exit Mix\r\n' +
+      '1,300,2700,3000,0,3000,450,717,3000,0,300,2700,0,FP,3788,3180,3788\r\n'
   );
 });

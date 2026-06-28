@@ -129,27 +129,27 @@ function setupMobileTooltips() {
     const helpContent = {
         reddito: {
             title: 'RAL ordinaria',
-            text: 'La tua retribuzione annua lorda ordinaria da lavoratore dipendente. Il modello la usa anche come base FP quando selezioni RAL. Non è pensato per autonomi, partite IVA o regimi sostitutivi.'
+            text: 'La tua retribuzione annua lorda ordinaria da lavoratore dipendente. Se scegli RAL come base, il modello usa questo importo per calcolare quota minima aderente e contributo datore. Non è pensato per autonomi, partite IVA o regimi sostitutivi.'
         },
         premiStraordinari: {
             title: 'Premi, straordinari e bonus',
-            text: 'Altri compensi annui imponibili INPS/IRPEF. Aumentano il reddito fiscale e previdenziale, ma non la base usata per quota minima FP e contributo datore.'
+            text: 'Altri compensi annui imponibili INPS/IRPEF. Nel modello aumentano reddito fiscale e previdenziale, ma non la base su cui si calcolano quota minima FP e contributo datore.'
         },
         variazioneReddito: {
-            title: 'Variazione reddito',
-            text: 'Simula aumenti periodici della RAL. Freq. indica ogni quanti anni applicare la variazione: con freq. 3 e valore 5%, il reddito resta uguale per 3 anni e aumenta del 5% dal quarto anno, poi di nuovo dal settimo.'
+            title: 'Aumento reddito',
+            text: 'Simula aumenti periodici della RAL ordinaria. “Ogni anni” indica ogni quanti anni applicare la variazione: con ogni 3 anni e aumento 5%, il reddito resta uguale per 3 anni e aumenta del 5% dal quarto, poi di nuovo dal settimo.'
         },
         durata: {
             title: 'Durata simulazione',
             text: 'Per quanti anni vuoi simulare l\'investimento. Più è lunga la durata, più si vedono gli effetti dell\'interesse composto. La tassazione FP scende dal 15% al 9% dopo 15 anni di partecipazione.'
         },
         investimento: {
-            title: 'Budget annuo',
+            title: 'Investimento annuo',
             text: 'L\'importo che vuoi allocare ogni anno tra fondo pensione e PAC. La quota oltre il limite deducibile viene considerata sempre PAC. Non include il TFR. Ricorda: il limite di deducibilità fiscale per il FP è €5.164,57/anno (incluso contributo datore, escluso TFR).'
         },
         variazioneInvestimento: {
-            title: 'Variazione investimento',
-            text: 'Simula aumenti periodici del budget annuo. Puoi usare una percentuale o un importo fisso in euro. Freq. 3 e valore 10% significa aumento del budget ogni 3 anni.'
+            title: 'Aumento investimento',
+            text: 'Simula aumenti periodici dell’investimento annuo. Puoi usare una percentuale o un importo fisso in euro. Ogni 3 anni e aumento 10% significa aumento dell’investimento ogni 3 anni.'
         },
         modalitaConfronto: {
             title: 'Modalità confronto',
@@ -160,36 +160,28 @@ function setupMobileTooltips() {
             text: 'Base annua su cui calcolare la quota minima che devi versare per ottenere il contributo del datore.'
         },
         baseContributivaFp: {
-            title: 'Base quota annua',
-            text: 'Inserisci il valore annuo della base per la quota aderente se il fondo non usa la RAL. Per esempio il minimo retributivo mensile moltiplicato per le mensilità previste. Il valore viene limitato alla RAL ordinaria.'
+            title: 'Minimo retributivo annuo',
+            text: 'Valore annuo del minimo tabellare o retributivo indicato dal CCNL, se quota aderente o contributo datore sono calcolati su questa base invece che sulla RAL. Usa il minimo mensile moltiplicato per le mensilità previste. Se supera la RAL, il calcolatore mostra un avviso perché è insolito.'
         },
         baseDatoreFpTipo: {
             title: 'Base contributo datore',
-            text: 'Base annua su cui calcolare il contributo percentuale del datore. Di default coincide con la base quota aderente; cambiala solo se fondo o CCNL indicano una base diversa.'
-        },
-        baseDatoreFp: {
-            title: 'Base datore annua',
-            text: 'Inserisci il valore annuo della base del contributo datore se è diversa dalla base quota aderente e non usa la RAL.'
+            text: 'Base annua su cui calcolare il contributo percentuale del datore: RAL ordinaria oppure minimo retributivo annuo. Se scegli minimo, viene usato lo stesso minimo retributivo annuo indicato nello scenario.'
         },
         variazioneBaseContributiva: {
-            title: 'Variazione base contributi',
-            text: 'Simula aumenti periodici delle basi alternative. Se la base quota aderente è RAL, questa variazione resta disattivata perché si usa già la variazione reddito.'
+            title: 'Aumento minimo retributivo',
+            text: 'Simula aumenti periodici del minimo retributivo annuo. Serve se quota minima aderente o contributo datore sono calcolati sul minimo tabellare del CCNL.'
         },
         contribuzioneDatoreFpPerc: {
             title: 'Contributo datore di lavoro',
-            text: 'Percentuale che l\'azienda versa nel tuo FP come benefit. Viene applicata alla base contributi FP selezionata, non necessariamente alla RAL. Si somma all’eventuale contributo fisso annuo.'
-        },
-        contributoDatoreFisso: {
-            title: 'Datore fisso annuo',
-            text: 'Importo annuo fisso che il datore versa nel fondo pensione, se previsto dal fondo o dall’accordo aziendale. Si somma al contributo percentuale e conta nel limite deducibile.'
+            text: 'Percentuale che l’azienda versa nel tuo fondo pensione. Viene applicata alla base contributo datore: RAL oppure minimo retributivo annuo.'
         },
         quotaMinAderentePerc: {
             title: 'Quota minima aderente',
-            text: 'Per ricevere il contributo del datore, molti contratti richiedono che tu versi almeno una certa percentuale della base contributi FP. Se non la versi, perdi il contributo aziendale. Verifica sul tuo CCNL.'
+            text: 'Per ricevere il contributo del datore, molti contratti richiedono che tu versi almeno una certa percentuale di un importo definito dal fondo o dal CCNL: spesso RAL, minimo retributivo o altra base contrattuale. Se non la versi, perdi il contributo aziendale.'
         },
         addizionaliPerc: {
-            title: 'Addizionali stimate',
-            text: 'Percentuale usata per stimare addizionale regionale e comunale. In modalità manuale puoi modificarla direttamente; in modalità da località mostra il risultato calcolato da Regione e Comune.'
+            title: 'Addizionali manuali',
+            text: 'Inserisci la somma tra aliquota media regionale e aliquota media comunale. Esempio: regionale 1,73% + comunale 0,80% = 2,53%. Se non vuoi calcolarla a mano, usa “Da località”.'
         },
         regioneAddizionali: {
             title: 'Regione addizionali',
@@ -200,20 +192,24 @@ function setupMobileTooltips() {
             text: 'Digita nome, provincia o codice catastale e scegli il Comune dai risultati. Il Comune aggiunge l’addizionale comunale e imposta automaticamente la Regione. Alcune note comunali particolari restano semplificate nel calcolo.'
         },
         contributiInpsPerc: {
-            title: 'Contributi INPS',
-            text: 'Aliquota previdenziale ordinaria a carico del lavoratore. Il modello la applica fino al massimale contributivo INPS per stimare l’imponibile IRPEF.'
+            title: 'Aliquota INPS lavoratore',
+            text: 'Aliquota previdenziale ordinaria a carico del lavoratore. Usa il preset più vicino alla tua busta paga; passa a manuale solo se hai un dato specifico.'
+        },
+        contributiInpsPercManuale: {
+            title: 'Aliquota manuale INPS',
+            text: 'Campo modificabile solo se scegli Manuale nel preset INPS. Serve per casi particolari ricavati dalla busta paga o da una simulazione consulenziale.'
         },
         massimaleContributivoInps: {
             title: 'Massimale INPS',
-            text: 'Tetto annuo della base su cui applicare i contributi INPS nel modello. Sopra questo valore non vengono stimati contributi ordinari o IVS aggiuntivi.'
+            text: 'Tetto annuo della base su cui applicare i contributi INPS nel modello. È trattato come assunzione normativa, non come input operativo.'
         },
         sogliaIvsAggiuntivo: {
             title: 'Soglia IVS aggiuntivo',
-            text: 'Soglia annua oltre la quale si applica il contributo IVS aggiuntivo. Il modello lo calcola solo sulla quota sopra soglia e comunque entro il massimale INPS.'
+            text: 'Soglia annua oltre la quale si applica il contributo IVS aggiuntivo. È un’assunzione normativa automatica del modello.'
         },
         aliquotaIvsAggiuntivaPerc: {
             title: 'Aliquota IVS extra',
-            text: 'Aliquota aggiuntiva applicata alla quota di reddito sopra la soglia IVS. Di norma è l’1%, ma puoi modificarla se hai un dato diverso.'
+            text: 'Aliquota aggiuntiva applicata alla quota di reddito sopra la soglia IVS. È un’assunzione normativa automatica del modello.'
         },
         ulterioriDetrazioni: {
             title: 'Ulteriori detrazioni',
@@ -221,7 +217,7 @@ function setupMobileTooltips() {
         },
         modalitaVersamentoFp: {
             title: 'Versamento FP',
-            text: 'Decide quanta quota FP viene trattata come versamento tramite busta paga. Tutta la quota deducibile riduce l’imponibile IRPEF, ma solo la quota in busta paga riduce la base usata per stimare detrazioni da lavoro dipendente, ex Bonus Renzi e bonus cuneo fiscale.'
+            text: 'Decide quanta quota FP viene trattata come versamento tramite busta paga. In modalità ottimizzata il simulatore prova più ripartizioni tra busta e bonifico e tiene quella con uscita finale migliore. Tutta la quota deducibile riduce l’imponibile IRPEF, ma solo la quota in busta paga riduce la base usata per stimare detrazioni da lavoro dipendente, ex Bonus Renzi e bonus cuneo fiscale.'
         },
         anzianitaPregressaFp: {
             title: 'Anzianità pregressa FP',
@@ -239,21 +235,37 @@ function setupMobileTooltips() {
             title: 'Anni residui maggiorazione',
             text: 'Numero di anni ancora disponibili per usare il plafond extra. La normativa consente il recupero nei 20 anni successivi ai primi 5 anni di partecipazione.'
         },
-        compartoFp: {
-            title: 'Comparto del fondo pensione',
-            text: 'Il comparto determina come vengono investiti i tuoi soldi. Garantito: più prudente, basso rendimento atteso. Obbligazionario: principalmente bond. Bilanciato: mix azioni/bond. Azionario: più rischioso ma rendimento atteso maggiore. I valori sono ipotesi ispirate a dati storici, non garanzie.'
-        },
-        etfPreset: {
-            title: 'Tipo di ETF per il PAC',
-            text: 'ETF globali come MSCI World o FTSE All-World offrono ampia diversificazione. I LifeStrategy combinano azioni e obbligazioni in percentuali fisse. I rendimenti sono ipotesi di simulazione basate su dati storici e non sono garantiti.'
-        },
         rendimentoAnnualeFpPerc: {
             title: 'Rendimento fondo pensione ipotizzato',
-            text: 'Rendimento annuo usato nella simulazione FP. Il modello lo considera già netto da costi e tassazione annuale dei rendimenti. Prova più valori: questo input influenza molto il mix consigliato.'
+            text: 'Rendimento annuo usato nella simulazione FP. Puoi stimarlo dai rendimenti storici del comparto, ricordando che non sono previsioni. Se scegli netto viene usato così com’è; se scegli lordo, il modello sottrae costi annui e tassazione annuale.'
+        },
+        rendimentoFpMode: {
+            title: 'Tipo rendimento FP',
+            text: 'Usa netto se il valore è già al netto di costi e tassazione annuale. Usa lordo se vuoi inserire rendimento prima di costi e tasse: il FP applica la tassazione sui rendimenti ogni anno.'
+        },
+        costiAnnuiFpPerc: {
+            title: 'Costi annui FP',
+            text: 'Percentuale annua sottratta al montante del fondo pensione quando il rendimento FP è impostato come lordo. Se usi rendimento netto, lasciala a 0 per evitare doppio conteggio.'
+        },
+        quotaAgevolataFpPerc: {
+            title: 'Quota FP agevolata 12,5%',
+            text: 'Quota dei rendimenti FP riconducibile a strumenti tassati al 12,5%, tipicamente titoli di Stato ed equiparati. Il resto è tassato al 20%. Il calcolatore mostra l’aliquota effettiva risultante.'
         },
         rendimentoAnnualePacPerc: {
             title: 'Rendimento ETF ipotizzato',
-            text: 'Rendimento annuo usato nella simulazione PAC. Il modello tassa le plusvalenze al 26% solo all’uscita. Non è una previsione: rendimenti più bassi o più alti cambiano molto il risultato finale.'
+            text: 'Rendimento annuo usato nella simulazione PAC. Puoi stimarlo da dati storici o altri strumenti, con ipotesi prudente. Se scegli netto viene usato così com’è; se scegli lordo, il modello sottrae costi annui e tassa le plusvalenze alla exit.'
+        },
+        rendimentoPacMode: {
+            title: 'Tipo rendimento PAC',
+            text: 'Usa netto se il rendimento è già al netto di TER, bollo e fiscalità attesa. Usa lordo se vuoi far applicare al modello costi annui e tassazione finale sulle plusvalenze.'
+        },
+        costiAnnuiPacPerc: {
+            title: 'Costi annui PAC',
+            text: 'Percentuale annua sottratta al montante PAC quando il rendimento PAC è lordo. Può rappresentare TER, bollo o altri costi ricorrenti se non li hai già inclusi nel rendimento.'
+        },
+        quotaAgevolataPacPerc: {
+            title: 'Quota PAC agevolata 12,5%',
+            text: 'Quota delle plusvalenze PAC riconducibile a strumenti tassati al 12,5%, tipicamente titoli di Stato ed equiparati. Il resto è tassato al 26%. Il calcolatore mostra l’aliquota effettiva risultante.'
         },
         riscattoAnticipato: {
             title: 'Riscatto anticipato',

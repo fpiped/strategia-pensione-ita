@@ -18,8 +18,9 @@ export const FINANCIAL_CONSTANTS = {
   BONUS_CUNEO_ALIQUOTA_2: 0.053,
   BONUS_CUNEO_ALIQUOTA_3: 0.048,
   BONUS_CUNEO_DETRAZIONE_PIENA: 1000,
-  TASSAZIONE_RENDITE_PAC: 0.26,
-  IMPOSTA_BOLLO_PAC: 0.002
+  TASSAZIONE_RENDIMENTI_AGEVOLATA: 0.125,
+  TASSAZIONE_RENDIMENTI_FP_ORDINARIA: 0.20,
+  TASSAZIONE_RENDIMENTI_PAC_ORDINARIA: 0.26
 };
 
 /**
@@ -51,48 +52,48 @@ export const COMPARTI_FP = {
 
 /**
  * ETF Preset per PAC con rendimenti ipotizzati per la simulazione.
- * Sono valori modificabili dall'utente, non previsioni.
+ * Il modello li tratta come rendimenti netti stimati, gia al netto di TER, bollo e fiscalita attesa.
  */
 export const ETF_PRESETS = {
   msciWorld: {
     nome: 'MSCI World (SWDA)',
     isin: 'IE00B4L5Y983',
-    rendimentoDefault: 8,
+    rendimentoDefault: 6,
     link: 'https://www.justetf.com/en/etf-profile.html?isin=IE00B4L5Y983'
   },
   ftseAllWorld: {
     nome: 'FTSE All-World (VWCE)',
     isin: 'IE00BK5BQT80',
-    rendimentoDefault: 7,
+    rendimentoDefault: 5.5,
     link: 'https://www.justetf.com/en/etf-profile.html?isin=IE00BK5BQT80'
   },
   lifeStrategy80: {
     nome: 'LifeStrategy 80%',
     isin: 'IE00BMVB5R75',
-    rendimentoDefault: 6,
+    rendimentoDefault: 4.8,
     link: 'https://www.justetf.com/en/etf-profile.html?isin=IE00BMVB5R75'
   },
   lifeStrategy60: {
     nome: 'LifeStrategy 60%',
     isin: 'IE00BMVB5P51',
-    rendimentoDefault: 5,
+    rendimentoDefault: 3.7,
     link: 'https://www.justetf.com/en/etf-profile.html?isin=IE00BMVB5P51'
   },
   lifeStrategy40: {
     nome: 'LifeStrategy 40%',
     isin: 'IE00BMVB5M21',
-    rendimentoDefault: 4,
+    rendimentoDefault: 2.6,
     link: 'https://www.justetf.com/en/etf-profile.html?isin=IE00BMVB5M21'
   },
   lifeStrategy20: {
     nome: 'LifeStrategy 20%',
     isin: 'IE00BMVB5K07',
-    rendimentoDefault: 3,
+    rendimentoDefault: 1.6,
     link: 'https://www.justetf.com/en/etf-profile.html?isin=IE00BMVB5K07'
   },
   custom: {
     nome: 'Personalizzato',
-    rendimentoDefault: 7,
+    rendimentoDefault: 6,
     link: null
   }
 };

@@ -14,31 +14,28 @@ Assunzione principale: il modello è pensato per un **lavoratore dipendente** e 
 - Ottimizza la quota deducibile tra FP e PAC anno per anno
 - Considera la quota oltre deduzione sempre nel PAC
 - Supporta la maggiorazione per prima occupazione post 31/12/2006, se inserisci plafond extra residuo e anni residui
-- Distingue versamenti FP in busta paga e via bonifico per stimare detrazioni lavoro dipendente, ex Bonus Renzi e bonus cuneo fiscale
-- Applica al PAC l'imposta di bollo annua dello 0,2% sul montante
+- Ottimizza o forza la ripartizione dei versamenti FP tra busta paga e bonifico, stimando effetti su detrazioni lavoro dipendente, ex Bonus Renzi e bonus cuneo fiscale
+- Permette rendimenti FP/PAC netti oppure lordi con costi annui e tassazione separata
 
 ## Opzioni
 
-La UI ha due livelli:
-
-- `Semplice`: mostra i controlli necessari per una simulazione rapida.
-- `Avanzata`: espone CCNL, fiscalità, variazioni nel tempo e parametri tecnici.
+La UI ha una sola plancia completa, organizzata per card tematiche: scenario e budget, fondo pensione e contratto, rendimento fondo pensione, rendimento PAC e fiscalità. Non esiste una modalità avanzata globale: i dettagli più tecnici vivono nel riquadro a cui appartengono. La compilazione guidata ripropone le stesse aree una alla volta con spiegazioni, esempi e indicazioni su dove recuperare i dati.
 
 | Opzione | Descrizione |
 |---------|-------------|
-| Modalità controlli | Semplice oppure avanzata |
 | Riscatto anticipato | Tassazione 23% invece di 15%→9% |
 | Anzianità pregressa FP | Anni già maturati nel fondo pensione per anticipare la riduzione della tassazione in uscita |
 | Prima occupazione post 2006 | Aggiunge al limite ordinario il recupero extra, max 2.582,29 €/anno entro plafond residuo |
 | Modalità confronto | Budget lordo annuo oppure sacrificio netto equivalente |
-| Variazioni periodiche | Aumenti o riduzioni di reddito e budget annuo in percentuale o euro |
-| Premi/bonus imponibili | Aumentano reddito fiscale/previdenziale ma non la base FP/datore |
-| Basi contributi FP | RAL, minimo retributivo annuo o importo manuale; base quota aderente e base datore possono coincidere o essere distinte |
+| Variazioni periodiche | Aumenti o riduzioni di RAL ordinaria, budget annuo e minimo retributivo annuo in percentuale o euro |
+| Premi/bonus imponibili | Aumentano reddito fiscale/previdenziale ma non l'importo su cui si calcolano quota minima aderente e contributo datore |
+| Basi contributi FP | Quota minima aderente e contributo datore possono essere calcolati su RAL oppure sullo stesso minimo retributivo annuo |
 | Addizionali locali | Modalità manuale oppure calcolo da Regione e Comune; il Comune è cercabile e forza la Regione dalla provincia |
-| Contributo datore | Percentuale sulla base datore, importo fisso annuo o somma delle due componenti |
-| Parametri INPS | Aliquota lavoratore, massimale contributivo e IVS aggiuntivo sopra soglia |
-| Versamento FP | Quota minima in busta + extra via bonifico, tutto busta o tutto bonifico |
+| Contributo datore | Percentuale sulla base datore; viene riconosciuto solo se raggiungi la quota minima aderente |
+| Parametri INPS | Aliquota lavoratore selezionabile; massimale contributivo e IVS aggiuntivo sono assunzioni normative automatiche |
+| Versamento FP | Ottimizzato dal simulatore, quota minima in busta + extra via bonifico, tutto busta o tutto bonifico |
 | Bonus fiscali lavoro dipendente | Ex Bonus Renzi e bonus cuneo fiscale 2025/2026 calcolati automaticamente |
+| Rendimenti FP/PAC | Netto già stimato oppure lordo con costi annui, quota agevolata 12,5% e aliquota effettiva calcolata |
 | Viste tabella | Mix, confronto scenari o dettaglio completo |
 
 Il calcolo è sempre cumulativo. I versamenti annui sono trattati come investiti nell'anno di versamento. In modalità `Budget lordo annuo` il risparmio fiscale stimato viene reinvestito l'anno successivo; in modalità `Sacrificio netto equivalente` riduce il costo effettivo del versamento FP e non viene reinvestito una seconda volta.
