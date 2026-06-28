@@ -1065,7 +1065,7 @@ export class FinancialModel {
         "PAC Cons": Math.round(quotaPacConsigliataAnno),
         "FP Busta": Math.round(quotaBustaAnno),
         "FP Bonifico": Math.round(quotaBonificoAnno),
-        "Ott Busta": Math.round(risparmioOttimizzazioneBustaAnno),
+        "Diff Busta": Math.round(risparmioOttimizzazioneBustaAnno),
         "Scelta": sceltaAnno,
         "Exit FP": Math.round(exitFP),
         "Exit PAC": Math.round(exitPAC),
@@ -1166,13 +1166,30 @@ export class FinancialModel {
           baselineSplit.quotaBusta
         )
         : 0;
+      const allBustaSplit = this._splitFpPayment(quotaFp, quotaMinAderente, 'tuttoBusta');
+      const risparmioTuttoBusta = quotaFp > 0
+        ? this._calculateTaxSavings(
+          reddito,
+          quotaFp,
+          quotaDatore,
+          contributiInpsPerc,
+          massimaleContributivoInps,
+          sogliaIvsAggiuntivo,
+          aliquotaIvsAggiuntivaPerc,
+          addizionaliPerc,
+          ulterioriDetrazioni,
+          quotaMinAderente,
+          'tuttoBusta',
+          limiteDeduzioneTotale,
+          allBustaSplit.quotaBusta
+        )
+        : 0;
+      const differenzaBustaBonifico = risparmioTuttoBusta - risparmioBaselineVersamento;
 
       return {
         ...best,
         risparmioBaselineVersamento,
-        extraRisparmioVersamento: modalitaVersamentoFp === 'ottimizza'
-          ? Math.max(best.risparmio - risparmioBaselineVersamento, 0)
-          : 0
+        extraRisparmioVersamento: differenzaBustaBonifico
       };
     }
 

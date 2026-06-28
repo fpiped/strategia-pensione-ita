@@ -4,7 +4,7 @@ https://pippo995.github.io/calcolatore-fondo-pensione-vs-pac/
 
 Confronta **Fondo Pensione** e **PAC in ETF** nel contesto fiscale italiano.
 
-Assunzione principale: il modello è pensato per un **lavoratore dipendente** e usa RAL ordinaria, eventuali premi/bonus imponibili, contributi INPS stimati, detrazioni da lavoro dipendente e possibile contributo del datore.
+Assunzione principale: il modello è pensato per un **lavoratore dipendente** e usa reddito annuo ordinario/RAL, eventuali premi/bonus imponibili, contributi INPS stimati, detrazioni da lavoro dipendente e possibile contributo del datore.
 
 ## Cosa fa
 
@@ -19,26 +19,26 @@ Assunzione principale: il modello è pensato per un **lavoratore dipendente** e 
 
 ## Opzioni
 
-La UI ha una sola plancia completa, organizzata per card tematiche: scenario e budget, fondo pensione e contratto, rendimento fondo pensione, rendimento PAC e fiscalità. Non esiste una modalità avanzata globale: i dettagli più tecnici vivono nel riquadro a cui appartengono. La compilazione guidata ripropone le stesse aree una alla volta con spiegazioni, esempi e indicazioni su dove recuperare i dati.
+La UI ha una sola plancia completa, organizzata per card tematiche: scenario e reddito, investimento, fondo pensione e contratto, rendimento fondo pensione, rendimento PAC e fiscalità. Non esiste una modalità avanzata globale: i dettagli più tecnici vivono nel riquadro a cui appartengono. La compilazione guidata ripropone le stesse aree una alla volta con spiegazioni, esempi e indicazioni su dove recuperare i dati.
 
 | Opzione | Descrizione |
 |---------|-------------|
 | Riscatto anticipato | Tassazione 23% invece di 15%→9% |
 | Anzianità pregressa FP | Anni già maturati nel fondo pensione per anticipare la riduzione della tassazione in uscita |
 | Prima occupazione post 2006 | Aggiunge al limite ordinario il recupero extra, max 2.582,29 €/anno entro plafond residuo |
-| Modalità confronto | Budget lordo annuo oppure sacrificio netto equivalente |
-| Variazioni periodiche | Aumenti o riduzioni di RAL ordinaria, budget annuo e minimo retributivo annuo in percentuale o euro |
+| Modalità investimento | Budget lordo annuo oppure sacrificio netto equivalente, con esempio calcolato sul primo anno |
+| Variazioni periodiche | Aumenti o riduzioni di reddito annuo ordinario, investimento annuo e minimo retributivo annuo in percentuale o euro |
 | Premi/bonus imponibili | Aumentano reddito fiscale/previdenziale ma non l'importo su cui si calcolano quota minima aderente e contributo datore |
 | Basi contributi FP | Quota minima aderente e contributo datore possono essere calcolati su RAL oppure sullo stesso minimo retributivo annuo |
 | Addizionali locali | Modalità manuale oppure calcolo da Regione e Comune; il Comune è cercabile e forza la Regione dalla provincia |
 | Contributo datore | Percentuale sulla base datore; viene riconosciuto solo se raggiungi la quota minima aderente |
 | Parametri INPS | Aliquota lavoratore selezionabile; massimale contributivo e IVS aggiuntivo sono assunzioni normative automatiche |
-| Versamento FP | Ottimizzato dal simulatore, quota minima in busta + extra via bonifico, tutto busta o tutto bonifico |
+| Versamento FP | Ottimizzato dal simulatore, quota minima in busta + extra via bonifico, oppure tutta la quota FP in busta |
 | Bonus fiscali lavoro dipendente | Ex Bonus Renzi e bonus cuneo fiscale 2025/2026 calcolati automaticamente |
 | Rendimenti FP/PAC | Netto già stimato oppure lordo con costi annui, quota agevolata 12,5% e aliquota effettiva calcolata |
 | Viste tabella | Mix, confronto scenari o dettaglio completo |
 
-Il calcolo è sempre cumulativo. I versamenti annui sono trattati come investiti nell'anno di versamento. In modalità `Budget lordo annuo` il risparmio fiscale stimato viene reinvestito l'anno successivo; in modalità `Sacrificio netto equivalente` riduce il costo effettivo del versamento FP e non viene reinvestito una seconda volta.
+Il calcolo è sempre cumulativo. I versamenti annui sono trattati con capitalizzazione posticipata: entrano nel montante a fine anno e iniziano a rendere dall'anno successivo. In modalità `Budget lordo annuo` il risparmio fiscale stimato viene reinvestito l'anno successivo; in modalità `Sacrificio netto equivalente` riduce il costo effettivo del versamento FP e non viene reinvestito una seconda volta.
 
 Le aliquote regionali e comunali sono dati MEF 2026 importati nel dataset locale. Il repo non include una pipeline di scraping: committa il dataset normalizzato usato dall'app, non i PDF/file sorgente.
 

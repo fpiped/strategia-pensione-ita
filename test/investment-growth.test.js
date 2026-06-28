@@ -16,8 +16,8 @@ import {
 } from '../js/calculators/investment-growth.js';
 
 test('applica rendimento PAC netto senza ulteriori costi o tasse modellate', () => {
-  assert.equal(Math.round(applyPacAnnualGrowth(0, 1000, 0.08) * 100), 108000);
-  assert.equal(Math.round(projectPacContribution(1000, 0.08, 2) * 100), 116640);
+  assert.equal(Math.round(applyPacAnnualGrowth(0, 1000, 0.08) * 100), 100000);
+  assert.equal(Math.round(projectPacContribution(1000, 0.08, 2) * 100), 108000);
 });
 
 test('calcola aliquota effettiva da quota agevolata e ordinaria', () => {
@@ -38,8 +38,8 @@ test('applica tassazione annuale e costi al rendimento lordo FP', () => {
 
   assert.equal(Math.round(options.taxRate * 1000), 170);
   assert.equal(Math.round(calculateNetAnnualReturn(0.10, { ...options, taxTiming: 'annual' }) * 10000), 722);
-  assert.equal(Math.round(applyFpAnnualGrowth(0, 1000, 0.10, options)), 1072);
-  assert.equal(Math.round(projectFpContribution(1000, 0.10, 2, options)), 1150);
+  assert.equal(Math.round(applyFpAnnualGrowth(0, 1000, 0.10, options)), 1000);
+  assert.equal(Math.round(projectFpContribution(1000, 0.10, 2, options)), 1072);
 });
 
 test('applica costi annui PAC durante la crescita e tassazione alla exit', () => {
@@ -53,8 +53,8 @@ test('applica costi annui PAC durante la crescita e tassazione alla exit', () =>
   const montante = projectPacContribution(1000, 0.08, 2, options);
 
   assert.equal(options.taxRate, 0.233);
-  assert.equal(Math.round(montante), 1162);
-  assert.equal(Math.round(calculatePacExit(montante, 1000, options)), 1124);
+  assert.equal(Math.round(montante), 1078);
+  assert.equal(Math.round(calculatePacExit(montante, 1000, options)), 1060);
 });
 
 test('aggiorna lo stato annuale di FP, PAC e risparmio fiscale', () => {
@@ -76,9 +76,9 @@ test('aggiorna lo stato annuale di FP, PAC e risparmio fiscale', () => {
     reinvestiRisparmio: true
   });
 
-  assert.equal(state.montanteFP, 1560);
+  assert.equal(state.montanteFP, 1540);
   assert.equal(state.contributiFP, 1500);
-  assert.equal(Math.round(state.montantePAC), 1296);
+  assert.equal(Math.round(state.montantePAC), 1280);
   assert.equal(state.investimentoPAC, 1200);
   assert.equal(state.risparmioAccumulato, 180);
   assert.equal(state.risparmioDaReinvestire, 80);

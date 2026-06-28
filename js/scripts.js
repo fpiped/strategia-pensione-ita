@@ -128,7 +128,7 @@ function setupMobileTooltips() {
     // Definizione help content
     const helpContent = {
         reddito: {
-            title: 'RAL ordinaria',
+            title: 'Reddito annuo',
             text: 'La tua retribuzione annua lorda ordinaria da lavoratore dipendente. Se scegli RAL come base, il modello usa questo importo per calcolare quota minima aderente e contributo datore. Non è pensato per autonomi, partite IVA o regimi sostitutivi.'
         },
         premiStraordinari: {
@@ -137,7 +137,7 @@ function setupMobileTooltips() {
         },
         variazioneReddito: {
             title: 'Aumento reddito',
-            text: 'Simula aumenti periodici della RAL ordinaria. “Ogni anni” indica ogni quanti anni applicare la variazione: con ogni 3 anni e aumento 5%, il reddito resta uguale per 3 anni e aumenta del 5% dal quarto, poi di nuovo dal settimo.'
+            text: 'Simula aumenti periodici del reddito annuo ordinario. “Ogni anni” indica ogni quanti anni applicare la variazione: con ogni 3 anni e aumento 5%, il reddito resta uguale per 3 anni e aumenta del 5% dal quarto, poi di nuovo dal settimo.'
         },
         durata: {
             title: 'Durata simulazione',
@@ -152,7 +152,7 @@ function setupMobileTooltips() {
             text: 'Simula aumenti periodici dell’investimento annuo. Puoi usare una percentuale o un importo fisso in euro. Ogni 3 anni e aumento 10% significa aumento dell’investimento ogni 3 anni.'
         },
         modalitaConfronto: {
-            title: 'Modalità confronto',
+            title: 'Modalità investimento',
             text: 'Budget lordo confronta lo stesso importo annuo allocato tra FP e PAC e reinveste il risparmio fiscale l’anno successivo. Sacrificio netto confronta invece a parità di impatto sul reddito netto: il PAC investe il costo netto equivalente del versamento FP, senza reinvestire di nuovo il risparmio fiscale.'
         },
         baseContributivaFpTipo: {
@@ -165,7 +165,7 @@ function setupMobileTooltips() {
         },
         baseDatoreFpTipo: {
             title: 'Base contributo datore',
-            text: 'Base annua su cui calcolare il contributo percentuale del datore: RAL ordinaria oppure minimo retributivo annuo. Se scegli minimo, viene usato lo stesso minimo retributivo annuo indicato nello scenario.'
+            text: 'Base annua su cui calcolare il contributo percentuale del datore: reddito annuo/RAL oppure minimo retributivo annuo. Se scegli minimo, viene usato lo stesso minimo retributivo annuo indicato nello scenario.'
         },
         variazioneBaseContributiva: {
             title: 'Aumento minimo retributivo',
@@ -217,7 +217,7 @@ function setupMobileTooltips() {
         },
         modalitaVersamentoFp: {
             title: 'Versamento FP',
-            text: 'Decide quanta quota FP viene trattata come versamento tramite busta paga. In modalità ottimizzata il simulatore prova più ripartizioni tra busta e bonifico e tiene quella con uscita finale migliore. Tutta la quota deducibile riduce l’imponibile IRPEF, ma solo la quota in busta paga riduce la base usata per stimare detrazioni da lavoro dipendente, ex Bonus Renzi e bonus cuneo fiscale.'
+            text: 'Decide quanta quota FP viene trattata come versamento tramite busta paga. La quota minima aderente deve passare in busta per agganciare il contributo datore; l’extra può essere ottimizzato tra busta e bonifico. Tutta la quota deducibile riduce l’imponibile IRPEF, ma solo la quota in busta paga riduce la base usata per stimare detrazioni da lavoro dipendente, ex Bonus Renzi e bonus cuneo fiscale.'
         },
         anzianitaPregressaFp: {
             title: 'Anzianità pregressa FP',

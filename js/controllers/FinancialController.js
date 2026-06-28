@@ -526,6 +526,7 @@ export class FinancialController {
         config.baseContributivaFp
       );
       this.updateContributionSummary(config, results.results);
+      this.updateInvestmentModeSummary(config, results.results);
 
       // Aggiorna il contenuto CSV per il download
       this.csvContent = this.model.convertToCSV(results.results);
@@ -1011,14 +1012,12 @@ export class FinancialController {
       const quotaFpConsigliata = selectedRow['FP Cons'] || 0;
       const quotaBusta = selectedRow['FP Busta'] || 0;
       const quotaBonifico = selectedRow['FP Bonifico'] || 0;
-      const ottimizzazioneBusta = selectedRow['Ott Busta'] || 0;
+      const differenzaBustaBonifico = selectedRow['Diff Busta'] || 0;
       const quotaBustaPerc = baseQuota > 0 ? (quotaBusta / baseQuota) * 100 : 0;
-      const operativo = quotaFpConsigliata <= 0
-        ? 'nessun versamento FP consigliato'
-        : config.modalitaVersamentoFp === 'ottimizza'
-          ? `ottimo anno ${anno}: ${formatMoney(quotaBusta)} in busta + ${formatMoney(quotaBonifico)} bonifico`
-          : `${formatMoney(quotaBusta)} in busta + ${formatMoney(quotaBonifico)} bonifico`;
-
+      const formatSignedMoney = (value) => {
+        if (Math.abs(value) < 0.5) return '0 €';
+        return `${value > 0 ? '+' : '-'}${formatMoney(Math.abs(value))}`;
+      };
       document.getElementById('quota-minima-display').textContent = formatMoney(quotaMinima);
       document.getElementById('contributo-datore-display').textContent = formatMoney(datoreRiconosciuto);
       document.getElementById('quota-fp-consigliata-display').textContent = formatMoney(quotaFpConsigliata);
@@ -1027,10 +1026,49 @@ export class FinancialController {
         ? formatPercent(quotaBustaPerc)
         : '0,00%';
       document.getElementById('quota-bonifico-display').textContent = formatMoney(quotaBonifico);
-      document.getElementById('ottimizzazione-busta-display').textContent = ottimizzazioneBusta > 0
-        ? `+${formatMoney(ottimizzazioneBusta)}`
-        : '0 €';
-      document.getElementById('versamento-operativo-display').textContent = operativo;
+      document.getElementById('ottimizzazione-busta-display').textContent = formatSignedMoney(differenzaBustaBonifico);
+    }
+
+    updateInvestmentModeSummary(config, results = []) {
+      const firstYear = results[0];
+      if (!firstYear) return;
+
+      const formatMoney = (value) => `${Math.round(Math.max(value, 0)).toLocaleString('it-IT')} €`;
+      const investimentoAnno = this.model._applyPeriodicVariation(
+        config.investimento,
+        1,
+        config.variazioneInvestimentoTipo,
+        config.variazioneInvestimentoFrequenza,
+        config.variazioneInvestimentoValore
+      );
+      const risparmioFiscale = firstYear.Risparmio || 0;
+      const fpConsigliato = firstYear['FP Cons'] || 0;
+      const pacConsigliato = firstYear['PAC Cons'] || 0;
+
+      const grossDisplay = document.getElementById('investment-year1-gross-display');
+      const taxDisplay = document.getElementById('investment-year1-tax-saving-display');
+      const equivalentLabel = document.getElementById('investment-year1-equivalent-label');
+      const equivalentDisplay = document.getElementById('investment-year1-equivalent-display');
+      const explanation = document.getElementById('investment-mode-explanation');
+
+      if (grossDisplay) grossDisplay.textContent = formatMoney(investimentoAnno);
+      if (taxDisplay) taxDisplay.textContent = formatMoney(risparmioFiscale);
+
+      if (config.modalitaConfronto === 'sacrificioNetto') {
+        const pacEquivalente = Math.max(investimentoAnno - risparmioFiscale, 0);
+        if (equivalentLabel) equivalentLabel.textContent = 'PAC equivalente anno 1';
+        if (equivalentDisplay) equivalentDisplay.textContent = formatMoney(pacEquivalente);
+        if (explanation) {
+          explanation.textContent = `Anno 1: versi fino a ${formatMoney(investimentoAnno)} nel FP, ma il costo netto stimato è ${formatMoney(pacEquivalente)} dopo ${formatMoney(risparmioFiscale)} di beneficio fiscale. Il PAC viene quindi confrontato con quel costo netto, non con il lordo pieno.`;
+        }
+        return;
+      }
+
+      if (equivalentLabel) equivalentLabel.textContent = 'Da reinvestire anno 2';
+      if (equivalentDisplay) equivalentDisplay.textContent = formatMoney(risparmioFiscale);
+      if (explanation) {
+        explanation.textContent = `Anno 1: il mix alloca ${formatMoney(fpConsigliato)} al FP e ${formatMoney(pacConsigliato)} al PAC. Il beneficio fiscale stimato di ${formatMoney(risparmioFiscale)} non è denaro regalato: nel modello budget lordo viene portato avanti e reinvestito dal ciclo successivo.`;
+      }
     }
 
     /**

@@ -66,7 +66,7 @@ export class FinancialView {
           { key: 'Extra Ded', label: 'Quota PAC extra' },
           { key: 'FP Busta', label: 'FP busta' },
           { key: 'FP Bonifico', label: 'FP bonifico' },
-          { key: 'Ott Busta', label: 'Extra busta' },
+          { key: 'Diff Busta', label: 'Diff busta' },
           { key: 'Datore', label: 'Datore' },
           { key: 'Risparmio', label: 'Risparmio fiscale' },
           { key: 'Exit FP', label: 'Exit FP' }
@@ -83,7 +83,7 @@ export class FinancialView {
           { key: 'PAC Cons', label: 'Quota PAC' },
           { key: 'FP Busta', label: 'FP busta' },
           { key: 'FP Bonifico', label: 'FP bonifico' },
-          { key: 'Ott Busta', label: 'Extra busta' },
+          { key: 'Diff Busta', label: 'Diff busta' },
           { key: 'Datore', label: 'Datore' },
           { key: 'Risparmio', label: 'Risparmio fiscale' },
           { key: 'Exit Mix', label: 'Exit Mix' }
@@ -216,7 +216,7 @@ export class FinancialView {
         pac: sum('PAC Cons'),
         datore: sum('Datore'),
         risparmio: sum('Risparmio'),
-        ottimizzazioneBusta: sum('Ott Busta'),
+        differenzaBustaBonifico: sum('Diff Busta'),
         fpBusta: sum('FP Busta'),
         fpBonifico: sum('FP Bonifico'),
         deducibile: sum('Entro Ded'),
@@ -245,11 +245,11 @@ export class FinancialView {
       const bustaDetail = totals.fp > 0
         ? `${this.formatMoney(Math.round(totals.fpBusta))} busta, ${this.formatMoney(Math.round(totals.fpBonifico))} bonifico`
         : 'Nessun versamento FP nel mix';
-      const optimizationDetail = totals.ottimizzazioneBusta > 0
-        ? `${this.formatMoney(Math.round(totals.ottimizzazioneBusta))} di beneficio fiscale aggiuntivo rispetto a quota minima in busta + extra via bonifico.`
-        : totals.fpBonifico > 0
-          ? 'L’extra via bonifico resta competitivo: portarlo in busta non aggiunge beneficio fiscale netto nello scenario impostato.'
-          : 'Nessun beneficio extra da ripartizione: la quota FP in busta coincide con il minimo o con tutta la quota utile.';
+      const optimizationDetail = totals.differenzaBustaBonifico > 0
+        ? `${formatSignedMoney(totals.differenzaBustaBonifico)} rispetto a quota minima in busta + extra via bonifico: portare l'extra in busta aumenta il beneficio fiscale.`
+        : totals.differenzaBustaBonifico < 0
+          ? `${formatSignedMoney(totals.differenzaBustaBonifico)} rispetto a quota minima in busta + extra via bonifico: l'extra in busta peggiora il beneficio fiscale nello scenario impostato.`
+          : 'Nessuna differenza fiscale netta tra extra in busta ed extra via bonifico nello scenario impostato.';
       const mixDetail = best.key === 'MIX'
         ? `Rispetto a FP: ${formatSignedMoney(mixVsFp)} · rispetto a PAC: ${formatSignedMoney(mixVsPac)}`
         : `Il mix resta ${formatSignedMoney((lastResult['Exit Mix'] || 0) - best.value)} dal migliore`;
@@ -284,12 +284,10 @@ export class FinancialView {
         },
         {
           icon: 'fa-file-invoice-dollar',
-          label: 'Ottimizzazione busta',
-          value: totals.ottimizzazioneBusta > 0
-            ? `+${this.formatMoney(Math.round(totals.ottimizzazioneBusta))}`
-            : totals.fp > 0
-              ? `${formatPercent(payrollShare)} FP in busta`
-              : 'Nessun FP',
+          label: 'Busta vs bonifico',
+          value: totals.fp > 0
+            ? formatSignedMoney(totals.differenzaBustaBonifico)
+            : 'Nessun FP',
           detail: `${bustaDetail}. ${optimizationDetail}`
         },
         {

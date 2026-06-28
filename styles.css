@@ -534,6 +534,19 @@ header {
     margin-bottom: 0.875rem;
 }
 
+.advanced-tax-options .control-section-heading:first-of-type {
+    margin-top: 0;
+}
+
+.option-field {
+    display: flex;
+    align-items: end;
+}
+
+.option-field .toggle-label {
+    min-height: 2.75rem;
+}
+
 .control-section-heading small {
     color: var(--color-text-muted);
     font-size: 0.74rem;
@@ -871,6 +884,31 @@ select.form-control::-ms-expand {
 
 .variation-grid[aria-disabled="true"] {
     opacity: 0.58;
+}
+
+.scenario-variable {
+    margin-top: 1rem;
+}
+
+.scenario-variable:first-of-type {
+    margin-top: 0.75rem;
+}
+
+.scenario-variable-row {
+    grid-template-columns: minmax(12rem, 0.82fr) minmax(18rem, 1.18fr);
+    align-items: start;
+}
+
+.scenario-variable-row .variation-grid {
+    margin-top: 0;
+}
+
+.investment-mode-summary div {
+    background: #ffffff;
+}
+
+.investment-mode-note {
+    border-color: #9fc7ff;
 }
 
 /* Info Box */

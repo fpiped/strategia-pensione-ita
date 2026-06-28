@@ -21,9 +21,9 @@ test('calcola lo scenario cumulativo predefinito', () => {
   const result = model.calculateResults(baseConfig);
 
   assert.equal(result.results.length, 30);
-  assert.equal(result.breakeven, 27);
+  assert.equal(result.breakeven, 26);
   assert.equal(result.quotaDatoreFp, 450);
-  assert.equal(result.risparmioImposta, 5986);
+  assert.equal(result.risparmioImposta, 6821);
 
   assert.deepEqual(result.results[0], {
     Anno: 1,
@@ -38,31 +38,31 @@ test('calcola lo scenario cumulativo predefinito', () => {
     'PAC Cons': 2700,
     'FP Busta': 300,
     'FP Bonifico': 0,
-    'Ott Busta': 0,
+    'Diff Busta': 0,
     Scelta: 'MIX',
-    'Exit FP': 3788,
-    'Exit PAC': 3180,
-    'Exit Mix': 3626
+    'Exit FP': 3650,
+    'Exit PAC': 3000,
+    'Exit Mix': 3434
   });
 
   assert.deepEqual(result.results.at(-1), {
     Anno: 30,
     'Entro Min': 300,
-    'Extra Min': 3622,
-    'Entro Ded': 3922,
+    'Extra Min': 3629,
+    'Entro Ded': 3929,
     'Extra Ded': 0,
-    Aderente: 3922,
+    Aderente: 3929,
     Datore: 450,
-    Risparmio: 929,
-    'FP Cons': 3922,
+    Risparmio: 931,
+    'FP Cons': 3929,
     'PAC Cons': 0,
     'FP Busta': 300,
-    'FP Bonifico': 3622,
-    'Ott Busta': 0,
+    'FP Bonifico': 3629,
+    'Diff Busta': 267,
     Scelta: 'FP',
-    'Exit FP': 238957,
-    'Exit PAC': 251405,
-    'Exit Mix': 276516
+    'Exit FP': 229276,
+    'Exit PAC': 237175,
+    'Exit Mix': 262053
   });
 });
 
@@ -155,8 +155,8 @@ test('include addizionali stimate nel risparmio fiscale', () => {
   assert.equal(result.results[0]['PAC Cons'], 0);
   assert.equal(result.results[0]['FP Busta'], 300);
   assert.equal(result.results[0]['FP Bonifico'], 2700);
-  assert.equal(result.results[0]['Exit FP'], 3848);
-  assert.equal(result.results[0]['Exit Mix'], 3848);
+  assert.equal(result.results[0]['Exit FP'], 3710);
+  assert.equal(result.results[0]['Exit Mix'], 3710);
 });
 
 test('distingue beneficio fiscale tra versamento FP in busta e bonifico', () => {
@@ -260,7 +260,7 @@ test('puo lasciare extra FP via bonifico quando la busta riduce bonus fiscali', 
 
   assert.equal(Math.round(split.quotaBusta), 300);
   assert.equal(Math.round(split.quotaBonifico), 2700);
-  assert.equal(Math.round(split.extraRisparmioVersamento), 0);
+  assert.equal(Math.round(split.extraRisparmioVersamento), -192);
 });
 
 test('le ulteriori detrazioni riducono il beneficio fiscale se manca capienza', () => {
@@ -322,8 +322,8 @@ test('usa il rendimento PAC come rendimento netto senza costi o tasse aggiuntive
     rendimentoAnnualePacPerc: 0.08
   });
 
-  assert.equal(result.results[0]['Exit PAC'], 3240);
-  assert.equal(result.results[0]['Exit PAC'], Math.round(3000 * 1.08));
+  assert.equal(result.results[0]['Exit PAC'], 3000);
+  assert.equal(result.results[0]['Exit PAC'], 3000);
 });
 
 test('la modalita sacrificio netto confronta il PAC con il costo netto del FP', () => {
@@ -338,8 +338,8 @@ test('la modalita sacrificio netto confronta il PAC con il costo netto del FP', 
   assert.equal(result.results[0].Risparmio, 777);
   assert.equal(result.results[0]['FP Cons'], 3000);
   assert.equal(result.results[0]['PAC Cons'], 0);
-  assert.equal(result.results[0]['Exit PAC'], 2356);
-  assert.equal(result.results[0]['Exit Mix'], 3071);
+  assert.equal(result.results[0]['Exit PAC'], 2223);
+  assert.equal(result.results[0]['Exit Mix'], 2933);
 });
 
 test('applica variazioni periodiche a reddito e investimento', () => {
@@ -492,12 +492,12 @@ test('il mix consigliato puo dividere la quota deducibile prima del FP pieno', (
     addizionaliPerc: 0.02
   });
 
-  assert.equal(result.breakeven, 26);
+  assert.equal(result.breakeven, 25);
   assert.equal(result.results[0].Scelta, 'MIX');
   assert.equal(result.results[19].Scelta, 'MIX');
   assert.equal(result.results[23].Scelta, 'MIX');
-  assert.equal(result.results[24].Scelta, 'MIX');
-  assert.equal(result.results[25].Scelta, 'FP');
+  assert.equal(result.results[23].Scelta, 'MIX');
+  assert.equal(result.results[24].Scelta, 'FP');
   assert.equal(result.results.at(-1).Scelta, 'FP');
   assert.ok(result.results.at(-1)['Exit Mix'] > result.results.at(-1)['Exit PAC']);
 });
@@ -528,7 +528,7 @@ test('converte i risultati in CSV con intestazione coerente', () => {
 
   assert.equal(
     model.convertToCSV(result.results),
-    'Anno,Entro Min,Extra Min,Entro Ded,Extra Ded,Aderente,Datore,Risparmio,FP Cons,PAC Cons,FP Busta,FP Bonifico,Ott Busta,Scelta,Exit FP,Exit PAC,Exit Mix\r\n' +
-      '1,300,2700,3000,0,3000,450,717,3000,0,300,2700,0,FP,3788,3180,3788\r\n'
+    'Anno,Entro Min,Extra Min,Entro Ded,Extra Ded,Aderente,Datore,Risparmio,FP Cons,PAC Cons,FP Busta,FP Bonifico,Diff Busta,Scelta,Exit FP,Exit PAC,Exit Mix\r\n' +
+      '1,300,2700,3000,0,3000,450,717,3000,0,300,2700,182,FP,3650,3000,3650\r\n'
   );
 });

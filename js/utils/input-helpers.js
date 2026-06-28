@@ -83,10 +83,6 @@ export function buildInputWarnings(config) {
     warnings.push('Ulteriori detrazioni elevate possono ridurre molto la capienza fiscale e quindi il beneficio della deduzione.');
   }
 
-  if (config.modalitaVersamentoFp === 'tuttoBonifico') {
-    warnings.push('Con versamento FP tutto via bonifico il modello non attribuisce effetti aggiuntivi su detrazioni lavoro dipendente, ex Bonus Renzi o bonus cuneo fiscale.');
-  }
-
   if (config.primaOccupazionePost2006 && config.plafondExtraPrimaOccupazione <= 0) {
     warnings.push('Prima occupazione post 2006 attiva ma plafond extra residuo pari a zero: il limite deducibile resta quello ordinario.');
   }

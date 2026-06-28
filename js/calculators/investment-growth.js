@@ -44,7 +44,7 @@ export function applyFpAnnualGrowth(montante, contributo, rendimento, options = 
     ...options,
     taxTiming: options.mode === 'lordo' ? 'annual' : 'none'
   });
-  return Math.max((montante + contributo) * (1 + netReturn), 0);
+  return Math.max((montante * (1 + netReturn)) + contributo, 0);
 }
 
 export function applyPacAnnualGrowth(montante, contributo, rendimento, options = {}) {
@@ -52,7 +52,7 @@ export function applyPacAnnualGrowth(montante, contributo, rendimento, options =
     ...options,
     taxTiming: 'exit'
   });
-  return Math.max((montante + contributo) * (1 + netReturnBeforeExitTax), 0);
+  return Math.max((montante * (1 + netReturnBeforeExitTax)) + contributo, 0);
 }
 
 export function projectFpContribution(contributo, rendimento, anni, options = {}) {
