@@ -204,23 +204,23 @@ header {
 }
 
 #input-form {
-    order: 4;
-}
-
-#calculator-content .metrics-dashboard {
     order: 1;
 }
 
-#calculator-content .result-explanation {
+#calculator-content .metrics-dashboard {
     order: 2;
 }
 
-#calculator-content .chart-section {
+#calculator-content .result-explanation {
     order: 3;
 }
 
-#calculator-content .results-section {
+#calculator-content .chart-section {
     order: 5;
+}
+
+#calculator-content .results-section {
+    order: 4;
 }
 
 /* ============================================
@@ -398,7 +398,7 @@ header {
 .calculator-mode-panel {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 1rem;
     padding: 0.875rem 1rem;
     margin-bottom: 1rem;
@@ -411,9 +411,14 @@ header {
 .mode-actions {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 0.75rem;
     flex-wrap: wrap;
+    flex: 0 0 auto;
+}
+
+.mode-copy {
+    min-width: 0;
 }
 
 .mode-title {
@@ -905,6 +910,10 @@ select.form-control::-ms-expand {
 
 .investment-mode-summary div {
     background: #ffffff;
+}
+
+.investment-mode-summary div[hidden] {
+    display: none;
 }
 
 .investment-mode-note {

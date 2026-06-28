@@ -90,10 +90,12 @@ export class FinancialController {
       });
       document.querySelectorAll('[id^="guided-"]').forEach((input) => {
         input.addEventListener('input', () => {
+          this.updateGuidedFirstEmploymentFields();
           this.updateGuidedContributionPreview();
           this.updateGuidedLocalTaxFields();
         });
         input.addEventListener('change', () => {
+          this.updateGuidedFirstEmploymentFields();
           this.updateGuidedContributionPreview();
           this.updateGuidedLocalTaxFields();
         });
@@ -101,6 +103,9 @@ export class FinancialController {
       document.getElementById('primaOccupazionePost2006').addEventListener('change', () => {
         this.updateFirstEmploymentFields();
         this.updateResults();
+      });
+      document.getElementById('anzianitaPregressaFp').addEventListener('input', () => {
+        this.updateFirstEmploymentFields();
       });
       document.getElementById('baseContributivaFpTipo').addEventListener('change', () => {
         this.updateContributionBaseFields();
@@ -124,6 +129,12 @@ export class FinancialController {
         this.updateInpsContributionFields();
         this.updateResults();
       });
+      document.getElementById('guided-contributi-inps-preset').addEventListener('change', () => {
+        this.updateGuidedInpsContributionFields();
+        this.updateGuidedContributionPreview();
+      });
+      document.getElementById('guided-rendimento-fp-mode').addEventListener('change', () => this.updateGuidedReturnFields());
+      document.getElementById('guided-rendimento-pac-mode').addEventListener('change', () => this.updateGuidedReturnFields());
       document.getElementById('reddito').addEventListener('input', () => {
         this.updateContributionBaseFields();
         this.updateLocalTaxFields();
@@ -257,10 +268,12 @@ export class FinancialController {
       copyValue('quotaMinAderentePerc', 'guided-quota-min');
       copyValue('contribuzioneDatoreFpPerc', 'guided-datore-perc');
       copyValue('addizionaliPerc', 'guided-addizionali');
+      copyValue('ulterioriDetrazioni', 'guided-ulteriori-detrazioni');
       copyValue('anzianitaPregressaFp', 'guided-anzianita');
+      copyChecked('riscattoAnticipato', 'guided-riscatto-anticipato');
       copyChecked('primaOccupazionePost2006', 'guided-prima-occupazione');
       copyValue('plafondExtraPrimaOccupazione', 'guided-plafond-extra');
-      copyValue('anniResiduiMaggiorazione', 'guided-anni-maggiorazione');
+      copyValue('contributiInpsPerc', 'guided-contributi-inps');
       copyValue('rendimentoAnnualeFpPerc', 'guided-rendimento-fp');
       copyValue('rendimentoAnnualePacPerc', 'guided-rendimento-pac');
       copyValue('costiAnnuiFpPerc', 'guided-costi-fp');
@@ -272,11 +285,15 @@ export class FinancialController {
       document.getElementById('guided-rendimento-fp-mode').value = document.getElementById('rendimentoFpMode').value;
       document.getElementById('guided-rendimento-pac-mode').value = document.getElementById('rendimentoPacMode').value;
       document.getElementById('guided-modalita-versamento').value = document.getElementById('modalitaVersamentoFp').value;
+      document.getElementById('guided-contributi-inps-preset').value = document.getElementById('contributiInpsPreset').value;
       document.getElementById('guided-regione-addizionali').value = document.getElementById('regioneAddizionali').value;
       document.getElementById('guided-comune-addizionali').value = document.getElementById('comuneAddizionali').value;
       document.getElementById('guided-comune-addizionali-search').value = document.getElementById('comuneAddizionaliSearch').value;
       this.selectedGuidedMunicipalityLabel = document.getElementById('comuneAddizionaliSearch').value;
       this.setGuidedTaxMode(this.localTaxMode);
+      this.updateGuidedInpsContributionFields();
+      this.updateGuidedFirstEmploymentFields();
+      this.updateGuidedReturnFields();
     }
 
     applyGuidedMode() {
@@ -311,10 +328,12 @@ export class FinancialController {
       copyValue('guided-quota-min', 'quotaMinAderentePerc');
       copyValue('guided-datore-perc', 'contribuzioneDatoreFpPerc');
       copyValue('guided-addizionali', 'addizionaliPerc');
+      copyValue('guided-ulteriori-detrazioni', 'ulterioriDetrazioni');
       copyValue('guided-anzianita', 'anzianitaPregressaFp');
+      copyChecked('guided-riscatto-anticipato', 'riscattoAnticipato');
       copyChecked('guided-prima-occupazione', 'primaOccupazionePost2006');
       copyValue('guided-plafond-extra', 'plafondExtraPrimaOccupazione');
-      copyValue('guided-anni-maggiorazione', 'anniResiduiMaggiorazione');
+      copyValue('guided-contributi-inps', 'contributiInpsPerc');
       copyValue('guided-rendimento-fp', 'rendimentoAnnualeFpPerc');
       copyValue('guided-rendimento-pac', 'rendimentoAnnualePacPerc');
       copyValue('guided-costi-fp', 'costiAnnuiFpPerc');
@@ -327,6 +346,7 @@ export class FinancialController {
       document.getElementById('rendimentoFpMode').value = document.getElementById('guided-rendimento-fp-mode').value;
       document.getElementById('rendimentoPacMode').value = document.getElementById('guided-rendimento-pac-mode').value;
       document.getElementById('modalitaVersamentoFp').value = document.getElementById('guided-modalita-versamento').value;
+      document.getElementById('contributiInpsPreset').value = document.getElementById('guided-contributi-inps-preset').value;
       document.getElementById('regioneAddizionali').value = document.getElementById('guided-regione-addizionali').value;
       document.getElementById('comuneAddizionali').value = document.getElementById('guided-comune-addizionali').value;
       document.getElementById('comuneAddizionaliSearch').value = document.getElementById('guided-comune-addizionali-search').value;
@@ -334,6 +354,7 @@ export class FinancialController {
       this.setLocalTaxMode(this.guidedTaxMode);
       this.updateFirstEmploymentFields();
       this.updateContributionBaseFields();
+      this.updateInpsContributionFields();
       this.updateLocalTaxFields();
       this.updateResults();
       this.closeGuidedMode();
@@ -365,9 +386,11 @@ export class FinancialController {
       clampGuidedNumber('guided-quota-min', 0, 100);
       clampGuidedNumber('guided-datore-perc', 0, 100);
       clampGuidedNumber('guided-addizionali', 0, 10);
+      clampGuidedNumber('guided-ulteriori-detrazioni', 0);
+      clampGuidedNumber('guided-contributi-inps', 0, 20);
       clampGuidedNumber('guided-anzianita', 0, 50);
       clampGuidedNumber('guided-plafond-extra', 0, 25822.85);
-      clampGuidedNumber('guided-anni-maggiorazione', 0, 20);
+      this.updateGuidedFirstEmploymentFields();
       clampGuidedNumber('guided-rendimento-fp', 0, 20);
       clampGuidedNumber('guided-rendimento-pac', 0, 20);
       clampGuidedNumber('guided-costi-fp', 0, 5);
@@ -408,12 +431,12 @@ export class FinancialController {
         quotaMinAderente: quotaMinima,
         modalitaVersamentoFp: modalitaVersamento,
         reddito: reddito + Math.max(readGuidedNumber('guided-premi'), 0),
-        contributiInpsPerc: FINANCIAL_CONSTANTS.CONTRIBUTI_INPS_DEFAULT,
+        contributiInpsPerc: Math.max(readGuidedNumber('guided-contributi-inps', FINANCIAL_CONSTANTS.CONTRIBUTI_INPS_DEFAULT * 100), 0) / 100,
         massimaleContributivoInps: FINANCIAL_CONSTANTS.MASSIMALE_CONTRIBUTIVO_INPS,
         sogliaIvsAggiuntivo: FINANCIAL_CONSTANTS.SOGLIA_IVS_AGGIUNTIVO,
         aliquotaIvsAggiuntivaPerc: FINANCIAL_CONSTANTS.ALIQUOTA_IVS_AGGIUNTIVO,
         addizionaliPerc: Math.max(readGuidedNumber('guided-addizionali'), 0) / 100,
-        ulterioriDetrazioni: 0,
+        ulterioriDetrazioni: Math.max(readGuidedNumber('guided-ulteriori-detrazioni'), 0),
         limiteDeduzioneTotale: limiteDeducibileOrdinario
       });
       const quotaBusta = splitVersamento.quotaBusta;
@@ -439,6 +462,7 @@ export class FinancialController {
     updateResults() {
       window.clearTimeout(this.updateResultsTimer);
       this.updateEffectiveTaxOutputs();
+      this.updateFirstEmploymentFields();
       this.updateContributionBaseFields();
       const readNumber = (id, fallback = 0) => {
         const value = parseFloat(document.getElementById(id).value);
@@ -450,6 +474,9 @@ export class FinancialController {
       };
 
       // Raccogli tutti i valori di input
+      const primaOccupazionePost2006 = document.getElementById('primaOccupazionePost2006').checked;
+      const anzianitaPregressaFp = readNumber('anzianitaPregressaFp');
+
       const config = {
         durata: readNumber('durata', 1),
         reddito: readNumber('reddito'),
@@ -498,12 +525,12 @@ export class FinancialController {
         reinvestiRisparmio: true,
         modalitaCumulativa: true,
         riscattoAnticipato: document.getElementById('riscattoAnticipato').checked,
-        anzianitaPregressaFp: readNumber('anzianitaPregressaFp'),
+        anzianitaPregressaFp,
 
         // Maggiorazione deduzione per prima occupazione post 2006
-        primaOccupazionePost2006: document.getElementById('primaOccupazionePost2006').checked,
+        primaOccupazionePost2006,
         plafondExtraPrimaOccupazione: readNumber('plafondExtraPrimaOccupazione'),
-        anniResiduiMaggiorazione: readNumber('anniResiduiMaggiorazione', 20)
+        anniResiduiMaggiorazione: this.calculateFirstEmploymentRemainingYears(anzianitaPregressaFp, primaOccupazionePost2006)
       };
   
       // Calcola i risultati usando il model
@@ -601,8 +628,36 @@ export class FinancialController {
 
     updateFirstEmploymentFields() {
       const enabled = document.getElementById('primaOccupazionePost2006').checked;
+      const yearsInput = document.getElementById('anniResiduiMaggiorazione');
       document.getElementById('plafondExtraPrimaOccupazione').disabled = !enabled;
-      document.getElementById('anniResiduiMaggiorazione').disabled = !enabled;
+      yearsInput.value = String(this.calculateFirstEmploymentRemainingYears(
+        parseFloat(document.getElementById('anzianitaPregressaFp').value) || 0,
+        enabled
+      ));
+      yearsInput.disabled = true;
+    }
+
+    updateGuidedFirstEmploymentFields() {
+      const enabled = document.getElementById('guided-prima-occupazione').checked;
+      const yearsInput = document.getElementById('guided-anni-maggiorazione');
+      document.getElementById('guided-plafond-extra').disabled = !enabled;
+      yearsInput.value = String(this.calculateFirstEmploymentRemainingYears(
+        parseFloat(document.getElementById('guided-anzianita').value) || 0,
+        enabled
+      ));
+      yearsInput.disabled = true;
+    }
+
+    calculateFirstEmploymentRemainingYears(anzianitaPregressaFp, enabled = true) {
+      if (!enabled) return 0;
+
+      const completedYears = Math.max(Math.floor(anzianitaPregressaFp || 0), 0);
+      if (completedYears < 5) return 0;
+
+      return Math.min(
+        Math.max(25 - completedYears, 0),
+        FINANCIAL_CONSTANTS.MAGGIORAZIONE_PRIMA_OCCUPAZIONE_ANNI
+      );
     }
 
     resetVariation(kind) {
@@ -662,6 +717,31 @@ export class FinancialController {
 
       input.value = preset;
       input.disabled = true;
+    }
+
+    updateGuidedInpsContributionFields() {
+      const preset = document.getElementById('guided-contributi-inps-preset').value;
+      const input = document.getElementById('guided-contributi-inps');
+
+      if (preset === 'manuale') {
+        input.disabled = false;
+        return;
+      }
+
+      input.value = preset;
+      input.disabled = true;
+    }
+
+    updateGuidedReturnFields() {
+      const fpMode = document.getElementById('guided-rendimento-fp-mode').value;
+      const pacMode = document.getElementById('guided-rendimento-pac-mode').value;
+
+      document.querySelectorAll('[data-guided-return-extra="fp"]').forEach((element) => {
+        element.hidden = fpMode !== 'lordo';
+      });
+      document.querySelectorAll('[data-guided-return-extra="pac"]').forEach((element) => {
+        element.hidden = pacMode !== 'lordo';
+      });
     }
 
     populateLocalTaxSelectors() {
@@ -1047,15 +1127,17 @@ export class FinancialController {
 
       const grossDisplay = document.getElementById('investment-year1-gross-display');
       const taxDisplay = document.getElementById('investment-year1-tax-saving-display');
+      const equivalentCard = document.getElementById('investment-year1-equivalent-card');
       const equivalentLabel = document.getElementById('investment-year1-equivalent-label');
       const equivalentDisplay = document.getElementById('investment-year1-equivalent-display');
       const explanation = document.getElementById('investment-mode-explanation');
 
-      if (grossDisplay) grossDisplay.textContent = formatMoney(investimentoAnno);
       if (taxDisplay) taxDisplay.textContent = formatMoney(risparmioFiscale);
 
       if (config.modalitaConfronto === 'sacrificioNetto') {
         const pacEquivalente = Math.max(investimentoAnno - risparmioFiscale, 0);
+        if (grossDisplay) grossDisplay.textContent = formatMoney(investimentoAnno);
+        if (equivalentCard) equivalentCard.hidden = false;
         if (equivalentLabel) equivalentLabel.textContent = 'PAC equivalente anno 1';
         if (equivalentDisplay) equivalentDisplay.textContent = formatMoney(pacEquivalente);
         if (explanation) {
@@ -1064,10 +1146,10 @@ export class FinancialController {
         return;
       }
 
-      if (equivalentLabel) equivalentLabel.textContent = 'Da reinvestire anno 2';
-      if (equivalentDisplay) equivalentDisplay.textContent = formatMoney(risparmioFiscale);
+      if (grossDisplay) grossDisplay.textContent = formatMoney(investimentoAnno);
+      if (equivalentCard) equivalentCard.hidden = true;
       if (explanation) {
-        explanation.textContent = `Anno 1: il mix alloca ${formatMoney(fpConsigliato)} al FP e ${formatMoney(pacConsigliato)} al PAC. Il beneficio fiscale stimato di ${formatMoney(risparmioFiscale)} non è denaro regalato: nel modello budget lordo viene portato avanti e reinvestito dal ciclo successivo.`;
+        explanation.textContent = `Anno 1: il mix alloca ${formatMoney(fpConsigliato)} al FP e ${formatMoney(pacConsigliato)} al PAC. Il beneficio fiscale stimato non è denaro regalato: in modalità budget annuo pianificato viene reinvestito dal ciclo successivo, senza mostrarlo come secondo importo duplicato.`;
       }
     }
 

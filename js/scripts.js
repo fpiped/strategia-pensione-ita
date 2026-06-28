@@ -153,7 +153,7 @@ function setupMobileTooltips() {
         },
         modalitaConfronto: {
             title: 'Modalità investimento',
-            text: 'Budget lordo confronta lo stesso importo annuo allocato tra FP e PAC e reinveste il risparmio fiscale l’anno successivo. Sacrificio netto confronta invece a parità di impatto sul reddito netto: il PAC investe il costo netto equivalente del versamento FP, senza reinvestire di nuovo il risparmio fiscale.'
+            text: 'Budget annuo pianificato parte dall’importo annuo che vuoi investire e reinveste il risparmio fiscale l’anno successivo. Pari esborso netto confronta invece FP e PAC a parità di costo effettivo: il PAC investe il costo netto equivalente del versamento FP, senza reinvestire di nuovo il risparmio fiscale.'
         },
         baseContributivaFpTipo: {
             title: 'Base quota aderente',
@@ -232,8 +232,8 @@ function setupMobileTooltips() {
             text: 'Quota di deduzione aggiuntiva ancora recuperabile. Si calcola come 25.822,85 € meno i contributi effettivamente versati nei primi 5 anni di partecipazione. Ogni anno puoi usare al massimo 2.582,29 € extra.'
         },
         anniResiduiMaggiorazione: {
-            title: 'Anni residui maggiorazione',
-            text: 'Numero di anni ancora disponibili per usare il plafond extra. La normativa consente il recupero nei 20 anni successivi ai primi 5 anni di partecipazione.'
+            title: 'Anni residui maggiorazione calcolati',
+            text: 'Valore informativo calcolato dall’anzianità FP già maturata. Il recupero è disponibile dal 6° al 25° anno di partecipazione: prima non è ancora utilizzabile, dopo non ci sono anni residui.'
         },
         rendimentoAnnualeFpPerc: {
             title: 'Rendimento fondo pensione ipotizzato',

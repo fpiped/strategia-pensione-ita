@@ -41,15 +41,15 @@
                 <!-- Parameters Form -->
                 <form id="input-form">
                     <div class="calculator-mode-panel" aria-label="Modalità controlli">
-                        <div>
-                            <div class="mode-title">Configura la simulazione</div>
-                            <div class="mode-subtitle">Compila le card tematiche oppure usa la guida passo passo se vuoi esempi e indicazioni su dove trovare i dati.</div>
-                        </div>
                         <div class="mode-actions">
                             <button type="button" class="btn guided-cta" id="open-guided-mode">
                                 <i class="fas fa-list-check"></i>
                                 Compilazione guidata
                             </button>
+                        </div>
+                        <div class="mode-copy">
+                            <div class="mode-title">Configura la simulazione</div>
+                            <div class="mode-subtitle">Usa la guida passo passo oppure compila direttamente le card tematiche qui sotto. I risultati iniziano solo dopo tutti i parametri.</div>
                         </div>
                     </div>
 
@@ -173,8 +173,8 @@
                                     <div class="form-group full-width">
                                         <label for="modalitaConfronto"><span class="help-trigger" data-help="modalitaConfronto">Modalità investimento</span></label>
                                         <select id="modalitaConfronto" class="form-control">
-                                            <option value="budgetLordo" selected>Budget lordo annuo</option>
-                                            <option value="sacrificioNetto">Sacrificio netto equivalente</option>
+                                            <option value="budgetLordo" selected>Budget annuo pianificato</option>
+                                            <option value="sacrificioNetto">Pari esborso netto</option>
                                         </select>
                                     </div>
                                 </div>
@@ -187,8 +187,8 @@
                                         <span>Risparmio fiscale stimato</span>
                                         <strong id="investment-year1-tax-saving-display">-</strong>
                                     </div>
-                                    <div>
-                                        <span id="investment-year1-equivalent-label">Da reinvestire anno 2</span>
+                                    <div id="investment-year1-equivalent-card" hidden>
+                                        <span id="investment-year1-equivalent-label">PAC equivalente anno 1</span>
                                         <strong id="investment-year1-equivalent-display">-</strong>
                                     </div>
                                 </div>
@@ -386,8 +386,8 @@
                                             <input type="number" id="plafondExtraPrimaOccupazione" class="form-control" value="0" min="0" max="25822.85" step="100" disabled>
                                         </div>
                                         <div class="form-group">
-                                            <label for="anniResiduiMaggiorazione"><span class="help-trigger" data-help="anniResiduiMaggiorazione">Anni residui maggiorazione</span></label>
-                                            <input type="number" id="anniResiduiMaggiorazione" class="form-control" value="20" min="0" max="20" step="1" disabled>
+                                            <label for="anniResiduiMaggiorazione"><span class="help-trigger" data-help="anniResiduiMaggiorazione">Anni residui maggiorazione calcolati</span></label>
+                                            <input type="number" id="anniResiduiMaggiorazione" class="form-control" value="0" min="0" max="20" step="1" disabled>
                                         </div>
                                     </div>
                                 </details>
@@ -646,12 +646,26 @@
                     </div>
                     <div class="guided-body">
                         <section class="guided-step active" data-guided-step="0">
-                            <h3>Profilo e reddito</h3>
-                            <p>Usa il reddito annuo ordinario da contratto o busta paga. Premi, straordinari e bonus imponibili vanno separati: nel modello aumentano reddito fiscale e previdenziale, ma non la base su cui si calcolano quota minima FP e contributo datore.</p>
+                            <h3>Scenario e reddito</h3>
+                            <p>Definisci l'orizzonte della simulazione e le basi economiche. Premi, straordinari e bonus imponibili aumentano reddito fiscale e previdenziale, ma non la base su cui si calcolano quota minima FP e contributo datore.</p>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="guided-durata">Durata simulazione (anni)</label>
+                                    <input type="number" id="guided-durata" class="form-control" min="1" max="50">
+                                </div>
+                                <div class="form-group">
+                                    <label for="guided-anzianita">Anzianità FP già maturata (anni)</label>
+                                    <input type="number" id="guided-anzianita" class="form-control" min="0" max="50" step="1">
+                                </div>
+                            </div>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="guided-reddito">Reddito annuo (€)</label>
                                     <input type="number" id="guided-reddito" class="form-control" min="0" step="1000">
+                                </div>
+                                <div class="form-group">
+                                    <label for="guided-minimo-retributivo">Minimo retributivo annuo (€)</label>
+                                    <input type="number" id="guided-minimo-retributivo" class="form-control" value="30000" min="0" step="100">
                                 </div>
                                 <div class="form-group">
                                     <label for="guided-premi">Premi/bonus imponibili (€)</label>
@@ -680,34 +694,42 @@
                             <div class="guided-note">
                                 <strong>Dove trovarli:</strong> il reddito annuo ordinario è nel contratto/lettera di assunzione o nel riepilogo annuo. Premi e straordinari sono voci imponibili separate in busta paga o CU. Esempio: reddito annuo €30.000 + premio €2.000 -> reddito fiscale €32.000, ma quota minima aderente e contributo datore continuano a essere calcolati su €30.000. Se prevedi scatti o aumenti, usa “aumento reddito” ogni N anni.
                             </div>
+                            <div class="variation-grid">
+                                <div class="variation-header">
+                                    <span>Aumento minimo retributivo</span>
+                                    <div class="variation-toggle" aria-label="Tipo aumento minimo retributivo">
+                                        <label><input type="radio" name="guided-variazione-base-tipo" value="percentuale" checked> %</label>
+                                        <label><input type="radio" name="guided-variazione-base-tipo" value="euro"> €</label>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="guided-variazione-base-frequenza">Ogni anni</label>
+                                        <input type="number" id="guided-variazione-base-frequenza" class="form-control" min="0" max="50" step="1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="guided-variazione-base-valore">Aumento</label>
+                                        <input type="number" id="guided-variazione-base-valore" class="form-control" step="0.1">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="guided-note">
+                                <strong>Minimo retributivo:</strong> serve solo se quota aderente o contributo datore sono calcolati sul minimo tabellare del CCNL. Se supera il reddito annuo il calcolatore mostra un avviso, perché è un caso insolito.
+                            </div>
                         </section>
                         <section class="guided-step" data-guided-step="1">
-                            <h3>Investimento, orizzonte e metodo</h3>
-                            <p>Inserisci solo l'investimento annuo aggiuntivo: il TFR resta escluso. Qui scegli anche la modalità investimento, perché cambia cosa viene confrontato nel PAC.</p>
+                            <h3>Investimento</h3>
+                            <p>Inserisci solo l'investimento annuo aggiuntivo: il TFR resta escluso. Qui scegli la modalità investimento, perché cambia cosa viene confrontato nel PAC.</p>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="guided-investimento">Investimento annuo (€)</label>
                                     <input type="number" id="guided-investimento" class="form-control" min="0" step="100">
                                 </div>
-                                <div class="form-group">
-                                    <label for="guided-minimo-retributivo">Minimo retributivo annuo (€)</label>
-                                    <input type="number" id="guided-minimo-retributivo" class="form-control" value="30000" min="0" step="100">
-                                </div>
-                                <div class="form-group">
-                                    <label for="guided-durata">Durata simulazione (anni)</label>
-                                    <input type="number" id="guided-durata" class="form-control" min="1" max="50">
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="guided-anzianita">Anzianità FP già maturata (anni)</label>
-                                    <input type="number" id="guided-anzianita" class="form-control" min="0" max="50" step="1">
-                                </div>
                                 <div class="form-group full-width">
                                     <label for="guided-modalita-confronto">Modalità investimento</label>
                                     <select id="guided-modalita-confronto" class="form-control">
-                                        <option value="budgetLordo">Budget lordo annuo: investo lo stesso importo e reinvesto il risparmio fiscale</option>
-                                        <option value="sacrificioNetto">Sacrificio netto equivalente: confronto il PAC con il costo netto del FP</option>
+                                        <option value="budgetLordo">Budget annuo pianificato: parti dall'importo annuo scelto e reinvesti il risparmio fiscale</option>
+                                        <option value="sacrificioNetto">Pari esborso netto: confronti il PAC con il costo netto del FP</option>
                                     </select>
                                 </div>
                             </div>
@@ -730,27 +752,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="variation-grid">
-                                <div class="variation-header">
-                                    <span>Aumento minimo retributivo</span>
-                                    <div class="variation-toggle" aria-label="Tipo aumento minimo retributivo">
-                                        <label><input type="radio" name="guided-variazione-base-tipo" value="percentuale" checked> %</label>
-                                        <label><input type="radio" name="guided-variazione-base-tipo" value="euro"> €</label>
-                                    </div>
-                                </div>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="guided-variazione-base-frequenza">Ogni anni</label>
-                                        <input type="number" id="guided-variazione-base-frequenza" class="form-control" min="0" max="50" step="1">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="guided-variazione-base-valore">Aumento</label>
-                                        <input type="number" id="guided-variazione-base-valore" class="form-control" step="0.1">
-                                    </div>
-                                </div>
-                            </div>
                             <div class="guided-note">
-                                <strong>Scelta pratica:</strong> usa budget lordo se parti da “ho €3.000/anno da allocare” e vuoi reinvestire il beneficio fiscale dal ciclo successivo. Usa sacrificio netto se vuoi confrontare il PAC con l'effettivo impatto in busta del versamento FP. Il minimo retributivo serve solo se quota aderente o contributo datore sono calcolati sul minimo tabellare del CCNL.
+                                <strong>Scelta pratica:</strong> usa Budget annuo pianificato se parti da “ho €3.000/anno da allocare” e vuoi reinvestire il beneficio fiscale dal ciclo successivo. Usa Pari esborso netto se vuoi confrontare il PAC con l'effettivo impatto in busta del versamento FP.
                             </div>
                         </section>
                         <section class="guided-step" data-guided-step="2">
@@ -782,6 +785,16 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="form-row">
+                                <div class="form-group full-width">
+                                    <label for="guided-modalita-versamento">Versamento FP</label>
+                                    <select id="guided-modalita-versamento" class="form-control">
+                                        <option value="ottimizza">Ottimizza busta/bonifico</option>
+                                        <option value="quotaMinimaBusta">Quota minima in busta, extra via bonifico</option>
+                                        <option value="tuttoBusta">Tutta la quota FP in busta paga</option>
+                                    </select>
+                                </div>
+                            </div>
                             <div class="guided-live-summary" aria-live="polite">
                                 <div>
                                     <span>Quota minima per avere il datore</span>
@@ -795,14 +808,30 @@
                                     <span>Esito con il budget indicato</span>
                                     <strong id="guided-employer-status">-</strong>
                                 </div>
+                                <div>
+                                    <span>Quota FP deducibile stimata</span>
+                                    <strong id="guided-fp-contribution">-</strong>
+                                </div>
+                                <div>
+                                    <span>In busta paga</span>
+                                    <strong id="guided-payroll-contribution">-</strong>
+                                </div>
+                                <div>
+                                    <span>% da indicare in busta</span>
+                                    <strong id="guided-payroll-percentage">-</strong>
+                                </div>
+                                <div>
+                                    <span>Via bonifico</span>
+                                    <strong id="guided-bank-transfer-contribution">-</strong>
+                                </div>
                             </div>
                             <div class="guided-note">
-                                <strong>Controllo di coerenza:</strong> se il minimo retributivo annuo supera la RAL, il calcolatore mostra un avviso perché è insolito. Non corregge automaticamente il valore.
+                                <strong>Dove verificarlo:</strong> controlla scheda fondo, portale payroll o istruzioni del fondo. Default consigliato: lascia ottimizzare al simulatore e forza una modalità solo se il tuo datore o il fondo non permettono la ripartizione suggerita. La percentuale in busta è calcolata sulla base quota aderente scelta: RAL oppure minimo retributivo annuo.
                             </div>
                         </section>
                         <section class="guided-step" data-guided-step="3">
-                            <h3>Fiscalità locale e busta paga</h3>
-                            <p>Qui imposti come stimare le addizionali locali e come viene versata la quota FP. Sono insieme perché incidono sulla stima del risparmio fiscale e dei bonus da lavoro dipendente.</p>
+                            <h3>Fiscalità</h3>
+                            <p>Qui imposti addizionali locali e altri parametri fiscali. Incidono su IRPEF netta, detrazioni da lavoro dipendente, ex Bonus Renzi e bonus cuneo fiscale.</p>
                             <div class="local-tax-mode-toggle guided-tax-toggle" role="group" aria-label="Modalità addizionali guidata">
                                 <button type="button" class="local-tax-mode-button active" data-guided-tax-mode="manual" aria-pressed="true">Manuale</button>
                                 <button type="button" class="local-tax-mode-button" data-guided-tax-mode="auto" aria-pressed="false">Da località</button>
@@ -832,36 +861,38 @@
                             <div class="guided-note">
                                 <strong>Esempio manuale:</strong> regionale media 1,73% + comunale media 0,80% → addizionali manuali 2,53%.
                             </div>
+                            <div class="control-section-heading">
+                                <h4>Altri parametri fiscali</h4>
+                            </div>
                             <div class="form-row">
-                                <div class="form-group full-width">
-                                    <label for="guided-modalita-versamento">Versamento FP</label>
-                                    <select id="guided-modalita-versamento" class="form-control">
-                                        <option value="ottimizza">Ottimizza busta/bonifico</option>
-                                        <option value="quotaMinimaBusta">Quota minima in busta, extra via bonifico</option>
-                                        <option value="tuttoBusta">Tutta la quota FP in busta paga</option>
-                                    </select>
+                                <div class="form-group">
+                                    <label for="guided-ulteriori-detrazioni">Ulteriori detrazioni (€)</label>
+                                    <input type="number" id="guided-ulteriori-detrazioni" class="form-control" min="0" step="100">
+                                </div>
+                                <div class="form-group option-field">
+                                    <label class="toggle-label">
+                                        <input type="checkbox" id="guided-riscatto-anticipato">
+                                        <span class="toggle-switch"></span>
+                                        Riscatto anticipato
+                                    </label>
                                 </div>
                             </div>
-                            <div class="guided-live-summary guided-live-summary-2" aria-live="polite">
-                                <div>
-                                    <span>Quota FP deducibile stimata</span>
-                                    <strong id="guided-fp-contribution">-</strong>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="guided-contributi-inps-preset">Aliquota INPS lavoratore</label>
+                                    <select id="guided-contributi-inps-preset" class="form-control">
+                                        <option value="9.19">9,19% - dipendente ordinario</option>
+                                        <option value="9.49">9,49% - aliquota ordinaria maggiorata</option>
+                                        <option value="manuale">Manuale</option>
+                                    </select>
                                 </div>
-                                <div>
-                                    <span>In busta paga</span>
-                                    <strong id="guided-payroll-contribution">-</strong>
-                                </div>
-                                <div>
-                                    <span>% da indicare in busta</span>
-                                    <strong id="guided-payroll-percentage">-</strong>
-                                </div>
-                                <div>
-                                    <span>Via bonifico</span>
-                                    <strong id="guided-bank-transfer-contribution">-</strong>
+                                <div class="form-group">
+                                    <label for="guided-contributi-inps">Aliquota manuale (%)</label>
+                                    <input type="number" id="guided-contributi-inps" class="form-control" min="0" max="20" step="0.01" disabled>
                                 </div>
                             </div>
                             <div class="guided-note">
-                                <strong>Dove verificarlo:</strong> controlla scheda fondo, portale payroll o istruzioni del fondo. Default consigliato: lascia ottimizzare al simulatore e forza una modalità solo se il tuo datore o il fondo non permettono la ripartizione suggerita. La percentuale in busta è calcolata sulla base quota aderente scelta: RAL oppure minimo retributivo annuo.
+                                <strong>Dove recuperarli:</strong> le detrazioni personali sono nella dichiarazione o nella stima fiscale. L'aliquota INPS è normalmente indicata in busta paga; lascia il preset ordinario se non hai una ragione specifica per modificarla.
                             </div>
                         </section>
                         <section class="guided-step" data-guided-step="4">
@@ -882,12 +913,12 @@
                                     <input type="number" id="guided-plafond-extra" class="form-control" min="0" max="25822.85" step="100">
                                 </div>
                                 <div class="form-group">
-                                    <label for="guided-anni-maggiorazione">Anni residui maggiorazione</label>
-                                    <input type="number" id="guided-anni-maggiorazione" class="form-control" min="0" max="20" step="1">
+                                    <label for="guided-anni-maggiorazione">Anni residui maggiorazione calcolati</label>
+                                    <input type="number" id="guided-anni-maggiorazione" class="form-control" min="0" max="20" step="1" disabled>
                                 </div>
                             </div>
                             <div class="guided-note">
-                                <strong>Come leggerlo:</strong> se non rientri in questa casistica, lascia disattivato. Se rientri, usa il plafond residuo indicato dalla tua posizione fiscale o calcolato dai contributi non dedotti nei primi anni.
+                                <strong>Come leggerlo:</strong> se non rientri in questa casistica, lascia disattivato. Se rientri, inserisci solo il plafond residuo: gli anni residui vengono calcolati dall'anzianità FP già maturata.
                             </div>
                         </section>
                         <section class="guided-step" data-guided-step="5">
@@ -909,7 +940,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="form-row">
+                            <div class="form-row" data-guided-return-extra="fp">
                                 <div class="form-group">
                                     <label for="guided-costi-fp">Costi annui FP (%)</label>
                                     <input type="number" id="guided-costi-fp" class="form-control" min="0" max="5" step="0.01">
@@ -920,7 +951,7 @@
                                 </div>
                             </div>
                             <div class="control-section-heading">
-                                <h4>PAC ETF</h4>
+                                <h4>PAC</h4>
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
@@ -935,7 +966,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="form-row">
+                            <div class="form-row" data-guided-return-extra="pac">
                                 <div class="form-group">
                                     <label for="guided-costi-pac">Costi annui PAC (%)</label>
                                     <input type="number" id="guided-costi-pac" class="form-control" min="0" max="5" step="0.01">
@@ -1149,7 +1180,7 @@ Risparmio fiscale stimato anno 1: ~€777</pre>
 <pre>Plafond teorico primi 5 anni: 5.164,57 × 5 = 25.822,85
 Plafond extra residuo: 25.822,85 - contributi versati nei primi 5 anni
 Limite annuo massimo: 5.164,57 + min(plafond residuo, 2.582,29)</pre>
-                    <p>Nel calcolatore questa opzione va attivata manualmente, inserendo il plafond extra residuo e gli anni residui di maggiorazione. Il plafond viene consumato anno per anno solo per la parte di contributi FP che supera il limite ordinario.</p>
+                    <p>Nel calcolatore questa opzione va attivata manualmente, inserendo il plafond extra residuo. Gli anni residui di maggiorazione sono calcolati dall'anzianità FP già maturata: il recupero è disponibile dal 6° al 25° anno di partecipazione. Il plafond viene consumato anno per anno solo per la parte di contributi FP che supera il limite ordinario.</p>
 
                     <h3>Vantaggi FP e reinvestimento</h3>
 <pre>Mario versa nel FP:          €3.000
@@ -1335,15 +1366,15 @@ A 55 anni, orizzonte 10 anni:
                     <p>Reddito annuo ordinario, premi/bonus imponibili, durata e minimo retributivo annuo definiscono il profilo di partenza. Premi, straordinari e bonus aumentano reddito fiscale e previdenziale, ma non l'importo su cui si calcolano quota minima aderente e contributo datore. Il TFR resta escluso.</p>
 
                     <h3>Investimento</h3>
-                    <p>La card Investimento contiene importo annuo, aumento nel tempo e modalità investimento. Mostra anche un esempio calcolato sul primo anno: investimento impostato, risparmio fiscale stimato e, in base alla modalità scelta, importo da reinvestire l'anno successivo oppure PAC equivalente a sacrificio netto.</p>
+                    <p>La card Investimento contiene importo annuo, aumento nel tempo e modalità investimento. Mostra anche un esempio calcolato sul primo anno: in Budget annuo pianificato vedi investimento e risparmio fiscale stimato; in Pari esborso netto vedi anche il PAC equivalente.</p>
 
                     <h3>Rendimenti</h3>
                     <p>FP e PAC hanno riquadri separati e richiedono un rendimento inserito direttamente. Per il FP puoi basarti sui dati COVIP del comparto; per il PAC puoi usare una stima calcolata a parte. In “Altre opzioni” puoi decidere se quel rendimento è netto o lordo; se è lordo, inserisci costi annui e quota dei rendimenti tassata al 12,5%.</p>
 
                     <h3>Modalità investimento</h3>
                     <ul>
-                        <li><strong>Budget lordo annuo:</strong> confronta lo stesso importo annuo allocato tra FP e PAC. Il risparmio fiscale viene reinvestito l'anno successivo, così non resta fuori dal confronto.</li>
-                        <li><strong>Sacrificio netto equivalente:</strong> confronta FP e PAC a parità di impatto sul reddito netto. Il PAC investe il costo netto del versamento FP, cioè versamento meno risparmio fiscale. In questa modalità il risparmio fiscale non viene reinvestito di nuovo, perché è già usato per ridurre il costo effettivo.</li>
+                        <li><strong>Budget annuo pianificato:</strong> confronta l'importo annuo che vuoi investire, tenendo conto delle variazioni impostate nel tempo. Il risparmio fiscale viene reinvestito l'anno successivo, così non resta fuori dal confronto.</li>
+                        <li><strong>Pari esborso netto:</strong> confronta FP e PAC a parità di impatto sul reddito netto. Il PAC investe il costo netto del versamento FP, cioè versamento meno risparmio fiscale. In questa modalità il risparmio fiscale non viene reinvestito di nuovo, perché è già usato per ridurre il costo effettivo.</li>
                     </ul>
 
                     <h3>Variazioni periodiche</h3>
@@ -1365,7 +1396,7 @@ Ogni 0 anni o aumento 0: nessuna variazione</pre>
                     <ul>
                         <li><strong>Calcolo cumulativo:</strong> l'investimento annuo viene versato ogni anno per tutta la durata della simulazione.</li>
                         <li><strong>Timing versamenti:</strong> i contributi annui sono trattati con capitalizzazione posticipata: entrano a fine anno e iniziano a rendere dall'anno successivo.</li>
-                        <li><strong>Trattamento deduzione:</strong> in Budget lordo il risparmio fiscale stimato viene reinvestito l'anno successivo; in Sacrificio netto riduce il costo effettivo del versamento FP.</li>
+                        <li><strong>Trattamento deduzione:</strong> in Budget annuo pianificato il risparmio fiscale stimato viene reinvestito l'anno successivo; in Pari esborso netto riduce il costo effettivo del versamento FP.</li>
                     </ul>
 
                     <h3>Riscatto anticipato</h3>
