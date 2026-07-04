@@ -199,7 +199,7 @@ test('ottimizza la ripartizione busta e bonifico della quota FP', () => {
     aliquotaIvsAggiuntivaPerc: undefined,
     addizionaliPerc: 0.02,
     ulterioriDetrazioni: 0,
-    limiteDeduzioneTotale: 5164.57
+    limiteDeduzioneTotale: 5300
   });
 
   assert.equal(Math.round(split.quotaBusta), 3000);
@@ -222,7 +222,7 @@ test('rispetta la modalita forzata extra via bonifico', () => {
     aliquotaIvsAggiuntivaPerc: undefined,
     addizionaliPerc: 0.02,
     ulterioriDetrazioni: 0,
-    limiteDeduzioneTotale: 5164.57
+    limiteDeduzioneTotale: 5300
   });
 
   assert.equal(Math.round(split.quotaBusta), 300);
@@ -255,7 +255,7 @@ test('puo lasciare extra FP via bonifico quando la busta riduce bonus fiscali', 
     aliquotaIvsAggiuntivaPerc: undefined,
     addizionaliPerc: 0.02,
     ulterioriDetrazioni: 0,
-    limiteDeduzioneTotale: 5164.57
+    limiteDeduzioneTotale: 5300
   });
 
   assert.equal(Math.round(split.quotaBusta), 300);
@@ -457,10 +457,10 @@ test('manda sempre nel PAC la quota oltre deduzione', () => {
     addizionaliPerc: 0.02
   });
 
-  assert.equal(result.results[0]['Entro Ded'], 4715);
-  assert.equal(result.results[0]['Extra Ded'], 3285);
-  assert.equal(result.results[0]['FP Cons'], 4715);
-  assert.equal(result.results[0]['PAC Cons'], 3285);
+  assert.equal(result.results[0]['Entro Ded'], 4850);
+  assert.equal(result.results[0]['Extra Ded'], 3150);
+  assert.equal(result.results[0]['FP Cons'], 4850);
+  assert.equal(result.results[0]['PAC Cons'], 3150);
   assert.equal(result.results[0].Scelta, 'MIX');
 });
 
@@ -476,16 +476,92 @@ test('applica la maggiorazione deducibile per prima occupazione post 2006', () =
     anniResiduiMaggiorazione: 20
   });
 
-  assert.equal(result.results[0]['Entro Ded'], 7297);
-  assert.equal(result.results[0]['Extra Ded'], 703);
-  assert.equal(result.results[0]['FP Cons'], 7297);
-  assert.equal(result.results[0].Risparmio, 1852);
+  assert.equal(result.results[0]['Entro Ded'], 7500);
+  assert.equal(result.results[0]['Extra Ded'], 500);
+  assert.equal(result.results[0]['FP Cons'], 7500);
+  assert.equal(result.results[0].Risparmio, 1902);
 
-  assert.equal(result.results[1]['Entro Ded'], 5132);
-  assert.equal(result.results[1]['Extra Ded'], 4719);
+  assert.equal(result.results[1]['Entro Ded'], 5200);
+  assert.equal(result.results[1]['Extra Ded'], 4702);
 });
 
-test('il mix consigliato puo dividere la quota deducibile prima del FP pieno', () => {
+test('altri redditi e premi crescenti alzano il reddito fiscale e il risparmio', () => {
+  const model = new FinancialModel();
+  const base = model.calculateResults({ ...baseConfig, durata: 4, addizionaliPerc: 0.02 });
+  const conAltri = model.calculateResults({
+    ...baseConfig,
+    durata: 4,
+    addizionaliPerc: 0.02,
+    altriRedditi: 20000
+  });
+  const conPremiCrescenti = model.calculateResults({
+    ...baseConfig,
+    durata: 4,
+    addizionaliPerc: 0.02,
+    premiStraordinari: 2000,
+    variazionePremiTipo: 'percentuale',
+    variazionePremiFrequenza: 1,
+    variazionePremiValore: 50
+  });
+
+  // Più imponibile IRPEF -> aliquota marginale più alta -> risparmio maggiore.
+  assert.ok(conAltri.results[0].Risparmio > base.results[0].Risparmio);
+  // I premi crescenti aumentano il beneficio negli anni successivi.
+  assert.ok(conPremiCrescenti.results[3].Risparmio >= conPremiCrescenti.results[0].Risparmio);
+  assert.ok(conPremiCrescenti.results[0].Risparmio >= base.results[0].Risparmio);
+});
+
+test('con anzianità sotto i 5 anni la maggiorazione parte dal 6° anno e accumula il plafond', () => {
+  const model = new FinancialModel();
+  const ordinaryLimit = 5300;
+  const result = model.calculateResults({
+    ...baseConfig,
+    durata: 8,
+    investimento: 9000,
+    addizionaliPerc: 0.02,
+    primaOccupazionePost2006: true,
+    plafondExtraPrimaOccupazione: 0,
+    anniResiduiMaggiorazione: 20,
+    anniAttesaMaggiorazione: 5
+  });
+
+  // Quinquennio iniziale: vale solo il limite ordinario.
+  for (let anno = 0; anno < 5; anno++) {
+    assert.ok(result.results[anno]['Entro Ded'] <= Math.round(ordinaryLimit),
+      `anno ${anno + 1}: deduzione oltre il limite ordinario`);
+  }
+
+  // Dal 6° anno il limite si alza grazie al plafond accumulato nel quinquennio.
+  assert.ok(result.results[5]['Entro Ded'] > Math.round(ordinaryLimit),
+    'anno 6: la maggiorazione non risulta applicata');
+});
+
+test('senza anni di attesa il comportamento della maggiorazione resta invariato', () => {
+  const model = new FinancialModel();
+  const withDefault = model.calculateResults({
+    ...baseConfig,
+    durata: 2,
+    investimento: 8000,
+    addizionaliPerc: 0.02,
+    primaOccupazionePost2006: true,
+    plafondExtraPrimaOccupazione: 3000,
+    anniResiduiMaggiorazione: 20
+  });
+  const withExplicitZero = model.calculateResults({
+    ...baseConfig,
+    durata: 2,
+    investimento: 8000,
+    addizionaliPerc: 0.02,
+    primaOccupazionePost2006: true,
+    plafondExtraPrimaOccupazione: 3000,
+    anniResiduiMaggiorazione: 20,
+    anniAttesaMaggiorazione: 0
+  });
+
+  assert.deepEqual(withDefault.results, withExplicitZero.results);
+});
+
+test('l allocazione ottimale puo dividere la quota deducibile prima del FP pieno', () => {
   const model = new FinancialModel();
   const result = model.calculateResults({
     ...baseConfig,
@@ -502,7 +578,7 @@ test('il mix consigliato puo dividere la quota deducibile prima del FP pieno', (
   assert.ok(result.results.at(-1)['Exit Mix'] > result.results.at(-1)['Exit PAC']);
 });
 
-test('il mix consigliato non e inferiore agli scenari puri sull exit finale', () => {
+test('l allocazione ottimale non e inferiore agli scenari puri sull exit finale', () => {
   const model = new FinancialModel();
   const scenarios = [
     baseConfig,

@@ -44,7 +44,13 @@ export class FinancialModel {
      */
     calculateResults(config) {
       const {
-        durata, reddito, premiStraordinari = 0, investimento,
+        durata, reddito, premiStraordinari = 0, altriRedditi = 0, investimento,
+        variazionePremiTipo = 'percentuale',
+        variazionePremiFrequenza = 0,
+        variazionePremiValore = 0,
+        variazioneAltriRedditiTipo = 'percentuale',
+        variazioneAltriRedditiFrequenza = 0,
+        variazioneAltriRedditiValore = 0,
         quotaDatoreFpPerc, contributoDatoreFisso = 0, quotaMinAderentePerc,
         rendimentoAnnualeFpPerc, rendimentoAnnualePacPerc,
         reinvestiRisparmio, modalitaCumulativa, riscattoAnticipato,
@@ -57,6 +63,7 @@ export class FinancialModel {
         primaOccupazionePost2006 = false,
         plafondExtraPrimaOccupazione = 0,
         anniResiduiMaggiorazione = FINANCIAL_CONSTANTS.MAGGIORAZIONE_PRIMA_OCCUPAZIONE_ANNI,
+        anniAttesaMaggiorazione = 0,
         modalitaConfronto = 'budgetLordo',
         variazioneRedditoTipo = 'percentuale',
         variazioneRedditoFrequenza = 0,
@@ -101,7 +108,8 @@ export class FinancialModel {
       const firstEmploymentConfig = {
         enabled: primaOccupazionePost2006,
         extraRemaining: plafondExtraPrimaOccupazione,
-        yearsRemaining: anniResiduiMaggiorazione
+        yearsRemaining: anniResiduiMaggiorazione,
+        waitYears: anniAttesaMaggiorazione
       };
 
       const fpPlan = this._createStrategyState(firstEmploymentConfig);
@@ -116,7 +124,21 @@ export class FinancialModel {
           variazioneRedditoFrequenza,
           variazioneRedditoValore
         );
-        const redditoFiscaleAnno = redditoAnno + Math.max(premiStraordinari, 0);
+        const premiAnno = this._applyPeriodicVariation(
+          Math.max(premiStraordinari, 0),
+          anno,
+          variazionePremiTipo,
+          variazionePremiFrequenza,
+          variazionePremiValore
+        );
+        const altriRedditiAnno = this._applyPeriodicVariation(
+          Math.max(altriRedditi, 0),
+          anno,
+          variazioneAltriRedditiTipo,
+          variazioneAltriRedditiFrequenza,
+          variazioneAltriRedditiValore
+        );
+        const redditoFiscaleAnno = redditoAnno + premiAnno + altriRedditiAnno;
         const investimentoAnno = this._applyPeriodicVariation(
           investimento,
           anno,
@@ -323,6 +345,12 @@ export class FinancialModel {
 
       return {
         results,
+        // Serie complete per vista tabella/esploratore per strategia.
+        strategies: {
+          mix: results,
+          fp: fpStrategyResults,
+          pac: pacStrategyResults
+        },
         breakeven,
         risparmioImposta: Math.round(selectedStrategy.plan.risparmioAccumulato),
         quotaDatoreFp: this._getInitialEmployerContribution({
@@ -341,7 +369,13 @@ export class FinancialModel {
 
     _calculateNetSacrificeResults(config) {
       const {
-        durata, reddito, premiStraordinari = 0, investimento,
+        durata, reddito, premiStraordinari = 0, altriRedditi = 0, investimento,
+        variazionePremiTipo = 'percentuale',
+        variazionePremiFrequenza = 0,
+        variazionePremiValore = 0,
+        variazioneAltriRedditiTipo = 'percentuale',
+        variazioneAltriRedditiFrequenza = 0,
+        variazioneAltriRedditiValore = 0,
         quotaDatoreFpPerc, contributoDatoreFisso = 0, quotaMinAderentePerc,
         rendimentoAnnualeFpPerc, rendimentoAnnualePacPerc,
         modalitaCumulativa, riscattoAnticipato,
@@ -354,6 +388,7 @@ export class FinancialModel {
         primaOccupazionePost2006 = false,
         plafondExtraPrimaOccupazione = 0,
         anniResiduiMaggiorazione = FINANCIAL_CONSTANTS.MAGGIORAZIONE_PRIMA_OCCUPAZIONE_ANNI,
+        anniAttesaMaggiorazione = 0,
         variazioneRedditoTipo = 'percentuale',
         variazioneRedditoFrequenza = 0,
         variazioneRedditoValore = 0,
@@ -392,7 +427,8 @@ export class FinancialModel {
       const firstEmploymentConfig = {
         enabled: primaOccupazionePost2006,
         extraRemaining: plafondExtraPrimaOccupazione,
-        yearsRemaining: anniResiduiMaggiorazione
+        yearsRemaining: anniResiduiMaggiorazione,
+        waitYears: anniAttesaMaggiorazione
       };
 
       const fpPlan = this._createStrategyState(firstEmploymentConfig);
@@ -407,7 +443,21 @@ export class FinancialModel {
           variazioneRedditoFrequenza,
           variazioneRedditoValore
         );
-        const redditoFiscaleAnno = redditoAnno + Math.max(premiStraordinari, 0);
+        const premiAnno = this._applyPeriodicVariation(
+          Math.max(premiStraordinari, 0),
+          anno,
+          variazionePremiTipo,
+          variazionePremiFrequenza,
+          variazionePremiValore
+        );
+        const altriRedditiAnno = this._applyPeriodicVariation(
+          Math.max(altriRedditi, 0),
+          anno,
+          variazioneAltriRedditiTipo,
+          variazioneAltriRedditiFrequenza,
+          variazioneAltriRedditiValore
+        );
+        const redditoFiscaleAnno = redditoAnno + premiAnno + altriRedditiAnno;
         const investimentoAnno = this._applyPeriodicVariation(
           investimento,
           anno,
@@ -607,6 +657,11 @@ export class FinancialModel {
 
       return {
         results,
+        strategies: {
+          mix: results,
+          fp: fpStrategyResults,
+          pac: pacStrategyResults
+        },
         breakeven: this._calculateFirstFullFpYear(results),
         risparmioImposta: Math.round(selectedStrategy.plan.risparmioAccumulato),
         quotaDatoreFp: this._getInitialEmployerContribution({
@@ -709,8 +764,8 @@ export class FinancialModel {
       return calculateEmployerContribution(baseContributiva, quotaDatoreFpPerc, contributoDatoreFisso);
     }
 
-    _createFirstEmploymentState({ enabled = false, extraRemaining = 0, yearsRemaining = 0 } = {}) {
-      return createFirstEmploymentState({ enabled, extraRemaining, yearsRemaining });
+    _createFirstEmploymentState({ enabled = false, extraRemaining = 0, yearsRemaining = 0, waitYears = 0 } = {}) {
+      return createFirstEmploymentState({ enabled, extraRemaining, yearsRemaining, waitYears });
     }
 
     _getTotalDeductionLimit(firstEmployment = {}) {

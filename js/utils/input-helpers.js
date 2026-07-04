@@ -21,6 +21,14 @@ export function buildInputWarnings(config) {
     warnings.push('La variazione investimento è negativa: stai simulando una riduzione periodica del budget annuo.');
   }
 
+  if (config.variazionePremiFrequenza > 0 && config.variazionePremiValore < 0) {
+    warnings.push('La variazione premi è negativa: stai simulando una riduzione periodica dei premi in busta.');
+  }
+
+  if (config.variazioneAltriRedditiFrequenza > 0 && config.variazioneAltriRedditiValore < 0) {
+    warnings.push('La variazione altri redditi è negativa: stai simulando una riduzione periodica degli altri redditi imponibili.');
+  }
+
   if (config.baseContributivaFpTipo !== 'ral' && config.baseContributivaFp <= 0) {
     warnings.push('Hai selezionato una base contributi FP alternativa ma non hai inserito un valore annuo: il calcolo usa la RAL.');
   }
@@ -72,7 +80,7 @@ export function buildInputWarnings(config) {
   }
 
   if (rendimentoNettoPac - rendimentoNettoFp >= 0.06) {
-    warnings.push('Il PAC ha un rendimento netto ipotizzato molto più alto del FP: il mix consigliato sarà particolarmente sensibile a questa scelta.');
+    warnings.push('Il PAC ha un rendimento netto ipotizzato molto più alto del FP: l\'allocazione ottimale sarà particolarmente sensibile a questa scelta.');
   }
 
   if (config.addizionaliPerc > 0.04) {
@@ -83,7 +91,14 @@ export function buildInputWarnings(config) {
     warnings.push('Ulteriori detrazioni elevate possono ridurre molto la capienza fiscale e quindi il beneficio della deduzione.');
   }
 
-  if (config.primaOccupazionePost2006 && config.plafondExtraPrimaOccupazione <= 0) {
+  const attesaMaggiorazione = Math.max(config.anniAttesaMaggiorazione || 0, 0);
+
+  if (
+    config.primaOccupazionePost2006 &&
+    config.plafondExtraPrimaOccupazione <= 0 &&
+    attesaMaggiorazione <= 0 &&
+    config.anniResiduiMaggiorazione > 0
+  ) {
     warnings.push('Prima occupazione post 2006 attiva ma plafond extra residuo pari a zero: il limite deducibile resta quello ordinario.');
   }
 

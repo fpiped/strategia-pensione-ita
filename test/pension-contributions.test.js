@@ -79,7 +79,7 @@ test('gestisce maggiorazione prima occupazione e consumo plafond', () => {
 
   consumeFirstEmploymentAllowance(firstEmployment, 6000, 450);
 
-  assert.equal(Math.round(firstEmployment.extraRemaining), 1715);
+  assert.equal(Math.round(firstEmployment.extraRemaining), 1850);
   assert.equal(firstEmployment.yearsRemaining, 1);
 });
 
@@ -94,6 +94,6 @@ test('divide budget tra quota deducibile, PAC extra e contributo datore', () => 
 
   const overLimitAllocation = splitBudget(6000, 300, 450, firstEmployment);
   assert.equal(overLimitAllocation.quotaDeducibile, FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP - 450);
-  assert.equal(Math.round(overLimitAllocation.quotaExtraPac * 100), 128543);
+  assert.equal(Math.round(overLimitAllocation.quotaExtraPac * 100), 115000);
   assert.equal(overLimitAllocation.quotaDatore, 450);
 });
