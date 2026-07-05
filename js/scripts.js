@@ -12,10 +12,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Inizializza toggle risultati
     setupResultsToggle();
+    setupConfigToggle();
+
+    // Sezioni apri/chiudi della guida informativa
+    setupDocsSections();
+
+    // Card del pannello di controllo apri/chiudi
+    document.querySelectorAll('.control-shell .param-card .card-header').forEach(function(header) {
+        header.addEventListener('click', function() {
+            header.closest('.param-card').classList.toggle('collapsed');
+        });
+    });
 
     // Inizializza tooltip mobile
     setupMobileTooltips();
 });
+
+/**
+ * Inizializza il toggle per mostrare/nascondere i parametri principali:
+ * stesso meccanismo delle altre sezioni, titolo cliccabile in barra.
+ */
+function setupConfigToggle() {
+    const toggleConfig = document.getElementById('config-title');
+    const configSection = toggleConfig?.closest('.config-workspace');
+
+    if (!toggleConfig || !configSection) return;
+
+    toggleConfig.addEventListener('click', function() {
+        configSection.classList.toggle('collapsed');
+    });
+}
 
 /**
  * Inizializza il toggle per mostrare/nascondere la tabella risultati
@@ -32,6 +58,15 @@ function setupResultsToggle() {
     }
 
     // Toggle grafico
+    const toggleExplorer = document.getElementById('annual-explorer-title');
+    const explorerSection = toggleExplorer?.closest('.annual-explorer-section');
+
+    if (toggleExplorer && explorerSection) {
+        toggleExplorer.addEventListener('click', function() {
+            explorerSection.classList.toggle('collapsed');
+        });
+    }
+
     const toggleChart = document.getElementById('toggle-chart');
     const chartSection = toggleChart?.closest('.chart-section');
 
@@ -43,21 +78,85 @@ function setupResultsToggle() {
 }
 
 /**
- * Inizializza la navigazione a tab
+ * Inizializza la navigazione a tab. Il tab attivo viene ricordato, così il
+ * refresh riporta alla stessa pagina (es. Informazioni) e non ai Calcoli.
  */
 function setupTabs() {
+    const STORAGE_KEY = 'strategia-pensione-active-tab';
+
+    const clearHash = () => {
+        if (window.location.hash) {
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+    };
+
+    const activateTab = (tabId) => {
+        clearHash();
+        const tab = document.querySelector(`.tab[data-tab="${tabId}"]`);
+        const content = document.getElementById(`${tabId}-content`);
+        if (!tab || !content) return;
+
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        content.classList.add('active');
+    };
+
     document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', function() {
-            // Rimuovi la classe active da tutti i tab
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            // Aggiungi la classe active al tab cliccato
-            this.classList.add('active');
-
-            // Nascondi tutti i contenuti dei tab
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            // Mostra il contenuto corrispondente
             const tabId = this.getAttribute('data-tab');
-            document.getElementById(`${tabId}-content`).classList.add('active');
+            activateTab(tabId);
+            try {
+                localStorage.setItem(STORAGE_KEY, tabId);
+            } catch (error) {
+                // Storage non disponibile (es. navigazione privata): ignora.
+            }
+        });
+    });
+
+    // Il logo riporta alla home (pagina Calcola): azzera il tab salvato.
+    document.querySelector('.logo')?.addEventListener('click', () => {
+        try {
+            localStorage.setItem(STORAGE_KEY, 'calculator');
+        } catch (error) { /* storage non disponibile */ }
+    });
+
+    let savedTab = null;
+    try {
+        savedTab = localStorage.getItem(STORAGE_KEY);
+    } catch (error) {
+        savedTab = null;
+    }
+    if (savedTab) activateTab(savedTab);
+
+    // Da qui in poi lo stato è gestito dalle classi: rimuovi l'attributo
+    // anti-flash impostato dallo script inline in <head>.
+    document.documentElement.removeAttribute('data-active-tab');
+}
+
+/**
+ * Rende apri/chiudi le sezioni della guida informativa: ogni blocco che
+ * inizia con un h2 diventa una card con titolo-barra cliccabile, nello
+ * stesso stile delle sezioni della pagina calcoli.
+ */
+function setupDocsSections() {
+    // Le sezioni sono già incapsulate staticamente nel markup: qui si
+    // agganciano solo i toggle (niente ristrutturazione del DOM al load).
+    document.querySelectorAll('.docs-collapsible > .docs-collapsible-title').forEach((title) => {
+        title.addEventListener('click', () => {
+            title.closest('.docs-collapsible').classList.toggle('collapsed');
+        });
+    });
+
+    // I link dell'indice riaprono la sezione e scrollano via JS,
+    // senza sporcare la URL con l'hash.
+    document.querySelectorAll('.docs-index a').forEach((link) => {
+        link.addEventListener('click', (event) => {
+            event.preventDefault();
+            const target = document.querySelector(link.getAttribute('href'));
+            if (!target) return;
+            target.classList.remove('collapsed');
+            window.scrollTo({ top: target.offsetTop - 20, behavior: 'smooth' });
         });
     });
 }
@@ -125,153 +224,299 @@ function downloadCSV(csvContent, filename) {
  * Inizializza il sistema di help modale per le label
  */
 function setupMobileTooltips() {
-    // Definizione help content
+    // Definizione help content: fonte unica delle spiegazioni.
+    // Ogni voce risponde sempre a tre domande, rese come sezioni etichettate:
+    // dove si recupera il dato, come lo usa il modello, cosa comporta.
     const helpContent = {
         reddito: {
             title: 'Reddito annuo',
-            text: 'La tua retribuzione annua lorda ordinaria da lavoratore dipendente. Se scegli RAL come base, il modello usa questo importo per calcolare quota minima aderente e contributo datore. Non è pensato per autonomi, partite IVA o regimi sostitutivi.'
+            dove: 'Contratto di lavoro, busta paga o Certificazione Unica: è la retribuzione annua lorda ordinaria da lavoratore dipendente.',
+            come: 'Se scegli RAL come base, il modello la usa per quota minima aderente e contributo datore, oltre che per IRPEF e contributi INPS.',
+            effetto: 'Più è alta, più cresce il beneficio della deduzione FP. Non è pensato per autonomi, partite IVA o regimi sostitutivi.'
         },
         premiStraordinari: {
             title: 'Premi, straordinari e bonus',
-            text: 'Altri compensi annui imponibili INPS/IRPEF. Nel modello aumentano reddito fiscale e previdenziale, ma non la base su cui si calcolano quota minima FP e contributo datore.'
+            dove: 'Voci imponibili separate in busta paga o nella Certificazione Unica.',
+            come: 'Aumentano reddito fiscale e previdenziale, ma non la base su cui si calcolano quota minima FP e contributo datore.',
+            effetto: 'Alzano l\'aliquota marginale, quindi possono aumentare il risparmio fiscale della deduzione.'
+        },
+        altriRedditi: {
+            title: 'Altri redditi imponibili IRPEF',
+            dove: 'Dichiarazione dei redditi: es. locazioni ordinarie o redditi diversi imponibili IRPEF.',
+            come: 'Aumentano il reddito fiscale usato per aliquote e beneficio della deduzione.',
+            effetto: 'Non toccano la base previdenziale né quella per quota minima e contributo datore.'
+        },
+        variazionePremi: {
+            title: 'Aumento premi e bonus',
+            dove: 'Ipotesi tua, basata su accordi aziendali o sullo storico personale.',
+            come: 'Frequenza indica ogni quanti anni applicare l\'aumento; il valore può essere in percentuale o in euro.',
+            effetto: 'Con andamento Costante i premi restano fissi per tutta la simulazione.'
+        },
+        variazioneAltriRedditi: {
+            title: 'Aumento altri redditi',
+            dove: 'Ipotesi tua, ad esempio adeguamenti previsti dei canoni di locazione.',
+            come: 'Stessa logica degli altri aumenti: frequenza in anni e valore in percentuale o euro.',
+            effetto: 'Se crescono, alzano aliquote e beneficio della deduzione negli anni successivi; con Costante restano fissi.'
         },
         variazioneReddito: {
             title: 'Aumento reddito',
-            text: 'Simula aumenti periodici del reddito annuo ordinario. “Ogni anni” indica ogni quanti anni applicare la variazione: con ogni 3 anni e aumento 5%, il reddito resta uguale per 3 anni e aumenta del 5% dal quarto, poi di nuovo dal settimo.'
+            dove: 'Ipotesi tua: scatti di anzianità, rinnovi CCNL o avanzamenti previsti.',
+            come: 'La frequenza indica ogni quanti anni applicare la variazione: con ogni 3 anni e aumento 5%, il reddito resta uguale per 3 anni e aumenta del 5% dal quarto, poi di nuovo dal settimo.',
+            effetto: 'Un reddito crescente aumenta quota minima, contributo datore e risparmio fiscale negli anni.'
         },
         durata: {
             title: 'Durata simulazione',
-            text: 'Per quanti anni vuoi simulare l\'investimento. Più è lunga la durata, più si vedono gli effetti dell\'interesse composto. La tassazione FP scende dal 15% al 9% dopo 15 anni di partecipazione.'
+            dove: 'Quanti anni mancano al momento in cui prevedi di ritirare il capitale (da 1 a 100).',
+            come: 'Definisce l\'orizzonte della simulazione anno per anno.',
+            effetto: 'Più è lunga, più pesano interesse composto e riduzione della tassazione FP in uscita (dal 15% verso il 9% dopo 15 anni di partecipazione).'
         },
         investimento: {
             title: 'Investimento annuo',
-            text: 'L\'importo che vuoi allocare ogni anno tra fondo pensione e PAC. La quota oltre il limite deducibile viene considerata sempre PAC. Non include il TFR. Ricorda: il limite di deducibilità fiscale per il FP è €5.164,57/anno (incluso contributo datore, escluso TFR).'
+            dove: 'Il tuo budget: l\'importo che vuoi allocare ogni anno tra fondo pensione e PAC, TFR escluso.',
+            come: 'La quota oltre il limite deducibile di 5.300 €/anno (incluso contributo datore, escluso TFR) viene considerata sempre PAC.',
+            effetto: 'Budget più alti saturano prima la deduzione: l\'eccedenza lavora nel PAC.'
         },
         variazioneInvestimento: {
             title: 'Aumento investimento',
-            text: 'Simula aumenti periodici dell’investimento annuo. Puoi usare una percentuale o un importo fisso in euro. Ogni 3 anni e aumento 10% significa aumento dell’investimento ogni 3 anni.'
+            dove: 'Ipotesi tua su quanto potrai aumentare il risparmio annuo nel tempo.',
+            come: 'Puoi usare una percentuale o un importo fisso in euro: ogni 3 anni e aumento 10% significa aumento dell\'investimento ogni 3 anni.',
+            effetto: 'Un budget crescente sposta più capitale negli anni finali, dove il confronto FP/PAC può cambiare.'
         },
         modalitaConfronto: {
             title: 'Modalità investimento',
-            text: 'Budget annuo pianificato parte dall’importo annuo che vuoi investire e reinveste il risparmio fiscale l’anno successivo. Pari esborso netto confronta invece FP e PAC a parità di costo effettivo: il PAC investe il costo netto equivalente del versamento FP, senza reinvestire di nuovo il risparmio fiscale.'
+            dove: 'Scelta di metodo, non un dato da recuperare: decide come confrontare FP e PAC.',
+            come: 'Budget parte dall\'importo annuo pianificato e reinveste il risparmio fiscale l\'anno successivo. Netto confronta a parità di esborso effettivo: il PAC investe il costo netto equivalente del versamento FP, senza reinvestire il risparmio fiscale.',
+            effetto: 'Con Budget il beneficio fiscale resta investito; con Netto ti rientra in tasca e il confronto è a parità di sacrificio.'
         },
         baseContributivaFpTipo: {
             title: 'Base quota aderente',
-            text: 'Base annua su cui calcolare la quota minima che devi versare per ottenere il contributo del datore.'
+            dove: 'Scheda del fondo o CCNL: se parlano di minimo tabellare o paga base scegli Retribuzione minima, altrimenti lascia RAL.',
+            come: 'È la base annua su cui si calcola la quota minima che devi versare per ottenere il contributo del datore.',
+            effetto: 'Con la base sbagliata la quota minima stimata risulta troppo alta o troppo bassa.'
         },
         baseContributivaFp: {
             title: 'Minimo retributivo annuo',
-            text: 'Valore annuo del minimo tabellare o retributivo indicato dal CCNL, se quota aderente o contributo datore sono calcolati su questa base invece che sulla RAL. Usa il minimo mensile moltiplicato per le mensilità previste. Se supera la RAL, il calcolatore mostra un avviso perché è insolito.'
+            dove: 'CCNL: minimo tabellare o paga base mensile moltiplicati per le mensilità previste.',
+            come: 'Usato come base annua per quota aderente e/o contributo datore quando scegli Retribuzione minima.',
+            effetto: 'Se supera la RAL, il calcolatore mostra un avviso perché è un caso insolito.'
         },
         baseDatoreFpTipo: {
             title: 'Base contributo datore',
-            text: 'Base annua su cui calcolare il contributo percentuale del datore: reddito annuo/RAL oppure minimo retributivo annuo. Se scegli minimo, viene usato lo stesso minimo retributivo annuo indicato nello scenario.'
+            dove: 'Scheda del fondo o CCNL, come per la base quota aderente.',
+            come: 'Base annua su cui si calcola il contributo percentuale del datore: RAL oppure lo stesso minimo retributivo annuo indicato nello scenario.',
+            effetto: 'La scelta cambia l\'importo del contributo datore stimato.'
         },
         variazioneBaseContributiva: {
             title: 'Aumento minimo retributivo',
-            text: 'Simula aumenti periodici del minimo retributivo annuo. Serve se quota minima aderente o contributo datore sono calcolati sul minimo tabellare del CCNL.'
+            dove: 'Rinnovi del CCNL: aumenti previsti dei minimi tabellari.',
+            come: 'Applica aumenti periodici al minimo retributivo annuo, con frequenza in anni e valore in percentuale o euro.',
+            effetto: 'Se il minimo cresce, crescono anche quota minima richiesta e contributo datore.'
         },
         contribuzioneDatoreFpPerc: {
             title: 'Contributo datore di lavoro',
-            text: 'Percentuale che l’azienda versa nel tuo fondo pensione. Viene applicata alla base contributo datore: RAL oppure minimo retributivo annuo.'
+            dove: 'Scheda del fondo, CCNL o accordo aziendale.',
+            come: 'Percentuale applicata alla base contributo datore, riconosciuta solo se versi almeno la quota minima aderente.',
+            effetto: 'È capitale extra che il PAC non riceve: pesa molto nel confronto.'
         },
         quotaMinAderentePerc: {
             title: 'Quota minima aderente',
-            text: 'Per ricevere il contributo del datore, molti contratti richiedono che tu versi almeno una certa percentuale di un importo definito dal fondo o dal CCNL: spesso RAL, minimo retributivo o altra base contrattuale. Se non la versi, perdi il contributo aziendale.'
+            dove: 'Scheda del fondo o CCNL: la percentuale minima richiesta all\'aderente, spesso su RAL, minimo retributivo o altra base contrattuale.',
+            come: 'Il modello la usa per stabilire la quota FP minima da versare per agganciare il contributo datore.',
+            effetto: 'Se non la versi, perdi il contributo aziendale.'
         },
         addizionaliPerc: {
             title: 'Addizionali manuali',
-            text: 'Inserisci la somma tra aliquota media regionale e aliquota media comunale. Esempio: regionale 1,73% + comunale 0,80% = 2,53%. Se non vuoi calcolarla a mano, usa “Da località”.'
+            dove: 'Busta paga (conguaglio) o dichiarazione dei redditi: somma tra aliquota media regionale e comunale. Esempio: 1,73% + 0,80% = 2,53%.',
+            come: 'Il modello le somma all\'IRPEF nel calcolo dell\'imposta.',
+            effetto: 'Aumentano anche il risparmio fiscale della deduzione. Se non vuoi calcolarle a mano, usa “Da località”.'
         },
         regioneAddizionali: {
             title: 'Regione addizionali',
-            text: 'Seleziona la Regione o Provincia autonoma per usare le aliquote regionali importate dal CSV MEF. Se selezioni anche il Comune, la Regione viene impostata automaticamente dalla provincia del Comune.'
+            dove: 'La tua Regione o Provincia autonoma di residenza fiscale.',
+            come: 'Applica le aliquote regionali importate dal CSV MEF.',
+            effetto: 'Se selezioni anche il Comune, la Regione viene impostata automaticamente dalla provincia del Comune.'
         },
         comuneAddizionali: {
             title: 'Comune addizionali',
-            text: 'Digita nome, provincia o codice catastale e scegli il Comune dai risultati. Il Comune aggiunge l’addizionale comunale e imposta automaticamente la Regione. Alcune note comunali particolari restano semplificate nel calcolo.'
+            dove: 'Il tuo Comune di residenza fiscale: digita nome, provincia o codice catastale e scegli dai risultati.',
+            come: 'Aggiunge l\'addizionale comunale e imposta automaticamente la Regione.',
+            effetto: 'Alcune note comunali particolari restano semplificate nel calcolo.'
         },
         contributiInpsPerc: {
             title: 'Aliquota INPS lavoratore',
-            text: 'Aliquota previdenziale ordinaria a carico del lavoratore. Usa il preset più vicino alla tua busta paga; passa a manuale solo se hai un dato specifico.'
+            dove: 'Busta paga: di solito 9,19% per il dipendente ordinario, 9,49% l\'aliquota ordinaria maggiorata.',
+            come: 'Dedotta dal reddito lordo prima di calcolare l\'IRPEF.',
+            effetto: 'Incide su imponibile e risparmio fiscale. Cambia il default 9,19% solo se la tua busta paga riporta un\'aliquota diversa.'
         },
         contributiInpsPercManuale: {
             title: 'Aliquota manuale INPS',
-            text: 'Campo modificabile solo se scegli Manuale nel preset INPS. Serve per casi particolari ricavati dalla busta paga o da una simulazione consulenziale.'
+            dove: 'Busta paga o simulazione consulenziale, per casi particolari.',
+            come: 'Modificabile solo con preset su Manuale; usata come il preset, dedotta prima dell\'IRPEF.',
+            effetto: 'Un\'aliquota più alta riduce l\'imponibile IRPEF e cambia leggermente il beneficio della deduzione.'
         },
         massimaleContributivoInps: {
             title: 'Massimale INPS',
-            text: 'Tetto annuo della base su cui applicare i contributi INPS nel modello. È trattato come assunzione normativa, non come input operativo.'
+            dove: 'Assunzione normativa del modello, non un input operativo.',
+            come: 'Tetto annuo della base su cui si applicano i contributi INPS.',
+            effetto: 'Sopra il massimale i contributi ordinari non crescono più.'
         },
         sogliaIvsAggiuntivo: {
             title: 'Soglia IVS aggiuntivo',
-            text: 'Soglia annua oltre la quale si applica il contributo IVS aggiuntivo. È un’assunzione normativa automatica del modello.'
+            dove: 'Assunzione normativa automatica del modello.',
+            come: 'Soglia annua oltre la quale si applica il contributo IVS aggiuntivo.',
+            effetto: 'Rileva solo per redditi sopra soglia.'
         },
         aliquotaIvsAggiuntivaPerc: {
             title: 'Aliquota IVS extra',
-            text: 'Aliquota aggiuntiva applicata alla quota di reddito sopra la soglia IVS. È un’assunzione normativa automatica del modello.'
+            dove: 'Assunzione normativa automatica del modello.',
+            come: 'Aliquota aggiuntiva applicata alla quota di reddito sopra la soglia IVS.',
+            effetto: 'Rileva solo per redditi sopra soglia.'
         },
         ulterioriDetrazioni: {
             title: 'Ulteriori detrazioni',
-            text: 'Importo annuo di altri bonus o detrazioni fiscali che riducono l’imposta netta. Non sono deduzioni: non abbassano il reddito imponibile, ma l’imposta da pagare.'
+            dove: 'Dichiarazione dei redditi: bonus e detrazioni oltre a quelle da lavoro dipendente (es. spese sanitarie, interessi mutuo).',
+            come: 'Riducono l\'imposta netta: non sono deduzioni, non abbassano il reddito imponibile.',
+            effetto: 'Se sono alte riducono la capienza fiscale e quindi il beneficio effettivo della deduzione FP.'
         },
         modalitaVersamentoFp: {
-            title: 'Versamento FP',
-            text: 'Decide quanta quota FP viene trattata come versamento tramite busta paga. La quota minima aderente deve passare in busta per agganciare il contributo datore; l’extra può essere ottimizzato tra busta e bonifico. Tutta la quota deducibile riduce l’imponibile IRPEF, ma solo la quota in busta paga riduce la base usata per stimare detrazioni da lavoro dipendente, ex Bonus Renzi e bonus cuneo fiscale.'
+            title: 'Versamento della quota FP extra',
+            dove: 'Ufficio HR/payroll o fondo pensione: verifica quali canali di versamento sono ammessi.',
+            come: 'La quota minima aderente passa sempre in busta per agganciare il contributo datore; l\'extra può andare in busta o via bonifico. Automatico sceglie la ripartizione più conveniente anno per anno.',
+            effetto: 'Tutta la quota deducibile riduce l\'imponibile IRPEF, ma solo la quota in busta riduce la base usata per detrazioni da lavoro dipendente, ex Bonus Renzi e bonus cuneo.'
         },
         anzianitaPregressaFp: {
             title: 'Anzianità pregressa FP',
-            text: 'Anni di partecipazione a forme pensionistiche complementari già maturati prima della simulazione. Anticipano la riduzione della tassazione in uscita dal 15% al 9%, ma non aggiungono un montante iniziale.'
+            dove: 'Area riservata del fondo: anni dalla prima adesione a forme pensionistiche complementari.',
+            come: 'Anticipa la riduzione della tassazione in uscita dal 15% verso il 9% e determina gli anni residui della maggiorazione prima occupazione.',
+            effetto: 'Non aggiunge un montante iniziale: conta solo per fiscalità e finestra di recupero.'
         },
         primaOccupazionePost2006: {
             title: 'Prima occupazione post 2006',
-            text: 'Attiva questa opzione se la tua prima occupazione è successiva al 31/12/2006 e sei nel periodo in cui puoi recuperare deduzione non usata nei primi 5 anni di partecipazione al fondo pensione.'
+            dove: 'La tua storia lavorativa: prima occupazione successiva al 31/12/2006.',
+            come: 'Attiva il recupero della deduzione non usata nei primi 5 anni di partecipazione: vale dal 6° al 25° anno, fino a 2.650 € extra all\'anno oltre il limite ordinario di 5.300 €.',
+            effetto: 'Se attiva, il modello alza il limite deducibile negli anni in cui hai plafond disponibile.'
         },
         plafondExtraPrimaOccupazione: {
             title: 'Plafond extra residuo',
-            text: 'Quota di deduzione aggiuntiva ancora recuperabile. Si calcola come 25.822,85 € meno i contributi effettivamente versati nei primi 5 anni di partecipazione. Ogni anno puoi usare al massimo 2.582,29 € extra.'
+            dove: 'Si calcola come 26.500 € meno i contributi effettivamente versati nei primi 5 anni di partecipazione.',
+            come: 'Quota di deduzione aggiuntiva ancora recuperabile; ogni anno puoi usarne al massimo 2.650 €.',
+            effetto: 'Se sei ancora nel quinquennio iniziale, la simulazione accumula da sola il plafond non usato negli anni simulati: qui inserisci solo il residuo già maturato prima della simulazione.'
         },
         anniResiduiMaggiorazione: {
             title: 'Anni residui maggiorazione calcolati',
-            text: 'Valore informativo calcolato dall’anzianità FP già maturata. Il recupero è disponibile dal 6° al 25° anno di partecipazione: prima non è ancora utilizzabile, dopo non ci sono anni residui.'
+            dove: 'Valore informativo calcolato dall\'anzianità FP già maturata.',
+            come: 'Il recupero è disponibile dal 6° al 25° anno di partecipazione.',
+            effetto: 'Prima del 6° anno non è ancora utilizzabile; dopo il 25° non ci sono anni residui.'
         },
         rendimentoAnnualeFpPerc: {
             title: 'Rendimento fondo pensione ipotizzato',
-            text: 'Rendimento annuo usato nella simulazione FP. Puoi stimarlo dai rendimenti storici del comparto, ricordando che non sono previsioni. Se scegli netto viene usato così com’è; se scegli lordo, il modello sottrae costi annui e tassazione annuale.'
+            dove: 'Rendimenti storici del comparto: scheda del fondo e confronti COVIP. Non sono previsioni.',
+            come: 'Rendimento annuo usato nella simulazione FP: con Netto è usato così com\'è, con Lordo il modello sottrae costi annui e tassazione annuale.',
+            effetto: 'Piccole differenze di rendimento cambiano molto il risultato su orizzonti lunghi.'
         },
         rendimentoFpMode: {
             title: 'Tipo rendimento FP',
-            text: 'Usa netto se il valore è già al netto di costi e tassazione annuale. Usa lordo se vuoi inserire rendimento prima di costi e tasse: il FP applica la tassazione sui rendimenti ogni anno.'
+            dove: 'Dipende da come hai stimato il rendimento: già al netto di costi e tassazione annuale, oppure lordo.',
+            come: 'Con Lordo il FP applica la tassazione sui rendimenti ogni anno (12,5% quota agevolata, 20% il resto) e sottrae i costi annui.',
+            effetto: 'Il calcolatore mostra il netto risultante, confrontabile con il PAC.'
         },
         costiAnnuiFpPerc: {
             title: 'Costi annui FP',
-            text: 'Percentuale annua sottratta al montante del fondo pensione quando il rendimento FP è impostato come lordo. Se usi rendimento netto, lasciala a 0 per evitare doppio conteggio.'
+            dove: 'ISC nella scheda costi del fondo pensione.',
+            come: 'Percentuale annua sottratta al montante FP quando il rendimento è impostato come lordo.',
+            effetto: 'Più i costi sono alti, più il netto composto si riduce. Con rendimento netto lasciala a 0 per evitare doppio conteggio.'
         },
         quotaAgevolataFpPerc: {
             title: 'Quota FP agevolata 12,5%',
-            text: 'Quota dei rendimenti FP riconducibile a strumenti tassati al 12,5%, tipicamente titoli di Stato ed equiparati. Il resto è tassato al 20%. Il calcolatore mostra l’aliquota effettiva risultante.'
+            dove: 'Composizione del comparto nella scheda del fondo: quota di titoli di Stato ed equiparati.',
+            come: 'Quei rendimenti sono tassati al 12,5%, il resto al 20%; il calcolatore mostra l\'aliquota effettiva risultante.',
+            effetto: 'Più quota agevolata significa meno tasse annue e rendimento netto più alto.'
         },
         rendimentoAnnualePacPerc: {
             title: 'Rendimento ETF ipotizzato',
-            text: 'Rendimento annuo usato nella simulazione PAC. Puoi stimarlo da dati storici o altri strumenti, con ipotesi prudente. Se scegli netto viene usato così com’è; se scegli lordo, il modello sottrae costi annui e tassa le plusvalenze alla exit.'
+            dove: 'Dati storici dell\'indice o KID dell\'ETF, con ipotesi prudente. Non è una previsione.',
+            come: 'Rendimento annuo usato nella simulazione PAC: con Netto è usato così com\'è, con Lordo il modello sottrae costi annui e tassa le plusvalenze alla exit.',
+            effetto: 'È la leva che più spesso decide il confronto con il FP.'
         },
         rendimentoPacMode: {
             title: 'Tipo rendimento PAC',
-            text: 'Usa netto se il rendimento è già al netto di TER, bollo e fiscalità attesa. Usa lordo se vuoi far applicare al modello costi annui e tassazione finale sulle plusvalenze.'
+            dove: 'Dipende da come hai stimato il rendimento: già al netto di TER, bollo e fiscalità attesa, oppure lordo.',
+            come: 'Con Lordo il modello applica costi annui e tassazione finale sulle plusvalenze (12,5% quota agevolata, 26% il resto, alla exit).',
+            effetto: 'Il calcolatore mostra il netto risultante, confrontabile con il FP.'
         },
         costiAnnuiPacPerc: {
             title: 'Costi annui PAC',
-            text: 'Percentuale annua sottratta al montante PAC quando il rendimento PAC è lordo. Può rappresentare TER, bollo o altri costi ricorrenti se non li hai già inclusi nel rendimento.'
+            dove: 'TER nel KID dell\'ETF, più bollo e altri costi ricorrenti se non già inclusi nel rendimento.',
+            come: 'Percentuale annua sottratta al montante PAC quando il rendimento è lordo.',
+            effetto: 'Costi più alti riducono il rendimento netto composto anno dopo anno.'
         },
         quotaAgevolataPacPerc: {
             title: 'Quota PAC agevolata 12,5%',
-            text: 'Quota delle plusvalenze PAC riconducibile a strumenti tassati al 12,5%, tipicamente titoli di Stato ed equiparati. Il resto è tassato al 26%. Il calcolatore mostra l’aliquota effettiva risultante.'
+            dove: 'Composizione dell\'ETF o del portafoglio: quota di titoli di Stato ed equiparati.',
+            come: 'Quelle plusvalenze sono tassate al 12,5%, il resto al 26% alla exit; il calcolatore mostra l\'aliquota effettiva risultante.',
+            effetto: 'Più quota agevolata significa meno tasse in uscita.'
         },
         riscattoAnticipato: {
             title: 'Riscatto anticipato',
-            text: 'Simula un riscatto totale anticipato con tassazione al 23%. Non è la stessa cosa delle anticipazioni parziali per sanità, casa o ulteriori esigenze. Se OFF, usa la tassazione ordinaria 15% che scende fino al 9%.'
+            dove: 'Scelta di scenario: simula l\'uscita totale anticipata dal fondo pensione.',
+            come: 'Applica al montante FP la tassazione del 23% invece dell\'ordinaria 15% che scende fino al 9%.',
+            effetto: 'Non equivale alle anticipazioni parziali per sanità, casa o altre esigenze, che hanno regole proprie.'
         }
     };
+
+    // Renderer condiviso: costruisce le sezioni etichettate (dove / come /
+    // cosa comporta) di una voce. Usato sia dal popover del pannello sia
+    // dalle note della guidata, così le spiegazioni sono identiche per
+    // costruzione.
+    const HELP_SECTIONS = [
+        ['dove', 'Dove si trova'],
+        ['come', 'Come viene usato'],
+        ['effetto', 'Cosa comporta']
+    ];
+
+    function buildHelpSections(help) {
+        const fragment = document.createDocumentFragment();
+        HELP_SECTIONS.forEach(([key, label]) => {
+            if (!help[key]) return;
+            const row = document.createElement('div');
+            row.className = 'help-section';
+            const tag = document.createElement('span');
+            tag.className = 'help-section-label';
+            tag.textContent = label;
+            const text = document.createElement('p');
+            text.className = 'help-section-text';
+            text.textContent = help[key];
+            row.append(tag, text);
+            fragment.appendChild(row);
+        });
+        return fragment;
+    }
+
+    // Popola le note della modalità guidata dalla stessa fonte dei popover
+    // del pannello: per ogni chiave in data-help-note viene renderizzata la
+    // voce completa (titolo + sezioni).
+    document.querySelectorAll('[data-help-note]').forEach(note => {
+        const keys = (note.getAttribute('data-help-note') || '').split(/\s+/).filter(Boolean);
+        const entries = keys
+            .map(key => helpContent[key])
+            .filter(Boolean)
+            .map(help => {
+                const entry = document.createElement('div');
+                entry.className = 'help-entry';
+                const title = document.createElement('strong');
+                title.className = 'help-entry-title';
+                title.textContent = help.title;
+                entry.appendChild(title);
+                entry.appendChild(buildHelpSections(help));
+                return entry;
+            });
+        note.replaceChildren(...entries);
+    });
+
+    // Icona informativa accanto ai titoli cliccabili del pannello, per
+    // rendere evidente che aprono la spiegazione.
+    // L'icona informativa è disegnata in CSS (::after su .help-trigger):
+    // presente dal primo paint, nessun flash al refresh.
 
     // Crea modal
     const modal = document.createElement('div');
@@ -303,7 +548,7 @@ function setupMobileTooltips() {
         if (!help) return;
 
         modalTitle.textContent = help.title;
-        modalText.textContent = help.text;
+        modalText.replaceChildren(buildHelpSections(help));
         modal.classList.add('active');
     }
 

@@ -1,3 +1,16 @@
+import { FINANCIAL_CONSTANTS } from '../constants/financial-constants.js';
+import {
+  calculateIncomeTax,
+  calculateIrpefTaxableIncome
+} from '../calculators/tax-calculator.js';
+import {
+  consumeFirstEmploymentAllowance,
+  createFirstEmploymentState,
+  getTotalDeductionLimit
+} from '../calculators/pension-contributions.js';
+import { calculateEffectiveTaxRate } from '../calculators/investment-growth.js';
+import { FinancialModel } from '../models/FinancialModel.js';
+
 /**
  * FinancialView - Gestisce tutto il rendering dell'interfaccia
  */
@@ -5,6 +18,11 @@ export class FinancialView {
     constructor() {
         this.chart = null;
     }
+
+    formatChoiceLabel(choice) {
+      return choice === 'MIX' ? 'Split' : choice;
+    }
+
     /**
      * Aggiorna il dashboard delle metriche con i valori di exit finali
      * @param {Array} results - Risultati dei calcoli
@@ -18,18 +36,15 @@ export class FinancialView {
       // Estrai i valori di exit
       const exitFP = lastResult['Exit FP'] || 0;
       const exitPAC = lastResult['Exit PAC'] || 0;
-      const exitMix = lastResult['Exit Mix'] || 0;
 
       // Aggiorna le card delle metriche
       document.getElementById('metric-fp-value').textContent = this.formatMoney(exitFP);
       document.getElementById('metric-pac-value').textContent = this.formatMoney(exitPAC);
-      document.getElementById('metric-mix-value').textContent = this.formatMoney(exitMix);
 
-      // Trova lo scenario migliore
+      // Evidenzia il migliore tra i benchmark puri; l'allocazione ottimale sta nel pannello decisionale.
       const values = [
         { id: 'fp', value: exitFP, card: document.querySelector('.metric-card.metric-fp') },
-        { id: 'pac', value: exitPAC, card: document.querySelector('.metric-card.metric-pac') },
-        { id: 'mix', value: exitMix, card: document.querySelector('.metric-card.metric-mix') }
+        { id: 'pac', value: exitPAC, card: document.querySelector('.metric-card.metric-pac') }
       ];
 
       // Rimuovi la classe 'best' da tutte le card
@@ -37,17 +52,9 @@ export class FinancialView {
         if (v.card) v.card.classList.remove('best');
       });
 
-      // Trova e evidenzia la migliore
       const best = values.reduce((a, b) => a.value > b.value ? a : b);
       if (best.card) {
         best.card.classList.add('best');
-
-        // Mostra il badge sulla card migliore
-        document.querySelectorAll('.metric-badge').forEach(b => b.style.display = 'none');
-        const bestBadge = best.card.querySelector('.metric-badge');
-        if (bestBadge) {
-          bestBadge.style.display = 'block';
-        }
       }
     }
 
@@ -56,7 +63,7 @@ export class FinancialView {
      * @param {Array} results - Risultati dei calcoli
      * @param {string} tableView - Vista tabella: fp, pac, mix o comparison
      */
-    createTable(results, tableView = 'mix') {
+    createTable(results, tableView = 'mix', exitLabel = 'Exit ottimale') {
       if (!results.length) return;
 
       const columnsByView = {
@@ -66,7 +73,6 @@ export class FinancialView {
           { key: 'Extra Ded', label: 'Quota PAC extra' },
           { key: 'FP Busta', label: 'FP busta' },
           { key: 'FP Bonifico', label: 'FP bonifico' },
-          { key: 'Diff Busta', label: 'Diff busta' },
           { key: 'Datore', label: 'Datore' },
           { key: 'Risparmio', label: 'Risparmio fiscale' },
           { key: 'Exit FP', label: 'Exit FP' }
@@ -83,16 +89,15 @@ export class FinancialView {
           { key: 'PAC Cons', label: 'Quota PAC' },
           { key: 'FP Busta', label: 'FP busta' },
           { key: 'FP Bonifico', label: 'FP bonifico' },
-          { key: 'Diff Busta', label: 'Diff busta' },
           { key: 'Datore', label: 'Datore' },
           { key: 'Risparmio', label: 'Risparmio fiscale' },
-          { key: 'Exit Mix', label: 'Exit Mix' }
+          { key: 'Exit Mix', label: exitLabel }
         ],
         comparison: [
           { key: 'Anno', label: 'Anno' },
           { key: 'Exit FP', label: 'FP deducibile' },
           { key: 'Exit PAC', label: 'Tutto PAC' },
-          { key: 'Exit Mix', label: 'Mix' }
+          { key: 'Exit Mix', label: 'Allocazione ottimale' }
         ]
       };
       const columns = columnsByView[tableView] || columnsByView.mix;
@@ -101,6 +106,9 @@ export class FinancialView {
         const row = {};
         columns.forEach(({ key, label }) => {
           let value = result[key];
+          if (key === 'Scelta') {
+            value = this.formatChoiceLabel(value);
+          }
           if (key !== 'Anno' && typeof value === 'number') {
             value = this.formatMoney(value);
           }
@@ -128,6 +136,7 @@ export class FinancialView {
       const tbody = document.createElement('tbody');
       rows.forEach(row => {
         const newRow = document.createElement('tr');
+        newRow.dataset.anno = row.Anno;
         for (const key in row) {
           const cell = document.createElement('td');
           cell.textContent = row[key];
@@ -143,6 +152,12 @@ export class FinancialView {
         griddiv.removeChild(griddiv.firstChild);
       }
       griddiv.appendChild(table);
+    }
+
+    highlightTableYear(year) {
+      document.querySelectorAll('#output-table tbody tr').forEach((row) => {
+        row.classList.toggle('active', Number(row.dataset.anno) === year);
+      });
     }
 
     updateChoiceSequence(results) {
@@ -173,7 +188,7 @@ export class FinancialView {
           const range = interval.start === interval.end
             ? `Anno ${interval.start}`
             : `${interval.start}-${interval.end}`;
-          return `${range}: ${interval.choice}`;
+          return `${range}: ${this.formatChoiceLabel(interval.choice)}`;
         })
         .join(' · ');
 
@@ -186,8 +201,11 @@ export class FinancialView {
 
     updateResultExplanation(results) {
       const summary = document.getElementById('result-explanation-summary');
-      const grid = document.getElementById('result-explanation-grid');
-      if (!summary || !grid || !results.length) return;
+      const primaryGrid = document.getElementById('result-primary-grid');
+      const secondaryGrid = document.getElementById('result-secondary-grid');
+      const bestValue = document.getElementById('result-best-value');
+      const bestDelta = document.getElementById('result-best-delta');
+      if (!summary || !primaryGrid || !secondaryGrid || !results.length) return;
 
       const sum = (key) => results.reduce((total, row) => total + (row[key] || 0), 0);
       const formatSignedMoney = (value) => `${value >= 0 ? '+' : '-'}${this.formatMoney(Math.abs(Math.round(value)))}`;
@@ -197,17 +215,19 @@ export class FinancialView {
       })}%`;
 
       const lastResult = results[results.length - 1];
-      const exits = [
-        { key: 'FP', label: 'FP deducibile', value: lastResult['Exit FP'] || 0 },
-        { key: 'PAC', label: 'Tutto PAC', value: lastResult['Exit PAC'] || 0 },
-        { key: 'MIX', label: 'Mix', value: lastResult['Exit Mix'] || 0 }
+      const exitFP = lastResult['Exit FP'] || 0;
+      const exitPAC = lastResult['Exit PAC'] || 0;
+      const optimalExit = lastResult['Exit Mix'] || 0;
+      const pureBenchmarks = [
+        { key: 'FP', label: 'FP deducibile', value: exitFP },
+        { key: 'PAC', label: 'Tutto PAC', value: exitPAC }
       ].sort((a, b) => b.value - a.value);
-
-      const best = exits[0];
-      const runnerUp = exits[1];
-      const delta = Math.max(0, best.value - runnerUp.value);
-      const mixVsFp = (lastResult['Exit Mix'] || 0) - (lastResult['Exit FP'] || 0);
-      const mixVsPac = (lastResult['Exit Mix'] || 0) - (lastResult['Exit PAC'] || 0);
+      const bestPure = pureBenchmarks[0];
+      const worstPure = pureBenchmarks[1];
+      const optimalVsBestPure = optimalExit - bestPure.value;
+      const optimalVsWorstPure = optimalExit - worstPure.value;
+      const optimalVsFp = optimalExit - exitFP;
+      const optimalVsPac = optimalExit - exitPAC;
       const firstRow = results[0];
       const lastChoice = lastResult.Scelta || 'MIX';
 
@@ -236,7 +256,7 @@ export class FinancialView {
 
       const choiceSummary = ['FP', 'PAC', 'MIX']
         .filter(choice => yearsByChoice[choice])
-        .map(choice => `${yearsByChoice[choice]} anni ${choice}`)
+        .map(choice => `${yearsByChoice[choice]} anni ${this.formatChoiceLabel(choice)}`)
         .join(' · ');
 
       const firstSplitDetail = firstRow
@@ -244,31 +264,36 @@ export class FinancialView {
         : 'Nessuna quota allocata';
       const bustaDetail = totals.fp > 0
         ? `${this.formatMoney(Math.round(totals.fpBusta))} busta, ${this.formatMoney(Math.round(totals.fpBonifico))} bonifico`
-        : 'Nessun versamento FP nel mix';
+        : 'Nessun versamento FP nell\'allocazione ottimale';
       const optimizationDetail = totals.differenzaBustaBonifico > 0
         ? `${formatSignedMoney(totals.differenzaBustaBonifico)} rispetto a quota minima in busta + extra via bonifico: portare l'extra in busta aumenta il beneficio fiscale.`
         : totals.differenzaBustaBonifico < 0
           ? `${formatSignedMoney(totals.differenzaBustaBonifico)} rispetto a quota minima in busta + extra via bonifico: l'extra in busta peggiora il beneficio fiscale nello scenario impostato.`
           : 'Nessuna differenza fiscale netta tra extra in busta ed extra via bonifico nello scenario impostato.';
-      const mixDetail = best.key === 'MIX'
-        ? `Rispetto a FP: ${formatSignedMoney(mixVsFp)} · rispetto a PAC: ${formatSignedMoney(mixVsPac)}`
-        : `Il mix resta ${formatSignedMoney((lastResult['Exit Mix'] || 0) - best.value)} dal migliore`;
+      const optimizationDetailText = `Rispetto a FP: ${formatSignedMoney(optimalVsFp)} · rispetto a PAC: ${formatSignedMoney(optimalVsPac)}`;
       const timingDetail = lastChoice === 'FP'
         ? 'Negli ultimi anni pesa di più il vantaggio fiscale immediato del FP.'
         : lastChoice === 'PAC'
           ? 'Anche verso fine periodo il rendimento PAC resta sufficiente nello scenario impostato.'
           : 'Lo split resta utile quando conviene prendere incentivi FP senza rinunciare del tutto al PAC.';
 
-      summary.textContent = delta > 0
-        ? `${best.label} chiude a ${this.formatMoney(Math.round(best.value))}, circa ${this.formatMoney(Math.round(delta))} sopra ${runnerUp.label}. ${timingDetail}`
-        : `${best.label} e ${runnerUp.label} arrivano sostanzialmente alla pari nello scenario impostato.`;
+      summary.textContent = optimalVsBestPure > 0
+        ? `L'allocazione ottimale chiude a ${this.formatMoney(Math.round(optimalExit))}, circa ${this.formatMoney(Math.round(optimalVsBestPure))} sopra ${bestPure.label}. ${timingDetail}`
+        : `L'allocazione ottimale coincide sostanzialmente con ${bestPure.label} nello scenario impostato. ${timingDetail}`;
 
-      const cards = [
+      if (bestValue) bestValue.textContent = this.formatMoney(Math.round(optimalExit));
+      if (bestDelta) {
+        bestDelta.textContent = optimalVsBestPure > 0
+          ? `${this.formatMoney(Math.round(optimalVsBestPure))} sopra ${bestPure.label}; ${this.formatMoney(Math.round(optimalVsWorstPure))} sopra ${worstPure.label}.`
+          : `Sostanzialmente allineata a ${bestPure.label}; ${this.formatMoney(Math.round(optimalVsWorstPure))} sopra ${worstPure.label}.`;
+      }
+
+      const primaryCards = [
         {
-          icon: best.key === 'MIX' ? 'fa-route' : 'fa-trophy',
-          label: best.key === 'MIX' ? 'Mix vs alternative' : 'Scenario migliore',
-          value: best.label,
-          detail: mixDetail
+          icon: 'fa-scale-balanced',
+          label: 'Vantaggio finale',
+          value: optimalVsBestPure > 0 ? formatSignedMoney(optimalVsBestPure) : 'Quasi pari',
+          detail: optimizationDetailText
         },
         {
           icon: 'fa-chart-pie',
@@ -288,8 +313,17 @@ export class FinancialView {
           value: totals.fp > 0
             ? formatSignedMoney(totals.differenzaBustaBonifico)
             : 'Nessun FP',
-          detail: `${bustaDetail}. ${optimizationDetail}`
-        },
+          detail: totals.fp <= 0
+            ? 'Nessun versamento FP.'
+            : totals.differenzaBustaBonifico > 0
+              ? "Conviene versare l'extra in busta."
+              : totals.differenzaBustaBonifico < 0
+                ? "Conviene versare l'extra via bonifico."
+                : 'Nessuna differenza con questi input.'
+        }
+      ];
+
+      const secondaryCards = [
         {
           icon: 'fa-filter',
           label: 'Limite deducibile',
@@ -304,9 +338,9 @@ export class FinancialView {
         }
       ];
 
-      grid.replaceChildren(...cards.map(card => {
+      const renderCard = (card, type) => {
         const item = document.createElement('article');
-        item.className = 'result-explanation-card';
+        item.className = `result-explanation-card result-explanation-card-${type}`;
 
         const icon = document.createElement('i');
         icon.className = `fas ${card.icon}`;
@@ -328,7 +362,219 @@ export class FinancialView {
         content.append(label, value, detail);
         item.append(icon, content);
         return item;
-      }));
+      };
+
+      primaryGrid.replaceChildren(...primaryCards.map(card => renderCard(card, 'primary')));
+      secondaryGrid.replaceChildren(...secondaryCards.map(card => renderCard(card, 'secondary')));
+    }
+
+    updateAnnualExplorer(results, config, selectedYear = 1) {
+      const yearSelect = document.getElementById('annual-explorer-year');
+      if (!yearSelect || !results.length || !config) return;
+
+      const maxYear = results.at(-1).Anno || results.length;
+      const safeYear = Math.min(Math.max(selectedYear || 1, 1), maxYear);
+      const optionSignature = results.map((row) => row.Anno).join(',');
+      if (yearSelect.dataset.options !== optionSignature) {
+        yearSelect.replaceChildren(...results.map((row) => {
+          const option = document.createElement('option');
+          option.value = String(row.Anno);
+          option.textContent = `Anno ${row.Anno}`;
+          return option;
+        }));
+        yearSelect.dataset.options = optionSignature;
+      }
+      yearSelect.value = String(safeYear);
+
+      const row = results.find((item) => item.Anno === safeYear) || results[0];
+      const previousRow = results.find((item) => item.Anno === safeYear - 1);
+      const setText = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value;
+      };
+      const money = (value) => this.formatMoney(Math.round(value || 0));
+      const moneyExact = (value) => {
+        const cents = Math.round(Math.abs(value || 0) * 100);
+        const intPart = this.formatMoney(Math.floor(cents / 100)).replace(' €', '');
+        const decimals = String(cents % 100).padStart(2, '0');
+        return `${value < 0 ? '-' : ''}${intPart},${decimals} €`;
+      };
+      const signedMoney = (value) => `${value >= 0 ? '+' : '-'}${money(Math.abs(value || 0))}`;
+      const percent = (value) => `${(value || 0).toLocaleString('it-IT', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}%`;
+      const applyVariation = (baseValue, year, type, frequency, value) => {
+        const safeBase = Math.max(baseValue || 0, 0);
+        const safeFrequency = Math.max(parseInt(frequency, 10) || 0, 0);
+        const safeValue = Number(value) || 0;
+        if (safeFrequency <= 0 || safeValue === 0 || year <= 1) return safeBase;
+        const increments = Math.floor((year - 1) / safeFrequency);
+        if (increments <= 0) return safeBase;
+        if (type === 'euro') return Math.max(safeBase + safeValue * increments, 0);
+        return Math.max(safeBase * Math.pow(1 + safeValue / 100, increments), 0);
+      };
+
+      const redditoAnno = applyVariation(
+        config.reddito,
+        row.Anno,
+        config.variazioneRedditoTipo,
+        config.variazioneRedditoFrequenza,
+        config.variazioneRedditoValore
+      );
+      const investimentoAnno = applyVariation(
+        config.investimento,
+        row.Anno,
+        config.variazioneInvestimentoTipo,
+        config.variazioneInvestimentoFrequenza,
+        config.variazioneInvestimentoValore
+      );
+      const premiAnno = applyVariation(
+        config.premiStraordinari,
+        row.Anno,
+        config.variazionePremiTipo,
+        config.variazionePremiFrequenza,
+        config.variazionePremiValore
+      );
+      const altriRedditiAnno = applyVariation(
+        config.altriRedditi,
+        row.Anno,
+        config.variazioneAltriRedditiTipo,
+        config.variazioneAltriRedditiFrequenza,
+        config.variazioneAltriRedditiValore
+      );
+      const quotaFp = row['FP Cons'] || 0;
+      const quotaPac = row['PAC Cons'] || 0;
+      const quotaBusta = row['FP Busta'] || 0;
+      const quotaBonifico = row['FP Bonifico'] || 0;
+      const datore = row.Datore || 0;
+      const risparmio = row.Risparmio || 0;
+      const dedotto = row['Entro Ded'] || quotaFp;
+      const exitMix = row['Exit Mix'] || 0;
+      const exitFp = row['Exit FP'] || 0;
+      const exitPac = row['Exit PAC'] || 0;
+      const deltaFp = exitMix - exitFp;
+      const deltaPac = exitMix - exitPac;
+      const fpBase = config.baseContributivaFpTipo === 'ral' || (config.baseContributivaFp || 0) <= 0
+        ? redditoAnno
+        : applyVariation(
+          config.baseContributivaFp,
+          row.Anno,
+          config.variazioneBaseContributivaTipo,
+          config.variazioneBaseContributivaFrequenza,
+          config.variazioneBaseContributivaValore
+        );
+      const quotaMinimaStimata = fpBase * (config.quotaMinAderentePerc || 0);
+
+      // Step 1 - Imponibile e IRPEF: ricostruzione presentazionale con gli stessi calculator del modello.
+      const redditoFiscaleAnno = redditoAnno + premiAnno + altriRedditiAnno;
+      const imponibileIrpef = calculateIrpefTaxableIncome({
+        reddito: redditoFiscaleAnno,
+        contributiInpsPerc: config.contributiInpsPerc,
+        massimaleContributivoInps: config.massimaleContributivoInps,
+        sogliaIvsAggiuntivo: config.sogliaIvsAggiuntivo,
+        aliquotaIvsAggiuntivaPerc: config.aliquotaIvsAggiuntivaPerc
+      });
+      const contributiInps = Math.max(redditoFiscaleAnno - imponibileIrpef, 0);
+      const irpefLorda = calculateIncomeTax(imponibileIrpef);
+      const addizionali = imponibileIrpef * (config.addizionaliPerc || 0);
+      const aliquotaMarginale = imponibileIrpef <= 28000 ? 23 : imponibileIrpef <= 50000 ? 35 : 43;
+
+      // Step 2 - Capienza deduzione: replay dello stato prima occupazione fino all'anno selezionato.
+      const firstEmployment = createFirstEmploymentState({
+        enabled: Boolean(config.primaOccupazionePost2006),
+        extraRemaining: config.plafondExtraPrimaOccupazione || 0,
+        yearsRemaining: config.anniResiduiMaggiorazione ?? FINANCIAL_CONSTANTS.MAGGIORAZIONE_PRIMA_OCCUPAZIONE_ANNI,
+        waitYears: config.anniAttesaMaggiorazione || 0
+      });
+      let limiteAnno = getTotalDeductionLimit(firstEmployment);
+      for (const item of results) {
+        if (item.Anno > safeYear) break;
+        limiteAnno = getTotalDeductionLimit(firstEmployment);
+        consumeFirstEmploymentAllowance(firstEmployment, item['FP Cons'] || 0, item.Datore || 0);
+      }
+      const limiteOrdinario = FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP;
+      const maggiorazioneAnno = Math.max(limiteAnno - limiteOrdinario, 0);
+      const deduzioneUsata = quotaFp + datore;
+      const capienzaResidua = Math.max(limiteAnno - deduzioneUsata, 0);
+
+      // Step 5 - aliquota effettiva del risparmio sulla quota dedotta dall'aderente.
+      const aliquotaEffettiva = quotaFp > 0 ? (risparmio / quotaFp) * 100 : 0;
+      const impostaAnnoLorda = irpefLorda + addizionali;
+
+      // Step 6 - dettaglio exit: versato cumulato e fiscalita di uscita.
+      const rowsUpToYear = results.filter((item) => item.Anno <= safeYear);
+      const versatoFp = rowsUpToYear.reduce((total, item) => total + (item['FP Cons'] || 0) + (item.Datore || 0), 0);
+      const versatoPac = rowsUpToYear.reduce((total, item) => total + (item['PAC Cons'] || 0), 0);
+      const anniPartecipazione = (config.anzianitaPregressaFp || 0) + row.Anno;
+      const tassoUscitaFp = new FinancialModel()
+        .calcolaTassazioneFp((config.anzianitaPregressaFp || 0) + row.Anno - 1, Boolean(config.riscattoAnticipato));
+      const impostaUscitaFp = versatoFp * tassoUscitaFp;
+      const pacTassatoInUscita = config.rendimentoPacMode === 'lordo';
+      const aliquotaPacUscita = calculateEffectiveTaxRate(
+        config.quotaAgevolataPacPerc || 0,
+        FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_AGEVOLATA,
+        FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_PAC_ORDINARIA
+      ) * 100;
+
+      setText('annual-exit-value', money(exitMix));
+      setText('annual-choice-value', this.formatChoiceLabel(row.Scelta || '-'));
+      setText('annual-fp-value', money(quotaFp));
+      setText('annual-pac-value', money(quotaPac));
+      setText('annual-income-value', money(redditoAnno));
+      setText('annual-extra-income-value', money(premiAnno + altriRedditiAnno));
+      setText('annual-budget-value', money(investimentoAnno));
+      setText('annual-returns-value', `${percent((config.rendimentoNettoFpEffettivo || 0) * 100)} / ${percent((config.rendimentoNettoPacEffettivo || 0) * 100)}`);
+      // Step 1 - Imponibile e IRPEF
+      setText('annual-taxable-step-value', money(imponibileIrpef));
+      setText('annual-taxable-formula', `${money(redditoAnno)} retribuzione + ${money(premiAnno + altriRedditiAnno)} accessori - ${money(contributiInps)} INPS = ${money(imponibileIrpef)} imponibile IRPEF.`);
+      setText('annual-gross-income-value', money(redditoFiscaleAnno));
+      setText('annual-inps-value', `-${money(contributiInps)}`);
+      setText('annual-irpef-value', money(irpefLorda));
+      setText('annual-addizionali-value', money(addizionali));
+      setText('annual-marginal-rate-value', `${aliquotaMarginale}%`);
+
+      // Step 2 - Capienza e limite deduzione
+      setText('annual-limit-step-value', moneyExact(limiteAnno));
+      setText('annual-limit-formula', maggiorazioneAnno > 0
+        ? `${moneyExact(limiteOrdinario)} ordinario + ${moneyExact(maggiorazioneAnno)} prima occupazione = ${moneyExact(limiteAnno)}; dedotti ${money(deduzioneUsata)}.`
+        : `Limite anno = ${moneyExact(limiteOrdinario)} ordinario; dedotti ${money(deduzioneUsata)} (aderente + datore).`);
+      setText('annual-limit-ordinary-value', moneyExact(limiteOrdinario));
+      setText('annual-limit-extra-value', maggiorazioneAnno > 0
+        ? `+${moneyExact(maggiorazioneAnno)}`
+        : config.primaOccupazionePost2006 ? 'Non attiva quest\'anno' : 'Non attiva');
+      setText('annual-limit-used-value', `${money(deduzioneUsata)} / ${moneyExact(limiteAnno)}`);
+      setText('annual-limit-headroom-value', money(capienzaResidua));
+
+      setText('annual-fp-step-value', money(quotaFp));
+      setText('annual-fp-formula', `${money(fpBase)} base quota aderente x ${percent((config.quotaMinAderentePerc || 0) * 100)} = ${money(quotaMinimaStimata)} quota minima; quota FP scelta = ${money(quotaFp)}.`);
+      setText('annual-employer-value', money(datore));
+      setText('annual-deducted-value', money(dedotto));
+      setText('annual-payroll-step-value', money(quotaBusta + quotaBonifico));
+      setText('annual-payroll-formula', `${money(quotaFp)} FP = ${money(quotaBusta)} in busta + ${money(quotaBonifico)} via bonifico.`);
+      setText('annual-payroll-value', money(quotaBusta));
+      setText('annual-transfer-value', money(quotaBonifico));
+      setText('annual-tax-saving-value', money(risparmio));
+      setText('annual-tax-formula', quotaFp > 0
+        ? `${money(quotaFp)} dedotti x ${percent(aliquotaEffettiva)} aliquota effettiva = ${money(risparmio)} risparmio (IRPEF + addizionali + detrazioni).`
+        : 'Nessuna quota FP dedotta quest\'anno: risparmio fiscale 0 €.');
+      setText('annual-effective-rate-value', quotaFp > 0 ? percent(aliquotaEffettiva) : '-');
+      setText('annual-tax-before-after-value', `${money(impostaAnnoLorda)} → ${money(impostaAnnoLorda - risparmio)}`);
+      setText('annual-exit-step-value', money(exitMix));
+      setText('annual-exit-formula', previousRow
+        ? `Da ${money(previousRow['Exit Mix'] || 0)} a ${money(exitMix)}; delta vs FP ${signedMoney(deltaFp)}, delta vs PAC ${signedMoney(deltaPac)}.`
+        : `Primo anno: exit ottimale ${money(exitMix)}; delta vs FP ${signedMoney(deltaFp)}, delta vs PAC ${signedMoney(deltaPac)}.`);
+      setText('annual-exit-contrib-fp-value', money(versatoFp));
+      setText('annual-exit-contrib-pac-value', money(versatoPac));
+      setText('annual-exit-fp-tax-label', config.riscattoAnticipato
+        ? 'Riscatto anticipato: aliquota fissa'
+        : `15% → 9%: ${anniPartecipazione} anni di partecipazione`);
+      setText('annual-exit-fp-tax-value', `${percent(tassoUscitaFp * 100)} ≈ -${money(impostaUscitaFp)}`);
+      setText('annual-exit-pac-tax-value', pacTassatoInUscita
+        ? `${percent(aliquotaPacUscita)} sul gain`
+        : 'Già inclusa nel rendimento netto');
+      setText('annual-exit-fp-value', money(exitFp));
+      setText('annual-exit-pac-value', money(exitPac));
     }
 
     updateInputWarnings(warnings) {
@@ -380,9 +626,9 @@ export class FinancialView {
 
       // Colori
       const colors = {
-        fp: '#3b82f6',    // blu
-        pac: '#10b981',   // verde
-        mix: '#f59e0b'    // arancione
+        fp: '#2563eb',
+        pac: '#d97706',
+        mix: '#0f766e'
       };
 
       // Distruggi il grafico esistente se presente
@@ -390,35 +636,29 @@ export class FinancialView {
         this.chart.destroy();
       }
 
-      // Crea il nuovo grafico
+      // Crea il nuovo grafico: istogramma, tre barre per anno.
       this.chart = new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
           labels: labels,
           datasets: [
             {
-              label: 'Exit FP',
+              label: 'FP deducibile',
               data: exitFP,
-              borderColor: colors.fp,
-              backgroundColor: colors.fp + '20',
-              tension: 0.3,
-              fill: false
+              backgroundColor: colors.fp,
+              maxBarThickness: 24
             },
             {
-              label: 'Exit PAC',
+              label: 'Tutto PAC',
               data: exitPAC,
-              borderColor: colors.pac,
-              backgroundColor: colors.pac + '20',
-              tension: 0.3,
-              fill: false
+              backgroundColor: colors.pac,
+              maxBarThickness: 24
             },
             {
-              label: 'Mix',
+              label: 'Allocazione ottimale',
               data: exitMix,
-              borderColor: colors.mix,
-              backgroundColor: colors.mix + '20',
-              tension: 0.3,
-              fill: false
+              backgroundColor: colors.mix,
+              maxBarThickness: 24
             }
           ]
         },
@@ -432,6 +672,12 @@ export class FinancialView {
           layout: {
             padding: {
               top: 10
+            }
+          },
+          datasets: {
+            bar: {
+              categoryPercentage: 0.72,
+              barPercentage: 0.92
             }
           },
           plugins: {
@@ -454,8 +700,16 @@ export class FinancialView {
             }
           },
           scales: {
+            x: {
+              grid: {
+                display: false
+              }
+            },
             y: {
               beginAtZero: true,
+              grid: {
+                display: false
+              },
               ticks: {
                 callback: function(value) {
                   return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ' €';

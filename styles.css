@@ -3,39 +3,39 @@
    ============================================ */
 :root {
     /* Colors - Light Mode */
-    --color-bg-page: #f3f8ff;
+    --color-bg-page: #f6f7f2;
     --color-bg-card: #ffffff;
     --color-bg-header: #ffffff;
-    --color-bg-input: #fbfdff;
+    --color-bg-input: #ffffff;
 
-    --color-text-primary: #111827;
+    --color-text-primary: #172033;
     --color-text-secondary: #4b5563;
-    --color-text-inverse: #111827;
+    --color-text-inverse: #172033;
     --color-text-muted: #6b7280;
 
-    --color-border: #b9c8dc;
-    --color-border-soft: #dbe7f5;
-    --color-border-focus: #2563eb;
-    --color-blue-soft: #eff6ff;
-    --color-blue-line: #bfdbfe;
+    --color-border: #cbd3c9;
+    --color-border-soft: #e2e7de;
+    --color-border-focus: #0f766e;
+    --color-blue-soft: #eef5f3;
+    --color-blue-line: #d6e2dc;
 
     /* Accent Colors */
-    --color-accent-primary: #2563eb;
-    --color-accent-success: #059669;
-    --color-accent-warning: #d97706;
-    --color-accent-danger: #ef4444;
-    --color-accent-purple: #8b5cf6;
+    --color-accent-primary: #0f766e;
+    --color-accent-success: #15803d;
+    --color-accent-warning: #b45309;
+    --color-accent-danger: #dc2626;
+    --color-accent-purple: #6d5bd0;
 
     /* Metric Card Colors (corrispondono alle linee del grafico) */
     --color-metric-fp: #2563eb;
-    --color-metric-pac: #059669;
-    --color-metric-mix: #d97706;
-    --color-metric-breakeven: #db2777;
+    --color-metric-pac: #16a34a;
+    --color-metric-mix: #b45309;
+    --color-metric-breakeven: #7c3aed;
 
     /* Shadows */
-    --shadow-sm: 0 1px 2px rgb(37 99 235 / 0.06), 0 8px 18px rgb(15 23 42 / 0.04);
-    --shadow-md: 0 10px 24px rgb(37 99 235 / 0.10), 0 1px 2px rgb(15 23 42 / 0.05);
-    --shadow-lg: 0 16px 32px rgb(37 99 235 / 0.16);
+    --shadow-sm: 0 1px 2px rgb(23 32 51 / 0.06);
+    --shadow-md: 0 8px 20px rgb(23 32 51 / 0.08), 0 1px 2px rgb(23 32 51 / 0.06);
+    --shadow-lg: 0 18px 50px rgb(23 32 51 / 0.16);
 
     /* Typography */
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -45,6 +45,8 @@
     --radius-sm: 6px;
     --radius-md: 8px;
     --radius-lg: 8px;
+    --control-width: 22rem;
+    --control-wide-width: 28rem;
 
     /* Transitions */
     --transition: 0.2s ease;
@@ -59,8 +61,9 @@
     padding: 0;
 }
 
+/* Niente scroll-behavior globale: animerebbe anche il ripristino
+   dello scroll al refresh. Gli scroll fluidi voluti sono in JS. */
 html {
-    scroll-behavior: smooth;
     overflow-x: hidden;
 }
 
@@ -70,7 +73,7 @@ body {
     line-height: 1.6;
     color: var(--color-text-primary);
     background:
-        linear-gradient(180deg, #eaf3ff 0, var(--color-bg-page) 260px),
+        linear-gradient(180deg, #eef2e8 0, var(--color-bg-page) 240px),
         var(--color-bg-page);
     min-height: 100vh;
     overflow-x: hidden;
@@ -86,9 +89,9 @@ header {
     position: sticky;
     top: 0;
     z-index: 100;
-    border-top: 4px solid var(--color-accent-primary);
-    border-bottom: 1px solid var(--color-blue-line);
-    box-shadow: 0 1px 0 rgb(37 99 235 / 0.04);
+    border-top: 3px solid var(--color-accent-primary);
+    border-bottom: 1px solid var(--color-border-soft);
+    box-shadow: 0 1px 0 rgb(23 32 51 / 0.04);
 }
 
 .header-content {
@@ -106,18 +109,6 @@ header {
     align-items: center;
     gap: 1rem;
     min-width: 0;
-}
-
-.logo-icon {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, var(--color-accent-primary), #60a5fa);
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.125rem;
 }
 
 .logo h1 {
@@ -151,39 +142,40 @@ header {
    ============================================ */
 .tabs {
     display: flex;
-    gap: 0.25rem;
-    border: 1px solid var(--color-blue-line);
-    border-radius: var(--radius-lg);
-    padding: 0.25rem;
-    background: var(--color-bg-card);
-    box-shadow: 0 1px 2px rgb(37 99 235 / 0.08);
+    gap: 1.25rem;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
     overflow-x: auto;
     flex: 0 0 auto;
     min-width: 0;
 }
 
 .tab {
-    padding: 0.5rem 0.875rem;
+    padding: 0.25rem 0;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 650;
     color: var(--color-text-secondary);
     background: transparent;
     border: none;
     cursor: pointer;
-    border-radius: var(--radius-md);
+    border-radius: 0;
+    border-bottom: 2px solid transparent;
     transition: var(--transition);
     white-space: nowrap;
 }
 
 .tab:hover {
-    color: var(--color-text-primary);
-    background: var(--color-blue-soft);
+    color: var(--color-accent-primary);
 }
 
 .tab.active {
-    color: white;
-    background: linear-gradient(135deg, var(--color-accent-primary), #3b82f6);
-    box-shadow: 0 3px 10px rgb(37 99 235 / 0.18);
+    color: var(--color-accent-primary);
+    background: transparent;
+    box-shadow: none;
+    border-bottom-color: var(--color-accent-primary);
 }
 
 .tab i {
@@ -268,7 +260,6 @@ header {
 .metric-label {
     font-size: 0.75rem;
     font-weight: 600;
-    text-transform: uppercase;
     letter-spacing: 0;
     color: var(--color-text-secondary);
     margin-bottom: 0.5rem;
@@ -301,7 +292,6 @@ header {
     color: white;
     font-size: 0.625rem;
     font-weight: 600;
-    text-transform: uppercase;
     padding: 0.25rem 0.5rem;
     border-radius: var(--radius-sm);
 }
@@ -374,7 +364,6 @@ header {
     font-weight: 700;
     letter-spacing: 0;
     margin-bottom: 0.25rem;
-    text-transform: uppercase;
 }
 
 .result-explanation-value {
@@ -481,7 +470,6 @@ header {
     color: var(--color-text-primary);
     font-size: 0.78rem;
     font-weight: 800;
-    text-transform: uppercase;
 }
 
 .form-row + .control-section-heading,
@@ -494,7 +482,6 @@ header {
     color: var(--color-text-primary);
     font-size: 0.78rem;
     font-weight: 800;
-    text-transform: uppercase;
 }
 
 .section-hint {
@@ -715,7 +702,6 @@ select.form-control::-ms-expand {
     color: var(--color-text-primary);
     font-size: 0.78rem;
     font-weight: 800;
-    text-transform: uppercase;
 }
 
 .local-tax-subtitle {
@@ -860,22 +846,6 @@ select.form-control::-ms-expand {
 
 .variation-toggle input {
     accent-color: var(--color-accent-primary);
-}
-
-.variation-reset {
-    border: 1px solid #bdd4ee;
-    border-radius: 6px;
-    background: #ffffff;
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 0.25rem 0.45rem;
-}
-
-.variation-reset:hover {
-    border-color: var(--color-accent-primary);
-    color: var(--color-accent-primary);
 }
 
 .variation-grid .form-group {
@@ -1038,7 +1008,6 @@ body.modal-open {
     color: var(--color-accent-primary);
     font-size: 0.75rem;
     font-weight: 800;
-    text-transform: uppercase;
 }
 
 .guided-progress {
@@ -1119,21 +1088,6 @@ body.modal-open {
     margin-top: 1rem;
 }
 
-.summary-year-control {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(8rem, 12rem);
-    align-items: end;
-    gap: 0.75rem;
-    margin-top: 1rem;
-}
-
-.summary-year-control label {
-    color: var(--color-text-muted);
-    font-size: 0.78rem;
-    font-weight: 800;
-    text-transform: uppercase;
-}
-
 .guided-live-summary div {
     min-width: 0;
     padding: 0.875rem;
@@ -1147,7 +1101,6 @@ body.modal-open {
     color: var(--color-text-muted);
     font-size: 0.74rem;
     font-weight: 700;
-    text-transform: uppercase;
 }
 
 .guided-live-summary strong {
@@ -1216,7 +1169,6 @@ body.modal-open {
     color: var(--color-text-secondary);
     font-size: 0.75rem;
     font-weight: 500;
-    text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
@@ -1307,18 +1259,17 @@ body.modal-open {
 
 /* Help trigger - click per info */
 .help-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
     cursor: pointer;
     color: var(--color-text-primary);
-    text-decoration-line: underline;
-    text-decoration-style: dotted;
-    text-decoration-color: #93c5fd;
-    text-underline-offset: 3px;
+    text-decoration: none;
     transition: var(--transition);
 }
 
 .help-trigger:hover {
     color: var(--color-accent-primary);
-    text-decoration-color: var(--color-accent-primary);
 }
 
 /* Modal Help */
@@ -1639,7 +1590,6 @@ th {
     text-align: right;
     font-weight: 600;
     font-size: 0.6875rem;
-    text-transform: uppercase;
     letter-spacing: 0;
     white-space: nowrap;
     position: sticky;
@@ -1757,7 +1707,6 @@ td.best-value {
     padding: 0.25rem 0.5rem;
     font-size: 0.625rem;
     font-weight: 600;
-    text-transform: uppercase;
     letter-spacing: 0.05em;
     border-radius: var(--radius-sm);
     margin-right: 0.5rem;
@@ -1809,20 +1758,17 @@ td.best-value {
 
 .docs-index {
     display: flex;
-    flex-direction: column;
-    gap: 0;
-    max-width: 280px;
-    padding: 0;
-    margin: 0 0 2rem;
-    background: transparent;
-    border-left: 3px solid var(--color-accent-primary);
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    max-width: none;
+    margin: 0 0 1rem;
+    padding: 1rem;
 }
 
 .docs-index strong {
     display: block;
     padding: 0 0 0.5rem 0.875rem;
     font-size: 0.8125rem;
-    text-transform: uppercase;
     letter-spacing: 0;
     color: var(--color-text-primary);
 }
@@ -1893,9 +1839,9 @@ td.best-value {
     color: var(--color-text-primary);
 }
 
-/* Code blocks - simple gray background */
+/* Code blocks - stesso neutro verde-grigio del resto del sito */
 .docs-section pre {
-    background: #f8fbff;
+    background: #f8fbf9;
     border: 1px solid var(--color-blue-line);
     border-radius: var(--radius-sm);
     padding: 1rem;
@@ -1927,7 +1873,7 @@ td.best-value {
 }
 
 .docs-section th {
-    background: #eaf3ff;
+    background: #f8fbf9;
     font-weight: 600;
     color: var(--color-text-primary);
 }
@@ -2018,17 +1964,824 @@ td.best-value {
 }
 
 /* ============================================
+   UX/UI Refactor
+   ============================================ */
+#calculator-content.active {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+#calculator-content .intro-section { order: 1; }
+#calculator-content .config-workspace { order: 2; }
+#calculator-content .results-workspace { order: 3; }
+#calculator-content .chart-section { order: 4; }
+#calculator-content .detail-workspace { order: 5; }
+
+#input-form {
+    order: initial;
+}
+
+.intro-section {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 2rem;
+    padding: 1.35rem 1.45rem;
+    background: #ffffff;
+    border: 1px solid var(--color-border-soft);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.intro-copy {
+    min-width: 0;
+}
+
+.intro-copy h2 {
+    max-width: 56rem;
+    margin: 0;
+    color: var(--color-text-primary);
+    font-size: clamp(1.55rem, 2.7vw, 2.35rem);
+    font-weight: 780;
+    line-height: 1.08;
+}
+
+.intro-copy p:not(.section-kicker) {
+    max-width: 54rem;
+    margin: 0.75rem 0 0;
+    color: var(--color-text-secondary);
+    font-size: 0.98rem;
+    line-height: 1.55;
+}
+
+.intro-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.intro-primary {
+    min-height: 2.7rem;
+    padding-inline: 1rem;
+}
+
+.intro-link {
+    color: var(--color-accent-primary);
+    font-weight: 750;
+    text-decoration: none;
+    white-space: normal;
+}
+
+.intro-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.workspace-section {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-soft);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    min-width: 0;
+}
+
+.section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 0.95rem 1rem 0.8rem;
+    border-bottom: 1px solid var(--color-border-soft);
+    background: #fbfcf8;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    min-width: 0;
+}
+
+.section-heading-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.section-collapse-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-accent-primary);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 750;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.section-collapse-toggle:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.section-collapse-toggle i {
+    font-size: 0.7rem;
+    transition: transform var(--transition);
+}
+
+.config-workspace.collapsed .section-collapse-toggle i {
+    transform: rotate(-90deg);
+}
+
+.config-workspace.collapsed #input-form {
+    display: none;
+}
+
+.annual-explorer-section.collapsed .annual-explorer-body {
+    display: none;
+}
+
+.section-heading h2 {
+    margin: 0;
+    color: var(--color-text-primary);
+    font-size: 1.02rem;
+    font-weight: 750;
+    line-height: 1.2;
+}
+
+.section-heading p {
+    max-width: 42rem;
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.section-heading .section-kicker {
+    margin: 0 0 0.2rem;
+    color: var(--color-accent-primary);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-align: left;
+}
+
+.config-workspace #input-form {
+    padding: 1.25rem;
+}
+
+.btn-primary {
+    background: var(--color-accent-primary);
+    border-color: #0b5f59;
+    box-shadow: none;
+}
+
+.btn-primary:hover {
+    background: #0b5f59;
+    border-color: #084c48;
+    box-shadow: 0 8px 18px rgb(15 118 110 / 0.18);
+}
+
+.params-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin-bottom: 0;
+    background: var(--color-border-soft);
+    border: 1px solid var(--color-border-soft);
+}
+
+.param-card {
+    background: #ffffff;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+}
+
+.param-card .card-header {
+    background: #fbfcf8;
+    border-bottom-color: var(--color-border-soft);
+    color: var(--color-text-primary);
+    font-size: 0.86rem;
+    font-weight: 780;
+    padding: 0.85rem 1rem;
+}
+
+.param-card .card-body {
+    padding: 1rem;
+}
+
+.param-card .card-header i,
+.results-title i,
+.chart-title i {
+    color: var(--color-accent-primary);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), var(--control-width)));
+    gap: 0.875rem;
+    justify-content: start;
+}
+
+.form-row-4 {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), var(--control-width)));
+}
+
+.form-group.full-width {
+    grid-column: auto;
+}
+
+.form-group,
+.variation-grid {
+    width: min(100%, var(--control-width));
+    max-width: none;
+}
+
+.form-control,
+.computed-output,
+.variation-grid {
+    width: 100%;
+}
+
+.autocomplete-group,
+.local-tax-panel,
+.card-more-options,
+.assumptions-details,
+.guided-note,
+.info-box,
+    .input-warnings,
+    .guided-live-summary,
+    .investment-mode-summary,
+    .return-gross-fields {
+    max-width: 100%;
+}
+
+.local-tax-panel .form-row,
+.card-more-options .form-row,
+.return-gross-fields .form-row,
+.guided-step .form-row {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), var(--control-width)));
+    justify-content: start;
+}
+
+.variation-grid .form-row {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 10rem));
+}
+
+.scenario-variable-row {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 0.25rem;
+}
+
+.scenario-variable + .scenario-variable,
+.scenario-variable + .form-row {
+    margin-top: 1rem;
+}
+
+.form-group label {
+    color: var(--color-text-secondary);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.form-control,
+.computed-output {
+    min-height: 2.45rem;
+    background: var(--color-bg-input);
+    border-color: var(--color-border);
+}
+
+.form-control:focus {
+    border-color: var(--color-border-focus);
+    box-shadow: 0 0 0 3px rgb(15 118 110 / 0.14);
+}
+
+.control-section-heading {
+    border-top-color: var(--color-border-soft);
+}
+
+.local-tax-panel,
+.card-more-options,
+.assumptions-details {
+    background: #f8faf5;
+    border-color: var(--color-border-soft);
+}
+
+.local-tax-mode-toggle,
+.table-view-tabs {
+    background: #f8faf5;
+    border-color: var(--color-border-soft);
+}
+
+.local-tax-mode-button.active,
+.table-view-tab.active {
+    background: var(--color-accent-primary);
+    color: #ffffff;
+}
+
+.variation-grid {
+    margin-top: 0.2rem;
+    margin-bottom: 0;
+    padding: 0;
+    background: #fbfcf8;
+    border: 1px solid var(--color-border-soft);
+    border-radius: var(--radius-md);
+}
+
+.scenario-variable-row .variation-grid {
+    width: min(100%, var(--control-width));
+    justify-self: start;
+}
+
+.variation-grid summary {
+    list-style: none;
+}
+
+.variation-grid summary::-webkit-details-marker {
+    display: none;
+}
+
+.variation-header {
+    margin: 0;
+    min-height: 2.15rem;
+    padding: 0.42rem 0.65rem;
+    cursor: pointer;
+}
+
+.variation-header > span,
+.variation-header > .help-trigger {
+    color: var(--color-text-secondary);
+    font-size: 0.76rem;
+    font-weight: 750;
+}
+
+.variation-chevron {
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    transition: transform var(--transition);
+}
+
+.variation-grid[open] .variation-chevron {
+    transform: rotate(180deg);
+}
+
+.variation-body {
+    padding: 0 0.75rem 0.75rem;
+}
+
+.variation-toggle {
+    width: fit-content;
+    margin-bottom: 0.75rem;
+    gap: 0.25rem;
+    padding: 0.2rem;
+    background: #ffffff;
+    border: 1px solid var(--color-border-soft);
+    border-radius: var(--radius-sm);
+}
+
+.variation-toggle label {
+    min-width: 2.25rem;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.45rem;
+    border-radius: 4px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+
+.variation-toggle label:has(input:checked) {
+    color: #ffffff;
+    background: var(--color-accent-primary);
+}
+
+.variation-grid .form-row {
+    gap: 0.75rem;
+}
+
+.info-box,
+.guided-note {
+    color: #25514d;
+    background: #eef5f3;
+    border-color: #cfe0da;
+}
+
+.input-warning {
+    color: #7c3f00;
+    background: #fff7ed;
+    border-color: #fed7aa;
+}
+
+.results-workspace {
+    padding: 0;
+    overflow: hidden;
+}
+
+.results-body {
+    padding: 1.5rem;
+}
+
+.result-decision-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(22rem, 1.05fr);
+    gap: 1px;
+    margin-bottom: 1.45rem;
+    background: var(--color-border-soft);
+    border: 1px solid var(--color-border-soft);
+}
+
+.result-decision-main,
+.result-decision-side {
+    min-width: 0;
+    background: #fbfcf8;
+    padding: 1.2rem;
+}
+
+.result-decision-main {
+    background: #f2fbf5;
+}
+
+.result-decision-main h3 {
+    color: var(--color-text-primary);
+    font-size: 1.05rem;
+    line-height: 1.2;
+    margin: 0.25rem 0 0.65rem;
+}
+
+.result-best-value {
+    color: var(--color-text-primary);
+    font-family: var(--font-mono);
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.05;
+}
+
+.result-decision-main p,
+.result-decision-side p {
+    color: var(--color-text-secondary);
+    font-size: 0.88rem;
+    line-height: 1.45;
+    margin: 0.65rem 0 0;
+}
+
+.result-sequence-value {
+    color: var(--color-text-primary);
+    font-family: var(--font-mono);
+    font-size: 1.45rem;
+    font-weight: 800;
+    line-height: 1.25;
+    margin-top: 0.3rem;
+}
+
+.result-block-label {
+    color: var(--color-text-secondary);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.85rem;
+}
+
+.results-workspace .metrics-dashboard,
+.results-workspace .result-explanation {
+    margin: 0;
+}
+
+.results-workspace .metrics-dashboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    padding: 0 0 1.45rem;
+    border-bottom: 1px solid var(--color-border-soft);
+}
+
+.results-workspace .metric-card {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    min-height: 0;
+    padding: 0.95rem 1.2rem 0.2rem;
+    transition: none;
+}
+
+.results-workspace .metric-card:hover {
+    border-color: var(--color-border-soft);
+    box-shadow: none;
+}
+
+
+.results-workspace .metric-card + .metric-card {
+    border-left: 1px solid var(--color-border-soft);
+}
+
+.results-workspace .metric-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 1.2rem;
+    right: 1.2rem;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--color-border);
+}
+
+.results-workspace .metric-card.metric-fp::before {
+    background: var(--color-metric-fp);
+}
+
+.results-workspace .metric-card.metric-pac::before {
+    background: var(--color-metric-pac);
+}
+
+.results-workspace .metric-card.metric-mix::before {
+    background: var(--color-metric-mix);
+}
+
+.results-workspace .metric-label {
+    color: var(--color-text-secondary);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.65rem;
+}
+
+.results-workspace .metric-value {
+    font-size: 1.55rem;
+    line-height: 1.15;
+}
+
+.results-workspace .metric-card.best {
+    background: #f2fbf5;
+}
+
+.results-workspace .metric-card.best::before {
+    background: var(--color-accent-success);
+}
+
+.results-workspace .metric-badge {
+    background: var(--color-accent-success);
+    border-radius: 999px;
+    top: 0.9rem;
+    right: 1.2rem;
+    font-size: 0.6rem;
+}
+
+.decision-eyebrow {
+    color: var(--color-accent-primary);
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.25rem;
+}
+
+.results-workspace .result-explanation {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 1.35rem 0 0;
+}
+
+.results-workspace .result-explanation-header {
+    margin-bottom: 1.25rem;
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.results-workspace .result-explanation-header h3 {
+    font-size: 1.05rem;
+}
+
+.results-workspace .result-explanation-header p {
+    max-width: 70rem;
+    font-size: 0.93rem;
+    line-height: 1.55;
+}
+
+.result-analysis-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(20rem, 0.8fr);
+    gap: 1.5rem;
+}
+
+.result-analysis-group {
+    min-width: 0;
+}
+
+.result-analysis-group h4 {
+    color: var(--color-text-secondary);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    margin: 0 0 0.7rem;
+}
+
+.results-workspace .result-explanation-grid {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--color-border-soft);
+}
+
+.results-workspace .result-explanation-grid-primary,
+.results-workspace .result-explanation-grid-secondary {
+    grid-template-columns: 1fr;
+}
+
+.results-workspace .result-explanation-card {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    gap: 0.8rem;
+    padding: 1.05rem 1.1rem 1.05rem 0;
+}
+
+.results-workspace .result-explanation-card + .result-explanation-card {
+    border-top: 1px solid var(--color-border-soft);
+}
+
+.results-workspace .result-explanation-card i {
+    color: #0f766e;
+    margin-top: 0.15rem;
+}
+
+.results-workspace .result-explanation-value {
+    font-size: 1rem;
+}
+
+.results-workspace .result-explanation-detail {
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.chart-section,
+.results-section {
+    margin-top: 0;
+    padding: 0;
+    border-color: var(--color-border-soft);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.results-title,
+.chart-title {
+    margin: 0;
+    padding: 0.95rem 1rem 0.8rem;
+    border-bottom: 1px solid var(--color-border-soft);
+    background: #fbfcf8;
+}
+
+.results-content,
+.chart-content {
+    padding: 1rem;
+}
+
+.chart-container {
+    background: #fbfcf8;
+    border-color: var(--color-border-soft);
+}
+
+.table-container {
+    border-color: var(--color-border-soft);
+}
+
+th {
+    background: #eef5f3;
+    color: #25514d;
+}
+
+td {
+    border-bottom-color: var(--color-border-soft);
+}
+
+tr:hover td {
+    background: rgb(15 118 110 / 0.055);
+}
+
+.guided-dialog,
+.help-modal-content,
+.docs-section {
+    border-color: var(--color-border-soft);
+}
+
+.guided-header,
+.guided-footer,
+.help-modal-header {
+    background: #fbfcf8;
+    border-color: var(--color-border-soft);
+}
+
+.guided-progress {
+    background: #e4ece7;
+}
+
+.guided-progress span {
+    background: var(--color-accent-primary);
+}
+
+.guided-live-summary div {
+    background: #fbfcf8;
+    border-color: var(--color-border-soft);
+}
+
+.footer {
+    background: #eef2e8;
+    border-top-color: var(--color-border-soft);
+}
+
+/* ============================================
    Responsive Design
    ============================================ */
-@media (max-width: 1024px) {
+.result-explanation-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.result-explanation-header {
+    margin-bottom: 1.1rem;
+}
+
+.result-explanation-card {
+    padding: 1rem;
+}
+
+.result-explanation-value {
+    font-size: 1rem;
+}
+
+.result-explanation-detail {
+    font-size: 0.82rem;
+}
+
+.chart-section,
+.results-section {
+    padding: 0;
+}
+
+.chart-container {
+    height: 360px;
+}
+
+.results-title,
+.chart-title {
+    font-size: 0.92rem;
+}
+
+.table-view-tabs {
+    width: 100%;
+}
+
+.table-view-tab {
+    flex: 1 1 0;
+}
+
+@media (max-width: 1120px) {
+    .params-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .metrics-dashboard {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
     .result-explanation-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+}
 
+@media (max-width: 980px) {
+    .intro-section {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .intro-actions {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 900px) {
+    .params-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .metrics-dashboard {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .result-explanation-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 901px) and (max-width: 1024px) {
     .form-row-4 {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -2041,8 +2794,17 @@ td.best-value {
         gap: 0.75rem;
     }
 
-    .logo-icon {
-        display: none;
+    .tabs {
+        width: 100%;
+        justify-content: stretch;
+        gap: 0.75rem;
+        overflow-x: hidden;
+    }
+
+    .tab {
+        flex: 1 1 0;
+        min-width: 0;
+        text-align: center;
     }
 
     .page-container {
@@ -2185,13 +2947,13 @@ td.best-value {
     .results-section,
     .chart-section {
         margin-bottom: 1rem;
-        padding: 0.875rem;
+        padding: 0;
     }
 
     .results-title,
     .chart-title {
         font-size: 0.9rem;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0;
     }
 
     .chart-container {
@@ -2328,6 +3090,38 @@ td.best-value {
 }
 
 @media (max-width: 480px) {
+    header {
+        padding: 0.55rem 0.75rem;
+    }
+
+    .subheader {
+        display: none;
+    }
+
+    .tabs {
+        gap: 0.35rem;
+    }
+
+    .tab {
+        font-size: 0.7rem;
+        padding: 0.45rem 0.25rem;
+    }
+
+    .intro-section {
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .intro-copy {
+        max-width: 100%;
+    }
+
+    .intro-copy h2 {
+        font-size: 1.2rem;
+        line-height: 1.14;
+        word-break: normal;
+    }
+
     .page-container {
         padding: 0.75rem;
         width: 100%;
@@ -2345,27 +3139,12 @@ td.best-value {
         min-width: 0;
     }
 
-    header {
-        padding: 0.75rem 1rem;
-    }
-
-    .logo-icon {
-        width: 36px;
-        height: 36px;
-        font-size: 1.125rem;
-    }
-
     .logo {
         gap: 0.75rem;
     }
 
     .logo h1 {
-        font-size: 0.875rem;
-    }
-
-    .tab {
-        padding: 0.625rem 0.75rem;
-        font-size: 0.75rem;
+        font-size: 0.78rem;
     }
 
     .help-modal {
@@ -2475,12 +3254,12 @@ td.best-value {
     .results-title,
     .chart-title {
         font-size: 0.8125rem;
-        margin-bottom: 0.25rem;
+        margin-bottom: 0;
     }
 
     .results-content,
     .chart-content {
-        padding: 0;
+        padding: 0.875rem;
     }
 
     .chart-container {
@@ -2514,4 +3293,2326 @@ td.best-value {
         width: 40px;
         height: 40px;
     }
+}
+
+@media (max-width: 768px) {
+    #calculator-content.active {
+        gap: 1rem;
+    }
+
+    .intro-section {
+        padding: 1rem;
+    }
+
+    .intro-copy h2 {
+        font-size: 1.45rem;
+        line-height: 1.12;
+        overflow-wrap: anywhere;
+    }
+
+    .intro-copy p:not(.section-kicker) {
+        font-size: 0.9rem;
+    }
+
+    .intro-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .intro-primary,
+    .intro-link {
+        width: 100%;
+    }
+
+    .intro-link {
+        text-align: center;
+    }
+
+    .section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.35rem;
+        padding: 0.875rem;
+    }
+
+    .section-heading p {
+        max-width: none;
+        text-align: left;
+    }
+
+    .section-heading-actions {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .config-workspace #input-form {
+        padding: 0.875rem;
+    }
+
+    .mode-copy {
+        text-align: left;
+    }
+
+    .variation-header {
+        padding: 0.7rem 0.75rem;
+    }
+
+    .variation-body {
+        padding: 0 0.75rem 0.75rem;
+    }
+
+    .variation-toggle {
+        width: 100%;
+    }
+
+    .variation-toggle label {
+        flex: 1 1 0;
+    }
+
+    .results-body {
+        padding: 0.875rem;
+    }
+
+    .results-workspace .metrics-dashboard {
+        gap: 0;
+        grid-template-columns: 1fr;
+        margin-bottom: 0;
+        padding: 0;
+    }
+
+    .results-workspace .metric-card {
+        display: block;
+        padding: 1rem 0;
+        text-align: left;
+    }
+
+    .results-workspace .metric-card + .metric-card {
+        border-left: 0;
+        border-top: 1px solid var(--color-border-soft);
+    }
+
+    .results-workspace .metric-card::before {
+        left: 0;
+        right: 0;
+    }
+
+    .results-workspace .metric-value {
+        font-size: 1.35rem;
+        text-align: left;
+        white-space: normal;
+    }
+
+    .results-workspace .metric-subtitle {
+        display: block;
+    }
+
+    .result-decision-panel,
+    .result-analysis-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .result-best-value {
+        font-size: 1.6rem;
+    }
+
+    .result-sequence-value {
+        font-size: 1.2rem;
+    }
+
+    .results-workspace .result-explanation {
+        margin: 0;
+        padding-top: 1.1rem;
+    }
+
+    .results-workspace .result-explanation-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .results-workspace .result-explanation-card,
+    .results-workspace .result-explanation-card:nth-child(even) {
+        padding: 0.95rem 0;
+        border-left: 0;
+    }
+
+    .results-workspace .result-explanation-card + .result-explanation-card {
+        border-top: 1px solid var(--color-border-soft);
+    }
+}
+
+@media (max-width: 480px) {
+    .page-container {
+        padding: 1rem;
+    }
+
+    .workspace-section {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .section-heading h2 {
+        font-size: 1rem;
+    }
+
+    .calculator-mode-panel {
+        padding: 0.875rem;
+    }
+
+    .guided-cta {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ============================================
+   UX/UI redesign 2026
+   ============================================ */
+:root {
+    --color-bg-page: #f4f8f6;
+    --color-bg-card: #ffffff;
+    --color-bg-header: #ffffff;
+    --color-bg-input: #ffffff;
+    --color-text-primary: #172033;
+    --color-text-secondary: #52645f;
+    --color-text-muted: #6f7f7a;
+    --color-border: #bfd2ca;
+    --color-border-soft: #d7e3de;
+    --color-border-focus: #0f766e;
+    --color-blue-soft: #edf7f3;
+    --color-blue-line: #d7e3de;
+    --color-accent-primary: #0f766e;
+    --color-metric-fp: #2563eb;
+    --color-metric-pac: #d97706;
+    --color-metric-mix: #0f766e;
+    --control-width: 15.5rem;
+    --shadow-sm: 0 1px 2px rgb(23 32 51 / 0.04);
+    --shadow-md: 0 8px 20px rgb(23 32 51 / 0.08), 0 1px 2px rgb(23 32 51 / 0.05);
+}
+
+body {
+    background:
+        linear-gradient(180deg, #e8f3ee 0, var(--color-bg-page) 260px),
+        var(--color-bg-page);
+}
+
+header {
+    position: static;
+    padding: 1rem 1.5rem;
+    border-top: 0;
+    border-bottom: 1px solid var(--color-border-soft);
+    box-shadow: none;
+}
+
+.header-content {
+    max-width: 1180px;
+}
+
+/* Il padding laterale sta fuori dai 1180px: il contenuto interno
+   resta largo quanto .header-content e i bordi sono in asse. */
+.page-container {
+    max-width: calc(1180px + 3rem);
+}
+
+.logo h1 {
+    font-size: 1rem;
+    font-weight: 850;
+}
+
+.subheader {
+    margin-top: 0.15rem;
+    font-size: 0.78rem;
+}
+
+.tabs {
+    gap: 1.25rem;
+}
+
+.tab {
+    font-size: 0.82rem;
+    font-weight: 850;
+}
+
+#calculator-content.active {
+    gap: 1.45rem;
+}
+
+/* Sfondo pulito: nessuna grafica dietro il testo, solo un velo di
+   verde sul bordo destro dove non ci sono scritte. */
+.intro-section {
+    position: relative;
+    overflow: hidden;
+    grid-template-columns: minmax(0, 1fr) minmax(13rem, auto);
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    background:
+        linear-gradient(100deg, #ffffff 0%, #ffffff 72%, #eef7f3 100%),
+        #ffffff;
+    border-color: var(--color-border-soft);
+    border-radius: 10px;
+}
+
+.intro-copy,
+.intro-actions {
+    position: relative;
+    z-index: 1;
+}
+
+.intro-copy h2 {
+    max-width: 46rem;
+    font-size: 1.35rem;
+    letter-spacing: 0;
+}
+
+.section-kicker {
+    color: var(--color-accent-primary);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+}
+
+/* Solo il bottone, grande e senza card contenitore. */
+.intro-actions {
+    display: grid;
+    justify-items: stretch;
+    width: min(100%, 17rem);
+    padding: 0;
+    background: transparent;
+    border: 0;
+}
+
+.intro-actions .intro-primary {
+    min-height: 3.4rem;
+    padding-inline: 1.6rem;
+    font-size: 1.02rem;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgb(15 118 110 / 0.28);
+}
+
+.intro-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.25rem;
+}
+
+.workspace-section {
+    border-color: var(--color-border-soft);
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+}
+
+.config-workspace {
+    background: var(--color-bg-card);
+}
+
+.section-heading {
+    align-items: flex-end;
+    padding: 0 0 0.65rem;
+    background: transparent;
+    border: 0;
+}
+
+.workspace-section > .section-heading {
+    margin-bottom: 0.75rem;
+}
+
+.config-workspace > .section-heading {
+    margin: 0;
+    padding: 0 0 0.75rem;
+}
+
+.section-heading h2 {
+    font-size: 1.2rem;
+    font-weight: 850;
+}
+
+.section-heading p:not(.section-kicker) {
+    max-width: 42rem;
+    margin-top: 0.25rem;
+    color: var(--color-text-secondary);
+    text-align: left;
+}
+
+.config-workspace {
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.config-workspace #input-form {
+    padding: 1.1rem;
+    background: #f8fbf9;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 8px;
+}
+
+.params-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    background: transparent;
+    border: 0;
+}
+
+.param-card {
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.param-card .card-header {
+    gap: 0.55rem;
+    padding: 0.95rem 1rem 0;
+    background: transparent;
+    border: 0;
+    font-size: 0.98rem;
+    font-weight: 850;
+}
+
+.param-card .card-header i {
+    display: none;
+}
+
+.param-card .card-body {
+    padding: 1rem;
+}
+
+.form-row,
+.local-tax-panel .form-row,
+.card-more-options .form-row,
+.return-gross-fields .form-row,
+.guided-step .form-row {
+    grid-template-columns: repeat(2, minmax(0, var(--control-width)));
+    gap: 0.9rem;
+    justify-content: start;
+}
+
+.form-group,
+.variation-grid {
+    width: min(100%, var(--control-width));
+}
+
+.form-group.full-width {
+    grid-column: auto;
+}
+
+.form-group label {
+    min-height: 1.1rem;
+    color: var(--color-text-secondary);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.03em;
+}
+
+.form-control,
+.computed-output {
+    min-height: 2.75rem;
+    border-color: var(--color-border);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.scenario-variable-row {
+    grid-template-columns: minmax(0, var(--control-width)) minmax(0, var(--control-width));
+    gap: 0.9rem;
+}
+
+.variation-grid {
+    margin-top: 0;
+    background: #f8fbf9;
+    border-color: var(--color-border-soft);
+    border-radius: 7px;
+}
+
+.variation-header {
+    min-height: 2.75rem;
+    padding: 0 0.75rem;
+}
+
+.variation-body {
+    padding: 0 0.75rem 0.75rem;
+}
+
+.variation-grid .form-row {
+    grid-template-columns: repeat(2, minmax(0, 6.75rem));
+}
+
+.variation-grid .form-group {
+    width: 100%;
+}
+
+.variation-toggle,
+.local-tax-mode-toggle {
+    background: #edf7f3;
+    border-color: var(--color-border);
+}
+
+.variation-toggle label:has(input:checked),
+.local-tax-mode-button.active {
+    background: var(--color-accent-primary);
+}
+
+.local-tax-panel,
+.card-more-options,
+.assumptions-details {
+    background: transparent;
+    border: 0;
+    padding: 0;
+}
+
+.local-tax-panel-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+}
+
+.local-tax-subtitle,
+.assumptions-details,
+.param-card .info-box:not(.investment-mode-note):not(.local-tax-info) {
+    display: none;
+}
+
+.visually-hidden-control {
+    display: none !important;
+}
+
+.card-more-options {
+    margin-top: 1rem;
+}
+
+.card-more-options summary {
+    display: none;
+}
+
+.advanced-tax-options {
+    display: block;
+}
+
+.control-section-heading {
+    margin-top: 1rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--color-border-soft);
+}
+
+.guided-live-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.guided-live-summary div {
+    background: #f8fbf9;
+    border-color: var(--color-border-soft);
+}
+
+.input-warnings {
+    grid-column: 1 / -1;
+}
+
+.results-workspace {
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.results-body {
+    display: grid;
+    gap: 1.1rem;
+    padding: 1.1rem;
+    background: #ffffff;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 8px;
+}
+
+.result-decision-panel {
+    gap: 1.4rem;
+    margin: 0;
+    padding: 1.35rem;
+    background: #ffffff;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 8px;
+}
+
+.result-decision-main,
+.result-decision-side {
+    padding: 0;
+    background: transparent;
+}
+
+.result-decision-main h3 {
+    font-size: 0.95rem;
+}
+
+.result-best-value {
+    margin-top: 0.25rem;
+    font-family: var(--font-sans);
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 900;
+}
+
+.result-sequence-value {
+    font-family: var(--font-sans);
+    font-size: 1.45rem;
+}
+
+.decision-subsection {
+    display: grid;
+    gap: 0.85rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border-soft);
+}
+
+.result-section-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.result-section-head h3 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.result-section-head p,
+.result-section-head span {
+    color: var(--color-text-secondary);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.results-workspace .metrics-dashboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+    padding: 0;
+    border: 0;
+}
+
+.results-workspace .metric-card,
+.results-workspace .metric-card.best {
+    padding: 1rem;
+    background: #ffffff;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 8px;
+}
+
+.results-workspace .metric-card + .metric-card {
+    border-left: 1px solid var(--color-border-soft);
+}
+
+.results-workspace .metric-card::before {
+    display: none;
+}
+
+.results-workspace .result-explanation {
+    padding: 1rem 0 0;
+}
+
+.result-analysis-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.85rem;
+}
+
+.results-workspace .result-explanation-grid-primary,
+.results-workspace .result-explanation-grid-secondary {
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 0.85rem;
+    border: 0;
+}
+
+.result-analysis-group-secondary {
+    display: none;
+}
+
+.results-workspace .result-explanation-card {
+    padding: 1rem;
+    background: #ffffff;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 8px;
+}
+
+.results-workspace .result-explanation-card + .result-explanation-card {
+    border-top: 1px solid var(--color-border-soft);
+}
+
+.results-section,
+.chart-section,
+.annual-explorer-section {
+    margin-top: 0;
+    padding: 1.1rem;
+    background: #ffffff;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+}
+
+.annual-explorer-body {
+    display: grid;
+    gap: 1rem;
+}
+
+.results-title,
+.chart-title {
+    margin: 0 0 0.85rem;
+    cursor: pointer;
+    font-size: 1.05rem;
+    font-weight: 850;
+}
+
+.table-view-tabs {
+    display: none;
+}
+
+.table-container {
+    overflow: hidden;
+    border-color: var(--color-border-soft);
+    border-radius: 8px;
+}
+
+th {
+    background: #f8fbf9;
+    color: var(--color-text-primary);
+}
+
+td {
+    border-bottom-color: var(--color-border-soft);
+}
+
+/* Tabella annuale allineata al mockup: sans, testo a sinistra, header grigio chiaro. */
+.results-section table {
+    font-family: inherit;
+    font-size: 0.8rem;
+}
+
+.results-section th,
+.results-section td {
+    padding: 0.65rem 0.75rem;
+    text-align: left;
+}
+
+.results-section th {
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    white-space: normal;
+}
+
+.results-section td {
+    color: var(--color-text-secondary);
+}
+
+.results-section td:first-child {
+    color: var(--color-text-primary);
+    font-weight: 700;
+}
+
+.results-section tbody tr {
+    cursor: pointer;
+}
+
+.results-section tr:hover td,
+.results-section tr:hover td:first-child {
+    background: #f0faf5;
+}
+
+/* Riga dell'anno selezionato nell'esploratore annuale. */
+.results-section tr.active td,
+.results-section tr.active td:first-child {
+    background: #f0faf5;
+    color: var(--color-text-primary);
+    font-weight: 750;
+}
+
+.annual-explorer-section {
+    display: grid;
+    gap: 1rem;
+}
+
+.year-select {
+    display: grid;
+    gap: 0.35rem;
+    width: min(100%, 12rem);
+}
+
+.annual-explorer {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.year-answer,
+.annual-inputs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.year-answer-card,
+.annual-input,
+.calc-step {
+    min-width: 0;
+    padding: 0.9rem;
+    background: #ffffff;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 8px;
+}
+
+.year-answer-card.main {
+    background: #f0faf5;
+    border-color: #abd7c1;
+}
+
+.year-answer-card span,
+.annual-input span,
+.step-meta,
+.step-row span {
+    display: block;
+    color: var(--color-text-secondary);
+    font-size: 0.67rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+}
+
+.year-answer-card strong,
+.annual-input strong {
+    display: block;
+    margin-top: 0.3rem;
+    color: var(--color-text-primary);
+    font-size: 1.2rem;
+    font-weight: 900;
+    line-height: 1.15;
+}
+
+.year-answer-card p,
+.annual-input p,
+.calc-step p {
+    margin-top: 0.35rem;
+    color: var(--color-text-secondary);
+    font-size: 0.78rem;
+    line-height: 1.35;
+}
+
+.annual-input {
+    background: #f8fbf9;
+}
+
+.calc-flow {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.calc-step {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+}
+
+.step-title {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: start;
+}
+
+.step-title h4 {
+    margin: 0.15rem 0 0;
+    font-size: 0.95rem;
+}
+
+.step-title strong {
+    white-space: nowrap;
+}
+
+.step-formula {
+    margin-top: 0.65rem;
+    padding: 0.55rem 0.7rem;
+    color: #245c51;
+    background: #edf7f3;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.35;
+}
+
+.step-rows {
+    display: grid;
+    gap: 0.45rem;
+    margin-top: 0.65rem;
+}
+
+.step-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: baseline;
+    padding-top: 0.55rem;
+    border-top: 1px solid var(--color-border-soft);
+}
+
+.step-row strong {
+    white-space: nowrap;
+}
+
+.chart-container {
+    height: 360px;
+    padding: 1rem;
+    background: #ffffff;
+    border-color: var(--color-border-soft);
+}
+
+@media (max-width: 980px) {
+    .params-grid,
+    .result-decision-panel,
+    .results-workspace .result-explanation-grid-primary,
+    .year-answer,
+    .annual-inputs,
+    .calc-flow {
+        grid-template-columns: 1fr;
+    }
+
+    .scenario-variable-row,
+    .form-row,
+    .local-tax-panel .form-row,
+    .card-more-options .form-row,
+    .return-gross-fields .form-row,
+    .guided-step .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group,
+    .variation-grid,
+    .scenario-variable-row .variation-grid {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .intro-section {
+        grid-template-columns: 1fr;
+    }
+
+    .intro-section::before,
+    .intro-section::after {
+        display: none;
+    }
+
+    .intro-actions {
+        width: 100%;
+    }
+
+    .section-heading,
+    .result-section-head,
+    .step-title,
+    .step-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        align-items: start;
+    }
+
+    .config-workspace #input-form,
+    .results-body,
+    .results-section,
+    .chart-section,
+    .annual-explorer-section {
+        padding: 0.85rem;
+    }
+
+    .calc-step {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Final layout corrections: keep the UX order and control plancia aligned. */
+#calculator-content .intro-section { order: 1; }
+#calculator-content .config-workspace { order: 2; }
+#calculator-content .results-workspace { order: 3; }
+#calculator-content .detail-workspace { order: 4; }
+#calculator-content .annual-explorer-section { order: 5; }
+#calculator-content .chart-section { order: 6; }
+
+.config-workspace #input-form {
+    padding: 1.1rem;
+}
+
+.params-grid {
+    align-items: start;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.param-card {
+    min-width: 0;
+}
+
+.param-card .card-body {
+    display: grid;
+    gap: 1rem;
+}
+
+.control-subgroups {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.control-subgroup {
+    min-width: 0;
+    padding: 0.85rem;
+    background: #ffffff;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 7px;
+}
+
+.control-subgroup-title {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.7rem;
+}
+
+.control-subgroup-title strong {
+    color: var(--color-text-primary);
+    font-size: 0.86rem;
+    font-weight: 850;
+    line-height: 1.2;
+}
+
+.control-subgroup-title span {
+    color: var(--color-text-secondary);
+    font-size: 0.68rem;
+    font-weight: 850;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.control-subgroup > .control-section-heading:first-child,
+.control-subgroup > .control-section-heading:first-child + .form-row {
+    margin-top: 0;
+}
+
+.control-subgroup > .control-section-heading:first-child {
+    display: none;
+}
+
+.control-subgroup > .form-row + .form-row,
+.control-subgroup > .scenario-variable + .form-row,
+.control-subgroup > .form-row + .scenario-variable,
+.control-subgroup > .guided-live-summary,
+.control-subgroup > .info-box,
+.control-subgroup .return-gross-fields,
+.control-subgroup .local-tax-info {
+    margin-top: 0.75rem;
+}
+
+.advanced-tax-options[open] {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.control-subgroup .local-tax-title {
+    display: none;
+}
+
+.param-card .form-row,
+.param-card .local-tax-panel .form-row,
+.param-card .card-more-options .form-row,
+.param-card .return-gross-fields .form-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-top: 0;
+}
+
+.param-card .form-group {
+    width: 100%;
+}
+
+.param-card .guided-live-summary {
+    margin-top: 0;
+}
+
+.param-card .control-section-heading {
+    margin: 0;
+}
+
+.param-card .control-section-heading + .form-row,
+.param-card .control-section-heading + .scenario-variable {
+    margin-top: 0;
+}
+
+.scenario-variable {
+    margin-top: 0;
+}
+
+.form-row + .form-row,
+.scenario-variable + .form-row,
+.scenario-variable + .scenario-variable,
+.form-row + .scenario-variable {
+    margin-top: 0;
+}
+
+.investment-mode-note {
+    margin-top: 0;
+}
+
+@media (max-width: 980px) {
+    .params-grid,
+    .param-card .form-row,
+    .param-card .local-tax-panel .form-row,
+    .param-card .card-more-options .form-row,
+    .param-card .return-gross-fields .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Control normalization pass: same rhythm for inputs, toggles and expandable controls. */
+.param-card {
+    --control-height: 3rem;
+    --control-gap: 0.85rem;
+}
+
+.param-card .card-header {
+    padding: 0.9rem 1rem;
+    font-size: 1.05rem;
+    line-height: 1.2;
+}
+
+.param-card .card-body {
+    padding: 1rem;
+}
+
+.param-card .form-group {
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+.param-card .form-group label,
+.param-card .control-section-heading,
+.param-card .local-tax-title {
+    min-height: 1.05rem;
+    margin: 0 0 0.4rem;
+    color: var(--color-text-primary);
+    font-size: 0.78rem;
+    font-weight: 850;
+    line-height: 1.15;
+    letter-spacing: 0.01em;
+}
+
+.param-card .form-control,
+.param-card .computed-output {
+    min-height: var(--control-height);
+    padding: 0.58rem 0.8rem;
+    border-color: var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    font-weight: 750;
+    line-height: 1.2;
+}
+
+.param-card select.form-control {
+    padding-right: 2.4rem;
+}
+
+.param-card .form-control:disabled,
+.param-card .computed-output[aria-disabled="true"] {
+    background: #f7faf8;
+    color: #7b8985;
+    opacity: 1;
+}
+
+.param-card .control-section-heading {
+    padding-top: 0.2rem;
+    border-top: 1px solid var(--color-border-soft);
+}
+
+.param-card .control-section-heading:first-child {
+    padding-top: 0;
+    border-top: 0;
+}
+
+
+
+.param-card .option-field {
+    display: grid;
+    align-items: end;
+    min-width: 0;
+}
+
+.param-card .toggle-label {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.65rem;
+    min-height: var(--control-height);
+    width: 100%;
+    margin: 0;
+    padding: 0.45rem 0.75rem;
+    color: var(--color-text-primary);
+    background: #f8fbf9;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    font-weight: 850;
+    line-height: 1.15;
+}
+
+.param-card .toggle-label .toggle-switch {
+    width: 2.45rem;
+    height: 1.45rem;
+}
+
+.param-card .toggle-label .toggle-switch::after {
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.param-card .toggle-label input[type="checkbox"]:checked + .toggle-switch::after {
+    transform: translateX(1rem);
+}
+
+.param-card .local-tax-panel {
+    display: grid;
+    gap: var(--control-gap);
+    margin-bottom: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+}
+
+.param-card .local-tax-panel-header {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: end;
+    gap: var(--control-gap);
+}
+
+.param-card .local-tax-subtitle {
+    margin: 0.2rem 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+    line-height: 1.25;
+}
+
+.param-card .local-tax-mode-toggle {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    min-height: var(--control-height);
+    padding: 0.25rem;
+    background: #eef5f3;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+}
+
+.param-card .local-tax-mode-button {
+    min-width: 0;
+    min-height: 2.35rem;
+    padding: 0.35rem 0.55rem;
+    border-radius: calc(var(--radius-sm) - 2px);
+    font-size: 0.9rem;
+    font-weight: 850;
+    line-height: 1.1;
+}
+
+.param-card .local-tax-mode-button.active {
+    color: #ffffff;
+    background: var(--color-accent-primary);
+}
+
+.param-card .local-tax-manual-fields[aria-hidden="true"],
+.param-card .local-tax-auto-fields[aria-hidden="true"],
+.param-card .info-box.local-tax-auto-fields[aria-hidden="true"] {
+    display: none !important;
+}
+
+.param-card .local-tax-panel[data-local-tax-mode-current="manual"] .local-tax-auto-fields {
+    display: none !important;
+}
+
+.param-card .local-tax-panel[data-local-tax-mode-current="auto"] .local-tax-manual-fields {
+    display: none !important;
+}
+
+.param-card .local-tax-panel[data-local-tax-mode-current="auto"] .local-tax-auto-fields.form-row {
+    display: grid;
+}
+
+.param-card .info-box.local-tax-info {
+    margin-top: 0;
+}
+
+@media (max-width: 980px) {
+    .param-card .local-tax-panel-header {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Rebuilt control panel: mockup-derived structure, isolated from legacy form rules. */
+.config-workspace #input-form {
+    padding: 0;
+    background: transparent;
+    border: 0;
+}
+
+/* Nessun box proprio: la card della sezione .config-workspace fa da contenitore. */
+.control-shell {
+    display: grid;
+    gap: 1.125rem;
+}
+
+.control-shell .params-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 0;
+    background: transparent;
+    border: 0;
+}
+
+/* Stessa anatomia delle sezioni generali: card con padding e banda-titolo inset. */
+.control-shell .param-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 1.1rem;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgb(23 32 51 / 0.03);
+}
+
+/* Barra-titolo cliccabile, stessa anatomia delle altre sezioni apri/chiudi. */
+.control-shell .card-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+    margin: 0 0 0.85rem;
+    padding: 0.95rem 1rem 0.8rem;
+    background: #fbfcf8;
+    border: 0;
+    border-bottom: 1px solid var(--color-border-soft);
+    cursor: pointer;
+    user-select: none;
+}
+
+.control-shell .param-card.collapsed .card-header {
+    margin-bottom: 0;
+}
+
+.control-shell .card-header:hover h3 {
+    color: var(--color-accent-primary);
+}
+
+.control-shell .param-card.collapsed .card-body {
+    display: none;
+}
+
+.control-shell .param-card.collapsed .card-header {
+    border-bottom: 0;
+}
+
+.control-shell .card-header h3 {
+    margin: 0;
+    color: var(--color-text-primary);
+    font-size: 0.98rem;
+    font-weight: 900;
+    line-height: 1.2;
+}
+
+.control-shell .card-header p {
+    margin: 0.25rem 0 0;
+    color: var(--color-text-secondary);
+    font-size: 0.78rem;
+    line-height: 1.35;
+}
+
+.control-shell .card-header > span {
+    color: var(--color-text-secondary);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+}
+
+.control-shell .card-body {
+    display: grid;
+    gap: 0.85rem;
+    padding: 0;
+}
+
+.control-shell .control-subgroup {
+    min-width: 0;
+    padding: 0.85rem;
+    background: #ffffff;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 7px;
+}
+
+.control-shell .control-subgroup-title {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.7rem;
+}
+
+.control-shell .control-subgroup-title strong {
+    color: var(--color-text-primary);
+    font-size: 0.85rem;
+    font-weight: 900;
+    line-height: 1.2;
+}
+
+.control-shell .control-subgroup-title span {
+    color: var(--color-text-secondary);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.control-shell .form-row,
+.control-shell .return-gross-fields .form-row,
+.control-shell .local-tax-panel .form-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.control-shell .form-row + .form-row,
+.control-shell .control-followup,
+.control-shell .conditional-grid,
+.control-shell .return-gross-fields,
+.control-shell .mini-metrics,
+.control-shell .local-tax-panel .form-row,
+.control-shell .local-tax-info {
+    margin-top: 0.75rem;
+}
+
+.control-shell .control-followup,
+.control-shell .conditional-grid,
+.control-shell .return-gross-fields {
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border-soft);
+}
+
+.control-shell .form-group {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+}
+
+.control-shell .form-row[hidden],
+.control-shell .form-group[hidden],
+.control-shell .mini-metrics[hidden] {
+    display: none;
+}
+
+.control-shell label,
+.control-shell .control-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-height: 1.1rem;
+    margin: 0 0 0.38rem;
+    color: var(--color-text-primary);
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    line-height: 1.15;
+}
+
+.control-shell .control-field {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 2.75rem;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+}
+
+.control-shell .form-control,
+.control-shell .computed-output {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0 0.75rem;
+    color: var(--color-text-primary);
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.control-shell .control-field .form-control {
+    /* Il wrapper .control-field aggiunge 2px di bordo: l'input interno li
+       compensa così l'altezza totale resta 2.75rem come i segmented. */
+    min-height: calc(2.75rem - 2px);
+    border: 0;
+    border-radius: 0;
+}
+
+.control-shell .unit {
+    display: grid;
+    place-items: center;
+    min-width: 3rem;
+    padding: 0 0.55rem;
+    color: var(--color-text-secondary);
+    background: #f8fbf9;
+    border-left: 1px solid var(--color-border-soft);
+    font-size: 0.68rem;
+    font-weight: 900;
+}
+
+.control-shell select.form-control {
+    padding-right: 2.2rem;
+}
+
+.control-shell .native-select {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.control-shell .form-control:disabled,
+.control-shell .metric-input:disabled {
+    color: #7b8985;
+    background: #f8fbf9;
+    opacity: 1;
+}
+
+
+
+.control-shell .variation-toggle,
+.control-shell .local-tax-mode-toggle,
+.control-shell .segmented-control,
+.control-shell .binary-toggle-state {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-height: 2.75rem;
+    padding: 0.18rem;
+    background: #eef5f3;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+}
+
+.control-shell .variation-toggle label,
+.control-shell .local-tax-mode-button,
+.control-shell .segmented-control button,
+.control-shell .binary-toggle-state span {
+    display: grid;
+    place-items: center;
+    min-width: 0;
+    min-height: 2rem;
+    margin: 0;
+    padding: 0 0.45rem;
+    color: var(--color-text-secondary);
+    background: transparent;
+    border: 0;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: 900;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.control-shell .segmented-control button {
+    appearance: none;
+}
+
+.control-shell .variation-toggle {
+    width: 100%;
+    margin: 0;
+    gap: 0;
+}
+
+.control-shell .variation-toggle input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.control-shell .variation-toggle label:has(input:checked),
+.control-shell .local-tax-mode-button.active,
+.control-shell .segmented-control button.active,
+.control-shell .binary-toggle input[type="checkbox"]:not(:checked) ~ .binary-toggle-state span:first-child,
+.control-shell .binary-toggle input[type="checkbox"]:checked ~ .binary-toggle-state span:last-child {
+    color: #ffffff;
+    background: var(--color-accent-primary);
+}
+
+.control-shell .increase-grid {
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border-soft);
+}
+
+.control-shell .mini-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+}
+
+.control-shell .mini-metric {
+    min-width: 0;
+    padding: 0.7rem;
+    background: #f8fbf9;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 6px;
+}
+
+.control-shell .mini-metric.output {
+    background: #f2faf6;
+    border-color: #cfe0d9;
+}
+
+.control-shell .mini-metric span {
+    display: block;
+    color: var(--color-text-secondary);
+    font-size: 0.64rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+}
+
+.control-shell .mini-metric strong {
+    display: block;
+    margin-top: 0.28rem;
+    color: var(--color-text-primary);
+    font-size: 1rem;
+    font-weight: 900;
+    line-height: 1.15;
+}
+
+.control-shell .mini-metric p {
+    margin: 0.3rem 0 0;
+    color: var(--color-text-secondary);
+    font-size: 0.72rem;
+    line-height: 1.3;
+}
+
+.control-shell .metric-input {
+    width: 3.5rem;
+    padding: 0;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    font: inherit;
+    text-align: left;
+}
+
+.control-shell .toggle-label,
+.control-shell .binary-toggle {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    gap: 0.38rem;
+    min-height: 2.75rem;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    color: var(--color-text-primary);
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0;
+}
+
+.control-shell .binary-toggle > input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Stessa metrica e stesso inchiostro delle label normali (.param-card .form-group label). */
+.control-shell .binary-toggle > .help-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.35em;
+    min-height: 1.05rem;
+    color: var(--color-text-primary);
+    font-size: 0.78rem;
+    font-weight: 850;
+    letter-spacing: 0.01em;
+    line-height: 1.15;
+}
+
+.control-shell .local-tax-panel {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0;
+    background: transparent;
+    border: 0;
+}
+
+/* Stessa larghezza di una colonna della griglia controlli (metà riga meno il gap). */
+.control-shell .local-tax-mode-toggle {
+    width: calc(50% - 0.375rem);
+    min-width: min(100%, 14rem);
+}
+
+.control-shell .local-tax-manual-fields[aria-hidden="true"],
+.control-shell .local-tax-auto-fields[aria-hidden="true"] {
+    display: none !important;
+}
+
+.control-shell .local-tax-panel[data-local-tax-mode-current="manual"] .local-tax-auto-fields {
+    display: none !important;
+}
+
+.control-shell .local-tax-panel[data-local-tax-mode-current="auto"] .local-tax-manual-fields {
+    display: none !important;
+}
+
+.control-shell > .input-warnings {
+    display: none;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+}
+
+.control-shell > .input-warnings.is-visible {
+    display: grid;
+}
+
+.control-shell > .input-warnings .input-warning {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.5rem;
+    align-items: start;
+    margin: 0;
+    padding: 0.6rem 0.9rem;
+    color: #7c3f00;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.control-shell > .input-warnings .input-warning i {
+    color: #b45309;
+}
+
+.control-shell > .input-warnings .visually-hidden-control {
+    display: none !important;
+}
+
+@media (max-width: 980px) {
+    .control-shell .params-grid,
+    .control-shell .form-row,
+    .control-shell .return-gross-fields .form-row,
+    .control-shell .local-tax-panel .form-row,
+    .control-shell .mini-metrics {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================================================
+   Compilazione guidata: parità estetica col pannello di controllo.
+   Layer finale — tutte le regole sono scope .guided-dialog e si
+   appoggiano ai componenti .control-shell (la .guided-body porta
+   la classe control-shell nel markup).
+   ========================================================= */
+.guided-modal .guided-dialog {
+    border-color: var(--color-border-soft);
+}
+
+.guided-dialog .guided-header {
+    background: #fbfcf8;
+    border-bottom: 1px solid var(--color-border-soft);
+}
+
+.guided-dialog .guided-eyebrow {
+    color: var(--color-accent-primary);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+}
+
+.guided-dialog .guided-progress {
+    background: #e2ede8;
+}
+
+.guided-dialog .guided-progress span {
+    background: var(--color-accent-primary);
+}
+
+.guided-dialog .guided-footer {
+    background: #f8fbf9;
+    border-top: 1px solid var(--color-border-soft);
+}
+
+/* Il corpo riprende lo sfondo della plancia; ogni step è una card. */
+.guided-dialog .guided-body.control-shell {
+    display: block;
+    padding: 1.15rem 1.25rem 1.25rem;
+    background: #f8fbf9;
+    border: 0;
+    border-radius: 0;
+}
+
+.guided-dialog .guided-step {
+    display: none;
+}
+
+/* Contenuto diretto nel dialog: nessuna card intermedia. */
+.guided-dialog .guided-step.active {
+    display: grid;
+    gap: 0.85rem;
+    align-content: start;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.guided-dialog .guided-step-head h3 {
+    margin: 0;
+    color: var(--color-text-primary);
+    font-size: 0.98rem;
+    font-weight: 900;
+    line-height: 1.2;
+}
+
+.guided-dialog .guided-step-head p {
+    max-width: 70ch;
+    margin: 0.35rem 0 0;
+    color: var(--color-text-secondary);
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+/* Le righe si appoggiano al gap dello step: via i margini legacy. */
+.guided-dialog .guided-step .form-row,
+.guided-dialog .guided-step .mini-metrics {
+    margin: 0;
+}
+
+.guided-dialog .guided-step .form-row[hidden],
+.guided-dialog #guided-minimum-wage-fields[hidden] {
+    display: none !important;
+}
+
+.guided-dialog #guided-minimum-wage-fields {
+    display: grid;
+    gap: 0.85rem;
+    padding: 0.85rem;
+    background: #fbfdfb;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 6px;
+}
+
+/* Note informative: stessa palette dei mini-metric output della plancia. */
+.guided-dialog .guided-note {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    color: var(--color-text-secondary);
+    background: transparent;
+    border: 0;
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
+/* Ogni controllo spiegato ha il suo box. */
+.guided-dialog .guided-note .help-entry {
+    padding: 0.7rem 0.85rem;
+    background: #f2faf6;
+    border: 1px solid #cfe0d9;
+    border-radius: 6px;
+}
+
+.guided-dialog .guided-note strong {
+    color: var(--color-text-primary);
+}
+
+/* Disclosure aumenti: bordo, radius 6px e header alto 2.75rem come i controlli. */
+.guided-dialog .variation-grid {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: #f8fbf9;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+}
+
+.guided-dialog .variation-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    margin: 0;
+    padding: 0 0.75rem;
+    cursor: pointer;
+    list-style: none;
+}
+
+.guided-dialog .variation-header::-webkit-details-marker {
+    display: none;
+}
+
+.guided-dialog .variation-header > span {
+    color: var(--color-text-secondary);
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+}
+
+.guided-dialog .variation-grid[open] > .variation-header {
+    border-bottom: 1px solid var(--color-border-soft);
+}
+
+.guided-dialog .variation-grid[open] > .variation-header > span,
+.guided-dialog .variation-grid[open] > .variation-header .variation-chevron {
+    color: var(--color-accent-primary);
+}
+
+.guided-dialog .variation-body {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.75rem;
+}
+
+/* Toggle addizionali: stessa geometria del pannello. */
+.guided-dialog .guided-tax-toggle {
+    width: min(100%, 22rem);
+    margin: 0;
+}
+
+.guided-dialog .guided-tax-auto-fields[aria-hidden="true"],
+.guided-dialog .guided-tax-manual-fields[aria-hidden="true"] {
+    display: none !important;
+}
+
+/* Testo dei binary toggle: stessa metrica delle label della plancia. */
+.guided-dialog .binary-toggle > .binary-toggle-text {
+    display: flex;
+    align-items: center;
+    min-height: 1.05rem;
+    color: var(--color-text-primary);
+    font-size: 0.78rem;
+    font-weight: 850;
+    letter-spacing: 0.01em;
+    line-height: 1.15;
+}
+
+.guided-dialog .option-field {
+    display: grid;
+    align-items: end;
+    min-width: 0;
+}
+
+/* ============================================
+   Spiegazioni strutturate (help modal + note guidata)
+   Fonte unica: helpContent in scripts.js.
+   ============================================ */
+
+/* Icona informativa sui titoli cliccabili: dimensione leggibile e centrata
+   otticamente rispetto al testo della label. */
+/* Icona informativa in puro CSS: esiste dal primo paint (niente flash). */
+.help-trigger::after {
+    content: 'i';
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 1.15em;
+    height: 1.15em;
+    margin-top: -0.12em;
+    background: rgb(15 118 110 / 0.55);
+    border-radius: 999px;
+    color: #ffffff;
+    font-size: 0.78em;
+    font-style: normal;
+    font-weight: 900;
+    line-height: 1;
+    transition: var(--transition);
+}
+
+.help-trigger:hover::after {
+    background: var(--color-accent-primary);
+}
+
+/* Sezioni etichettate: Dove si trova / Come viene usato / Cosa comporta */
+.help-section {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.help-section + .help-section {
+    margin-top: 0.65rem;
+}
+
+.help-section-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: var(--color-accent-primary, #0f766e);
+    opacity: 0.85;
+}
+
+.help-section-text {
+    margin: 0;
+    font-size: 0.86rem;
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+}
+
+.help-modal-text .help-section + .help-section {
+    margin-top: 0.85rem;
+}
+
+/* Box della spiegazione più ampio e coerente con le note della guidata:
+   stesso fondo verde tenue, stesso bordo e stessa palette di testo. */
+.help-modal-content {
+    width: min(560px, calc(100vw - 2rem));
+    height: auto;
+    max-height: min(75vh, 640px);
+}
+
+.help-modal-header {
+    background: #f8fbf9;
+}
+
+/* Contenuto diretto nella modale: nessun box interno. */
+.help-modal-text {
+    margin: 0;
+    padding: 1rem 1.25rem 1.25rem;
+    background: transparent;
+    border: 0;
+    color: var(--color-text-secondary);
+}
+
+.help-modal-text .help-section-text {
+    color: inherit;
+}
+
+/* Voci multiple dentro le note della guidata */
+.guided-note .help-entry {
+    display: grid;
+    gap: 0.45rem;
+}
+
+
+.guided-note .help-entry-title {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--color-text-primary);
+}
+
+.guided-note .help-section-text {
+    color: inherit;
+}
+
+/* Pannello di controllo: stessa anatomia di .results-section
+   (card con padding 1.1rem, barra-titolo inset con margine sotto). */
+.config-workspace {
+    padding: 1.1rem;
+    background: #ffffff;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+}
+
+.config-workspace #input-form {
+    border: 0;
+    border-radius: 0;
+}
+
+/* ============================================
+   Guida informativa: sezioni apri/chiudi in card
+   (stesso stile della pagina calcoli) + indice.
+   ============================================ */
+.docs-section {
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.docs-collapsible {
+    padding: 1.1rem;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-soft);
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+    margin: 0 0 1rem;
+    overflow: hidden;
+}
+
+.docs-section h2.docs-collapsible-title {
+    margin: 0 0 0.85rem;
+    padding: 0.95rem 1rem 0.8rem;
+    background: #fbfcf8;
+    border-bottom: 1px solid var(--color-border-soft);
+    color: var(--color-text-primary);
+    font-size: 0.95rem;
+    font-weight: 750;
+    line-height: 1.2;
+    cursor: pointer;
+    user-select: none;
+}
+
+.docs-section h2.docs-collapsible-title:hover {
+    color: var(--color-accent-primary);
+}
+
+.docs-collapsible.collapsed .docs-collapsible-title {
+    margin-bottom: 0;
+    border-bottom: 0;
+}
+
+.docs-collapsible.collapsed .docs-collapsible-content {
+    display: none;
+}
+
+.docs-collapsible-content {
+    padding: 0;
+}
+
+.docs-collapsible-content > h3:first-child {
+    margin-top: 1rem;
+}
+
+/* Indice della guida: card con voci navigabili */
+.docs-index {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-content: center;
+    max-width: none;
+    margin: 0 0 1rem;
+    padding: 1.25rem 1.5rem;
+    min-height: 8rem;
+    background:
+        linear-gradient(100deg, #ffffff 0%, #ffffff 72%, #eef7f3 100%),
+        #ffffff;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 10px;
+    box-shadow: var(--shadow-sm);
+}
+
+.docs-index strong {
+    padding: 0;
+    color: var(--color-accent-primary);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+}
+
+.docs-index strong {
+    flex: 1 0 100%;
+}
+
+.docs-index a {
+    flex: 1 1 150px;
+    padding: 0.55rem 0.75rem;
+    background: var(--color-accent-primary);
+    border: 1px solid var(--color-accent-primary);
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.docs-index a:hover {
+    color: #ffffff;
+    border-color: #0b5d57;
+    background: #0b5d57;
+}
+
+/* Anti-flash tab: prima che il JS ripristini il tab salvato, un attributo
+   impostato inline in <head> forza subito la vista corretta. */
+html[data-active-tab="documentation"] #calculator-content.active {
+    display: none;
+}
+
+html[data-active-tab="documentation"] #documentation-content {
+    display: block;
+}
+
+html[data-active-tab="documentation"] .tab[data-tab="calculator"] {
+    color: var(--color-text-secondary);
+    border-bottom-color: transparent;
+}
+
+html[data-active-tab="documentation"] .tab[data-tab="documentation"] {
+    color: var(--color-accent-primary);
+    border-bottom-color: var(--color-accent-primary);
+}
+
+/* Card strategia selezionabili: pilotano tabella ed esploratore. */
+[data-strategy] {
+    cursor: pointer;
+    transition: outline-color var(--transition), box-shadow var(--transition), background-color var(--transition);
+}
+
+[data-strategy]:hover {
+    outline: 1px solid rgb(15 118 110 / 0.45);
+    outline-offset: -1px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgb(15 118 110 / 0.12);
+}
+
+.results-workspace [data-strategy].strategy-active,
+[data-strategy].strategy-active {
+    outline: 2px solid var(--color-accent-primary);
+    outline-offset: -2px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #e7f6f1 0%, #f9fcfa 70%);
+    box-shadow: 0 4px 16px rgb(15 118 110 / 0.18);
+}
+
+/* Guidata: i blocchi condizionali (es. rendimento lordo) spaziano le righe
+   interne con lo stesso gap dello step. */
+.guided-dialog .conditional-grid {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.guided-dialog .conditional-grid[hidden] {
+    display: none;
+}
+
+/* Guidata: pannelli e box informativi su fondo bianco. */
+.guided-dialog .guided-note .help-entry,
+.guided-dialog .mini-metric,
+.guided-dialog .mini-metric.output {
+    background: #ffffff;
+    border-color: var(--color-border-soft);
+}
+
+/* Grafico: come la tabella, larghezza minima con scroll orizzontale. */
+.chart-content {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.chart-container {
+    min-width: 640px;
+}
+
+/* Primo paint posticipato a calcoli pronti (attributo tolto da app.js,
+   fallback a 1,5s nell'inline script del head). */
+html[data-booting] body {
+    opacity: 0;
+}
+
+body {
+    transition: opacity 0.12s ease;
+}
+
+/* Esploratore: anno a sinistra, strategia a destra come tre bottoni. */
+.explorer-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.explorer-strategy-select {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.explorer-strategy-select button {
+    appearance: none;
+    min-height: 2.75rem;
+    padding: 0 1.1rem;
+    color: var(--color-text-primary);
+    background: #f8fbf9;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.explorer-strategy-select button:hover {
+    border-color: var(--color-accent-primary);
+    color: var(--color-accent-primary);
+}
+
+.explorer-strategy-select button.active {
+    color: #ffffff;
+    background: var(--color-accent-primary);
+    border-color: var(--color-accent-primary);
+}
+
+/* Esploratore: card di pari altezza; bianche tranne il risultato (verde). */
+.year-answer-card,
+.annual-input {
+    min-height: 6.75rem;
+    background: #ffffff;
+    border: 1px solid var(--color-border-soft);
+}
+
+.year-answer-card.main {
+    background: #f0faf5;
+    border-color: #abd7c1;
+}
+
+/* Logo cliccabile: simbolo (favicon) + nome, rimanda alla home. */
+a.logo {
+    text-decoration: none;
+    color: inherit;
+    gap: 0.65rem;
+}
+
+.logo-mark {
+    display: block;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    flex: 0 0 auto;
+}
+
+a.logo:hover h1 {
+    color: var(--color-accent-primary);
+}
+
+/* Hero: bottone ancorato in basso. */
+.intro-section .intro-actions {
+    align-self: end;
+}
+
+/* Indice: titolo in alto (grande, nero), bottoni ancorati in basso. */
+.docs-index {
+    align-content: space-between;
+}
+
+.docs-index strong {
+    align-self: start;
+    color: var(--color-text-primary);
+    font-size: 1.05rem;
+    font-weight: 750;
+    letter-spacing: 0;
 }

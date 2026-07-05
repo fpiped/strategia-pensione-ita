@@ -19,13 +19,15 @@ export class FinancialController {
         this.model = new FinancialModel();
         this.view = new FinancialView();
         this.tableView = 'mix';
+        // Strategia mostrata in tabella ed esploratore: mix | fp | pac.
+        this.strategyView = 'mix';
         this.latestResults = null;
         this.localTaxMode = 'manual';
         this.selectedMunicipalityLabel = '';
         this.guidedTaxMode = 'manual';
         this.selectedGuidedMunicipalityLabel = '';
         this.guidedStep = 0;
-        this.contributionSummaryYear = 1;
+        this.annualExplorerYear = 1;
         this.updateResultsTimer = null;
         this.initEventListeners();
       }
@@ -34,9 +36,11 @@ export class FinancialController {
      * Inizializza tutti gli event listener
      */
     initEventListeners() {
-      const shouldIgnoreFormUpdate = (event) => event.target?.id === 'contribution-summary-year';
+      this.initMoneyBounds();
+      this.initVariationBounds();
+      this.initLiveClamps();
       document.getElementById('input-form').addEventListener('input', (event) => {
-        if (shouldIgnoreFormUpdate(event)) return;
+        this.syncGuidedFieldsFromForm();
         if (event.target?.type === 'number') {
           this.scheduleResultsUpdate(200);
           return;
@@ -44,28 +48,62 @@ export class FinancialController {
         this.updateResults();
       });
       document.getElementById('input-form').addEventListener('change', (event) => {
-        if (shouldIgnoreFormUpdate(event)) return;
+        if (event.target?.matches('.native-select')) {
+          this.syncSegmentedControl(event.target.id);
+        }
+        this.syncVariationFields();
+        this.syncGuidedFieldsFromForm();
         this.updateResults();
       }); // Per checkbox
+      document.querySelectorAll('[data-select-target]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const select = document.getElementById(button.dataset.selectTarget);
+          if (!select) return;
+          select.value = button.dataset.selectValue;
+          this.syncSegmentedControl(select.id);
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+      });
       document.getElementById("download-csv").addEventListener("click", () => this.downloadCsv());
       document.getElementById('open-guided-mode').addEventListener('click', () => this.openGuidedMode());
-      const updateSummaryYear = (event) => {
+      const annualExplorerSelect = document.getElementById('annual-explorer-year');
+      annualExplorerSelect?.addEventListener('change', (event) => {
         event.stopPropagation();
-        this.contributionSummaryYear = parseInt(event.target.value, 10) || 1;
+        this.annualExplorerYear = parseInt(event.target.value, 10) || 1;
         if (this.latestResults?.config) {
-          this.updateContributionSummary(this.latestResults.config, this.latestResults.results);
+          this.view.updateAnnualExplorer(this.getStrategyRows(), this.latestResults.config, this.annualExplorerYear);
         }
-      };
-      document.getElementById('contribution-summary-year').addEventListener('input', updateSummaryYear);
-      document.getElementById('contribution-summary-year').addEventListener('change', updateSummaryYear);
+        this.view.highlightTableYear(this.annualExplorerYear);
+      });
+      document.getElementById('grid-div')?.addEventListener('click', (event) => {
+        const row = event.target.closest('tr[data-anno]');
+        if (!row) return;
+        const year = parseInt(row.dataset.anno, 10);
+        if (!Number.isFinite(year)) return;
+        this.annualExplorerYear = year;
+        const yearSelect = document.getElementById('annual-explorer-year');
+        if (yearSelect) yearSelect.value = String(year);
+        if (this.latestResults?.config) {
+          this.view.updateAnnualExplorer(this.getStrategyRows(), this.latestResults.config, year);
+        }
+        this.view.highlightTableYear(year);
+      });
       document.querySelectorAll('[data-guided-close]').forEach((element) => {
         element.addEventListener('click', () => this.closeGuidedMode());
       });
       document.getElementById('guided-prev').addEventListener('click', () => this.setGuidedStep(this.guidedStep - 1));
-      document.getElementById('guided-next').addEventListener('click', () => this.setGuidedStep(this.guidedStep + 1));
+      document.getElementById('guided-next').addEventListener('click', () => {
+        // "Avanti" applica subito i parametri al pannello: se la guidata viene
+        // chiusa a metà, gli step già confermati restano inseriti.
+        this.commitGuidedFieldsToForm();
+        this.setGuidedStep(this.guidedStep + 1);
+      });
       document.getElementById('guided-finish').addEventListener('click', () => this.applyGuidedMode());
       document.querySelectorAll('input[name^="guided-variazione-"]').forEach((input) => {
-        input.addEventListener('change', () => this.updateGuidedContributionPreview());
+        input.addEventListener('change', () => {
+          this.syncVariationFields();
+          this.updateGuidedContributionPreview();
+        });
       });
       document.querySelectorAll('[data-guided-tax-mode]').forEach((button) => {
         button.addEventListener('click', () => {
@@ -90,14 +128,24 @@ export class FinancialController {
       });
       document.querySelectorAll('[id^="guided-"]').forEach((input) => {
         input.addEventListener('input', () => {
+          this.updateGuidedContributionBaseFields();
           this.updateGuidedFirstEmploymentFields();
           this.updateGuidedContributionPreview();
           this.updateGuidedLocalTaxFields();
+          this.updateGuidedReturnFields();
+          // Specchio live: ogni modifica in guidata arriva subito al pannello.
+          window.clearTimeout(this.guidedCommitTimer);
+          this.guidedCommitTimer = window.setTimeout(() => this.commitGuidedFieldsToForm(), 250);
         });
         input.addEventListener('change', () => {
+          this.syncVariationFields();
+          this.updateGuidedContributionBaseFields();
           this.updateGuidedFirstEmploymentFields();
           this.updateGuidedContributionPreview();
           this.updateGuidedLocalTaxFields();
+          this.updateGuidedReturnFields();
+          window.clearTimeout(this.guidedCommitTimer);
+          this.commitGuidedFieldsToForm();
         });
       });
       document.getElementById('primaOccupazionePost2006').addEventListener('change', () => {
@@ -119,20 +167,6 @@ export class FinancialController {
         this.updateContributionBaseFields();
         this.scheduleResultsUpdate(200);
       });
-      document.querySelectorAll('[data-reset-variation]').forEach((button) => {
-        button.addEventListener('click', () => {
-          this.resetVariation(button.dataset.resetVariation);
-          this.updateResults();
-        });
-      });
-      document.getElementById('contributiInpsPreset').addEventListener('change', () => {
-        this.updateInpsContributionFields();
-        this.updateResults();
-      });
-      document.getElementById('guided-contributi-inps-preset').addEventListener('change', () => {
-        this.updateGuidedInpsContributionFields();
-        this.updateGuidedContributionPreview();
-      });
       document.getElementById('guided-rendimento-fp-mode').addEventListener('change', () => this.updateGuidedReturnFields());
       document.getElementById('guided-rendimento-pac-mode').addEventListener('change', () => this.updateGuidedReturnFields());
       document.getElementById('reddito').addEventListener('input', () => {
@@ -142,9 +176,13 @@ export class FinancialController {
       document.getElementById('premiStraordinari').addEventListener('input', () => {
         this.updateLocalTaxFields();
       });
+      document.getElementById('altriRedditi').addEventListener('input', () => {
+        this.updateLocalTaxFields();
+      });
       document.querySelectorAll('[data-local-tax-mode]').forEach((button) => {
         button.addEventListener('click', () => {
           this.setLocalTaxMode(button.dataset.localTaxMode, { clearLocation: button.dataset.localTaxMode === 'manual' });
+          this.syncGuidedFieldsFromForm();
           this.updateResults();
         });
       });
@@ -170,6 +208,20 @@ export class FinancialController {
           this.hideGuidedMunicipalitySuggestions();
         }
       });
+      document.querySelectorAll('[data-strategy-select]').forEach((button) => {
+        button.addEventListener('click', () => this.setStrategyView(button.dataset.strategySelect));
+      });
+      document.querySelectorAll('[data-strategy]').forEach((card) => {
+        const select = () => this.setStrategyView(card.dataset.strategy);
+        card.addEventListener('click', select);
+        card.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            select();
+          }
+        });
+      });
+      this.syncStrategyCards();
       document.querySelectorAll('[data-table-view]').forEach((button) => {
         button.addEventListener('click', () => {
           this.tableView = button.dataset.tableView;
@@ -177,7 +229,8 @@ export class FinancialController {
             item.classList.toggle('active', item === button);
           });
           if (this.latestResults) {
-            this.view.createTable(this.latestResults.results, this.tableView);
+            this.view.createTable(this.getStrategyRows(), this.tableView, this.getStrategyExitLabel());
+            this.view.highlightTableYear(this.annualExplorerYear);
           }
         });
       });
@@ -190,9 +243,198 @@ export class FinancialController {
       this.setGuidedTaxMode(this.guidedTaxMode);
       this.updateFirstEmploymentFields();
       this.updateContributionBaseFields();
-      this.updateInpsContributionFields();
+      this.updateGuidedContributionBaseFields();
       this.updateLocalTaxFields();
       this.updateEffectiveTaxOutputs();
+      this.initVariationStates();
+      this.syncSegmentedControls();
+      // Al load la guidata è allineata al pannello: nessun valore vecchio
+      // (anche se il browser ripristina i campi del modale).
+      this.syncGuidedFieldsFromForm();
+    }
+
+    // Importi in EUR forzati nell'intervallo 0-1.000.000; campo svuotato -> 0.
+    static CLAMPED_MONEY_INPUTS = [
+      'reddito', 'investimento', 'minimoRetributivoAnnuo',
+      'premiStraordinari', 'altriRedditi', 'ulterioriDetrazioni'
+    ];
+
+    initMoneyBounds() {
+      FinancialController.CLAMPED_MONEY_INPUTS.forEach((id) => {
+        const input = document.getElementById(id);
+        if (!input) return;
+        input.min = '0';
+        input.max = '1000000';
+        input.addEventListener('change', () => {
+          const value = parseFloat(input.value);
+          const clamped = Math.min(Math.max(Number.isFinite(value) ? value : 0, 0), 1000000);
+          input.value = String(clamped);
+        });
+      });
+    }
+
+    // Controlli aumento: frequenza 0-100 anni; valore 0-100 se %, 0-1000000 se EUR.
+    static VARIATION_BOUNDS = [
+      ['variazioneRedditoFrequenza', 'variazioneRedditoValore', 'variazioneRedditoTipo'],
+      ['variazioneInvestimentoFrequenza', 'variazioneInvestimentoValore', 'variazioneInvestimentoTipo'],
+      ['variazioneBaseContributivaFrequenza', 'variazioneBaseContributivaValore', 'variazioneBaseContributivaTipo'],
+      ['variazionePremiFrequenza', 'variazionePremiValore', 'variazionePremiTipo'],
+      ['variazioneAltriRedditiFrequenza', 'variazioneAltriRedditiValore', 'variazioneAltriRedditiTipo'],
+      ['guided-variazione-reddito-frequenza', 'guided-variazione-reddito-valore', 'guided-variazione-reddito-tipo'],
+      ['guided-variazione-investimento-frequenza', 'guided-variazione-investimento-valore', 'guided-variazione-investimento-tipo'],
+      ['guided-variazione-base-frequenza', 'guided-variazione-base-valore', 'guided-variazione-base-tipo'],
+      ['guided-variazione-premi-frequenza', 'guided-variazione-premi-valore', 'guided-variazione-premi-tipo'],
+      ['guided-variazione-altri-redditi-frequenza', 'guided-variazione-altri-redditi-valore', 'guided-variazione-altri-redditi-tipo']
+    ];
+
+    initVariationBounds() {
+      const clamp = (input, min, max) => {
+        const value = parseFloat(input.value);
+        input.value = String(Math.min(Math.max(Number.isFinite(value) ? value : 0, min), max));
+      };
+      FinancialController.VARIATION_BOUNDS.forEach(([freqId, valId, tipoName]) => {
+        const freq = document.getElementById(freqId);
+        if (freq) {
+          freq.min = '0';
+          freq.max = '100';
+          freq.addEventListener('change', () => clamp(freq, 0, 100));
+        }
+        const val = document.getElementById(valId);
+        if (!val) return;
+        const applyBounds = () => {
+          const isEuro = document.querySelector(`input[name="${tipoName}"]:checked`)?.value === 'euro';
+          val.min = '0';
+          val.max = String(isEuro ? 1000000 : 100);
+          // Freccine coerenti con l'unità: 100 EUR o 0,1 punti percentuali.
+          val.step = isEuro ? '100' : '0.1';
+        };
+        applyBounds();
+        val.addEventListener('change', () => {
+          applyBounds();
+          clamp(val, 0, parseFloat(val.max));
+        });
+        document.querySelectorAll(`input[name="${tipoName}"]`).forEach((radio) => {
+          radio.addEventListener('change', () => {
+            applyBounds();
+            clamp(val, 0, parseFloat(val.max));
+          });
+        });
+      });
+    }
+
+    /**
+     * Clamp in tempo reale durante la digitazione: se il numero supera i
+     * limiti min/max del campo, viene riportato subito al bordo (pannello e
+     * guidata si comportano allo stesso modo).
+     */
+    initLiveClamps() {
+      document.querySelectorAll('.control-shell input[type="number"], .guided-dialog input[type="number"]').forEach((input) => {
+        const clampToBounds = () => {
+          const value = parseFloat(input.value);
+          if (!Number.isFinite(value)) return false;
+          const min = parseFloat(input.min);
+          const max = parseFloat(input.max);
+          if (Number.isFinite(max) && value > max) input.value = String(max);
+          else if (Number.isFinite(min) && value < min) input.value = String(min);
+          return true;
+        };
+        input.addEventListener('input', clampToBounds);
+        // Campo svuotato: al blur torna al minimo (o 0 se non definito).
+        input.addEventListener('change', () => {
+          if (!clampToBounds()) {
+            const min = parseFloat(input.min);
+            input.value = String(Number.isFinite(min) ? min : 0);
+          }
+        });
+      });
+    }
+
+    static VARIATION_CONTROLS = [
+      ['variazioneRedditoAndamento', 'variazioneRedditoFrequenza', 'variazioneRedditoValore'],
+      ['variazioneInvestimentoAndamento', 'variazioneInvestimentoFrequenza', 'variazioneInvestimentoValore'],
+      ['variazioneBaseContributivaAndamento', 'variazioneBaseContributivaFrequenza', 'variazioneBaseContributivaValore'],
+      ['variazionePremiAndamento', 'variazionePremiFrequenza', 'variazionePremiValore'],
+      ['variazioneAltriRedditiAndamento', 'variazioneAltriRedditiFrequenza', 'variazioneAltriRedditiValore']
+    ];
+
+    /**
+     * Allinea lo switch Costante/Crescente ai valori correnti di frequenza/valore
+     * (stato iniziale e rientro dalla modalità guidata).
+     */
+    initVariationStates() {
+      FinancialController.VARIATION_CONTROLS.forEach(([selectId, freqId, valId]) => {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+        const freq = parseFloat(document.getElementById(freqId)?.value) || 0;
+        const val = parseFloat(document.getElementById(valId)?.value) || 0;
+        select.value = freq > 0 && val !== 0 ? 'crescente' : 'costante';
+      });
+      this.syncVariationFields();
+    }
+
+    /**
+     * Mostra i campi aumento solo con andamento Crescente e tiene
+     * l'unità del valore coerente con il tipo scelto (% / EUR).
+     */
+    syncVariationFields() {
+      document.querySelectorAll('select[data-variation-fields]').forEach((select) => {
+        const fields = document.getElementById(select.dataset.variationFields);
+        if (fields) fields.hidden = select.value !== 'crescente';
+      });
+      document.querySelectorAll('[data-unit-for]').forEach((unit) => {
+        const tipo = document.querySelector(`input[name="${unit.dataset.unitFor}"]:checked`);
+        unit.textContent = tipo?.value === 'euro' ? 'EUR' : '%';
+      });
+    }
+
+    syncSegmentedControls() {
+      document.querySelectorAll('.native-select[id]').forEach((select) => {
+        this.syncSegmentedControl(select.id);
+      });
+    }
+
+    syncSegmentedControl(selectId) {
+      const select = document.getElementById(selectId);
+      if (!select) return;
+
+      document.querySelectorAll(`[data-select-target="${selectId}"]`).forEach((button) => {
+        const isActive = button.dataset.selectValue === select.value;
+        button.classList.toggle('active', isActive);
+        button.setAttribute('aria-pressed', String(isActive));
+      });
+    }
+
+    getStrategyRows() {
+      const strategies = this.latestResults?.strategies;
+      return (strategies && strategies[this.strategyView]) || this.latestResults?.results || [];
+    }
+
+    getStrategyExitLabel() {
+      return { mix: 'Exit ottimale', fp: 'Exit FP', pac: 'Exit PAC' }[this.strategyView] || 'Exit';
+    }
+
+    setStrategyView(strategy) {
+      if (!['mix', 'fp', 'pac'].includes(strategy) || strategy === this.strategyView) return;
+      this.strategyView = strategy;
+      this.syncStrategyCards();
+      if (!this.latestResults) return;
+      this.view.createTable(this.getStrategyRows(), this.tableView, this.getStrategyExitLabel());
+      this.view.highlightTableYear(this.annualExplorerYear);
+      if (this.latestResults.config) {
+        this.view.updateAnnualExplorer(this.getStrategyRows(), this.latestResults.config, this.annualExplorerYear);
+        this.updateFpSplitCards(this.latestResults.results, this.latestResults.config);
+      }
+    }
+
+    syncStrategyCards() {
+      document.querySelectorAll('[data-strategy]').forEach((card) => {
+        card.classList.toggle('strategy-active', card.dataset.strategy === this.strategyView);
+      });
+      document.querySelectorAll('[data-strategy-select]').forEach((button) => {
+        const active = button.dataset.strategySelect === this.strategyView;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
     }
 
     scheduleResultsUpdate(delay = 200) {
@@ -204,13 +446,15 @@ export class FinancialController {
 
     openGuidedMode() {
       this.syncGuidedFieldsFromForm();
+      this.syncSegmentedControls();
+      this.syncVariationFields();
       this.setGuidedStep(0);
       this.updateGuidedContributionPreview();
       const modal = document.getElementById('guided-modal');
       modal.classList.add('is-open');
       modal.setAttribute('aria-hidden', 'false');
       document.body.classList.add('modal-open');
-      document.getElementById('guided-reddito').focus();
+      document.getElementById('guided-durata').focus({ preventScroll: true });
     }
 
     closeGuidedMode() {
@@ -218,7 +462,7 @@ export class FinancialController {
       modal.classList.remove('is-open');
       modal.setAttribute('aria-hidden', 'true');
       document.body.classList.remove('modal-open');
-      document.getElementById('open-guided-mode').focus();
+      document.getElementById('open-guided-mode').focus({ preventScroll: true });
     }
 
     setGuidedStep(step) {
@@ -237,6 +481,16 @@ export class FinancialController {
     }
 
     syncGuidedFieldsFromForm() {
+      if (this._mirroring) return;
+      this._mirroring = true;
+      try {
+        this._syncGuidedFieldsFromFormInner();
+      } finally {
+        this._mirroring = false;
+      }
+    }
+
+    _syncGuidedFieldsFromFormInner() {
       const copyValue = (from, to) => {
         document.getElementById(to).value = document.getElementById(from).value;
       };
@@ -252,6 +506,7 @@ export class FinancialController {
 
       copyValue('reddito', 'guided-reddito');
       copyValue('premiStraordinari', 'guided-premi');
+      copyValue('altriRedditi', 'guided-altri-redditi');
       copyValue('investimento', 'guided-investimento');
       copyValue('minimoRetributivoAnnuo', 'guided-minimo-retributivo');
       copyValue('durata', 'guided-durata');
@@ -261,9 +516,20 @@ export class FinancialController {
       copyValue('variazioneInvestimentoValore', 'guided-variazione-investimento-valore');
       copyValue('variazioneBaseContributivaFrequenza', 'guided-variazione-base-frequenza');
       copyValue('variazioneBaseContributivaValore', 'guided-variazione-base-valore');
+      copyValue('variazionePremiFrequenza', 'guided-variazione-premi-frequenza');
+      copyValue('variazionePremiValore', 'guided-variazione-premi-valore');
+      copyValue('variazioneAltriRedditiFrequenza', 'guided-variazione-altri-redditi-frequenza');
+      copyValue('variazioneAltriRedditiValore', 'guided-variazione-altri-redditi-valore');
       copyRadio('variazioneRedditoTipo', 'guided-variazione-reddito-tipo');
       copyRadio('variazioneInvestimentoTipo', 'guided-variazione-investimento-tipo');
       copyRadio('variazioneBaseContributivaTipo', 'guided-variazione-base-tipo');
+      copyRadio('variazionePremiTipo', 'guided-variazione-premi-tipo');
+      copyRadio('variazioneAltriRedditiTipo', 'guided-variazione-altri-redditi-tipo');
+      copyValue('variazioneRedditoAndamento', 'guided-variazione-reddito-andamento');
+      copyValue('variazioneInvestimentoAndamento', 'guided-variazione-investimento-andamento');
+      copyValue('variazioneBaseContributivaAndamento', 'guided-variazione-base-andamento');
+      copyValue('variazionePremiAndamento', 'guided-variazione-premi-andamento');
+      copyValue('variazioneAltriRedditiAndamento', 'guided-variazione-altri-redditi-andamento');
       document.getElementById('guided-modalita-confronto').value = document.getElementById('modalitaConfronto').value;
       copyValue('quotaMinAderentePerc', 'guided-quota-min');
       copyValue('contribuzioneDatoreFpPerc', 'guided-datore-perc');
@@ -285,18 +551,32 @@ export class FinancialController {
       document.getElementById('guided-rendimento-fp-mode').value = document.getElementById('rendimentoFpMode').value;
       document.getElementById('guided-rendimento-pac-mode').value = document.getElementById('rendimentoPacMode').value;
       document.getElementById('guided-modalita-versamento').value = document.getElementById('modalitaVersamentoFp').value;
-      document.getElementById('guided-contributi-inps-preset').value = document.getElementById('contributiInpsPreset').value;
       document.getElementById('guided-regione-addizionali').value = document.getElementById('regioneAddizionali').value;
       document.getElementById('guided-comune-addizionali').value = document.getElementById('comuneAddizionali').value;
       document.getElementById('guided-comune-addizionali-search').value = document.getElementById('comuneAddizionaliSearch').value;
       this.selectedGuidedMunicipalityLabel = document.getElementById('comuneAddizionaliSearch').value;
       this.setGuidedTaxMode(this.localTaxMode);
-      this.updateGuidedInpsContributionFields();
       this.updateGuidedFirstEmploymentFields();
+      this.updateGuidedContributionBaseFields();
       this.updateGuidedReturnFields();
     }
 
-    applyGuidedMode() {
+    /**
+     * Applica al pannello i valori correnti della guidata e ricalcola.
+     * Chiamata sia da "Avanti" (commit progressivo: chiudendo la guidata a
+     * metà, gli step già confermati restano nel pannello) sia da "Applica".
+     */
+    commitGuidedFieldsToForm() {
+      if (this._mirroring) return;
+      this._mirroring = true;
+      try {
+        this._commitGuidedFieldsToFormInner();
+      } finally {
+        this._mirroring = false;
+      }
+    }
+
+    _commitGuidedFieldsToFormInner() {
       const copyValue = (from, to) => {
         document.getElementById(to).value = document.getElementById(from).value;
       };
@@ -312,6 +592,7 @@ export class FinancialController {
 
       copyValue('guided-reddito', 'reddito');
       copyValue('guided-premi', 'premiStraordinari');
+      copyValue('guided-altri-redditi', 'altriRedditi');
       copyValue('guided-investimento', 'investimento');
       copyValue('guided-minimo-retributivo', 'minimoRetributivoAnnuo');
       copyValue('guided-durata', 'durata');
@@ -321,9 +602,20 @@ export class FinancialController {
       copyValue('guided-variazione-investimento-valore', 'variazioneInvestimentoValore');
       copyValue('guided-variazione-base-frequenza', 'variazioneBaseContributivaFrequenza');
       copyValue('guided-variazione-base-valore', 'variazioneBaseContributivaValore');
+      copyValue('guided-variazione-premi-frequenza', 'variazionePremiFrequenza');
+      copyValue('guided-variazione-premi-valore', 'variazionePremiValore');
+      copyValue('guided-variazione-altri-redditi-frequenza', 'variazioneAltriRedditiFrequenza');
+      copyValue('guided-variazione-altri-redditi-valore', 'variazioneAltriRedditiValore');
       copyRadio('guided-variazione-reddito-tipo', 'variazioneRedditoTipo');
       copyRadio('guided-variazione-investimento-tipo', 'variazioneInvestimentoTipo');
       copyRadio('guided-variazione-base-tipo', 'variazioneBaseContributivaTipo');
+      copyRadio('guided-variazione-premi-tipo', 'variazionePremiTipo');
+      copyRadio('guided-variazione-altri-redditi-tipo', 'variazioneAltriRedditiTipo');
+      copyValue('guided-variazione-reddito-andamento', 'variazioneRedditoAndamento');
+      copyValue('guided-variazione-investimento-andamento', 'variazioneInvestimentoAndamento');
+      copyValue('guided-variazione-base-andamento', 'variazioneBaseContributivaAndamento');
+      copyValue('guided-variazione-premi-andamento', 'variazionePremiAndamento');
+      copyValue('guided-variazione-altri-redditi-andamento', 'variazioneAltriRedditiAndamento');
       document.getElementById('modalitaConfronto').value = document.getElementById('guided-modalita-confronto').value;
       copyValue('guided-quota-min', 'quotaMinAderentePerc');
       copyValue('guided-datore-perc', 'contribuzioneDatoreFpPerc');
@@ -346,7 +638,6 @@ export class FinancialController {
       document.getElementById('rendimentoFpMode').value = document.getElementById('guided-rendimento-fp-mode').value;
       document.getElementById('rendimentoPacMode').value = document.getElementById('guided-rendimento-pac-mode').value;
       document.getElementById('modalitaVersamentoFp').value = document.getElementById('guided-modalita-versamento').value;
-      document.getElementById('contributiInpsPreset').value = document.getElementById('guided-contributi-inps-preset').value;
       document.getElementById('regioneAddizionali').value = document.getElementById('guided-regione-addizionali').value;
       document.getElementById('comuneAddizionali').value = document.getElementById('guided-comune-addizionali').value;
       document.getElementById('comuneAddizionaliSearch').value = document.getElementById('guided-comune-addizionali-search').value;
@@ -354,9 +645,17 @@ export class FinancialController {
       this.setLocalTaxMode(this.guidedTaxMode);
       this.updateFirstEmploymentFields();
       this.updateContributionBaseFields();
-      this.updateInpsContributionFields();
+      this.updateGuidedContributionBaseFields();
       this.updateLocalTaxFields();
+      // Gli andamenti sono stati copiati dalla guidata: basta riallineare
+      // visibilità dei campi aumento e stato dei segmented control.
+      this.syncVariationFields();
+      this.syncSegmentedControls();
       this.updateResults();
+    }
+
+    applyGuidedMode() {
+      this.commitGuidedFieldsToForm();
       this.closeGuidedMode();
     }
 
@@ -375,85 +674,34 @@ export class FinancialController {
         if (value > max) input.value = String(max);
       };
 
-      clampGuidedNumber('guided-reddito', 0);
-      clampGuidedNumber('guided-premi', 0);
-      clampGuidedNumber('guided-investimento', 0);
-      clampGuidedNumber('guided-minimo-retributivo', 0);
-      clampGuidedNumber('guided-durata', 1, 50);
-      clampGuidedNumber('guided-variazione-reddito-frequenza', 0, 50);
-      clampGuidedNumber('guided-variazione-investimento-frequenza', 0, 50);
-      clampGuidedNumber('guided-variazione-base-frequenza', 0, 50);
+      clampGuidedNumber('guided-reddito', 0, 1000000);
+      clampGuidedNumber('guided-premi', 0, 1000000);
+      clampGuidedNumber('guided-altri-redditi', 0, 1000000);
+      clampGuidedNumber('guided-investimento', 0, 1000000);
+      clampGuidedNumber('guided-minimo-retributivo', 0, 1000000);
+      clampGuidedNumber('guided-durata', 1, 100);
+      clampGuidedNumber('guided-variazione-reddito-frequenza', 0, 100);
+      clampGuidedNumber('guided-variazione-investimento-frequenza', 0, 100);
+      clampGuidedNumber('guided-variazione-base-frequenza', 0, 100);
+      clampGuidedNumber('guided-variazione-premi-frequenza', 0, 100);
+      clampGuidedNumber('guided-variazione-altri-redditi-frequenza', 0, 100);
       clampGuidedNumber('guided-quota-min', 0, 100);
       clampGuidedNumber('guided-datore-perc', 0, 100);
       clampGuidedNumber('guided-addizionali', 0, 10);
       clampGuidedNumber('guided-ulteriori-detrazioni', 0);
       clampGuidedNumber('guided-contributi-inps', 0, 20);
       clampGuidedNumber('guided-anzianita', 0, 50);
-      clampGuidedNumber('guided-plafond-extra', 0, 25822.85);
+      clampGuidedNumber('guided-plafond-extra', 0, FINANCIAL_CONSTANTS.PLAFOND_PRIMA_OCCUPAZIONE_MAX);
       this.updateGuidedFirstEmploymentFields();
-      clampGuidedNumber('guided-rendimento-fp', 0, 20);
-      clampGuidedNumber('guided-rendimento-pac', 0, 20);
+      clampGuidedNumber('guided-rendimento-fp', 0, 100);
+      clampGuidedNumber('guided-rendimento-pac', 0, 100);
       clampGuidedNumber('guided-costi-fp', 0, 5);
       clampGuidedNumber('guided-costi-pac', 0, 5);
       clampGuidedNumber('guided-quota-agevolata-fp', 0, 100);
       clampGuidedNumber('guided-quota-agevolata-pac', 0, 100);
 
-      const formatMoney = (value) => `${Math.round(value).toLocaleString('it-IT')} €`;
-      const formatPercent = (value) => `${value.toLocaleString('it-IT', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      })}%`;
-      const reddito = Math.max(readGuidedNumber('guided-reddito'), 0);
-      const minimoRetributivo = Math.max(readGuidedNumber('guided-minimo-retributivo'), 0);
-      const budget = Math.max(readGuidedNumber('guided-investimento'), 0);
-      const quotaMinPerc = Math.max(readGuidedNumber('guided-quota-min'), 0) / 100;
-      const datorePerc = Math.max(readGuidedNumber('guided-datore-perc'), 0) / 100;
-      const baseTipo = document.getElementById('guided-base-tipo').value;
-      const baseDatoreTipo = document.getElementById('guided-base-datore-tipo').value;
-      const modalitaVersamento = document.getElementById('guided-modalita-versamento').value;
-
-      document.getElementById('guided-minimo-retributivo').value = String(minimoRetributivo);
-
-      const resolveBase = (type) => {
-        if (type === 'minimoRetributivo' && minimoRetributivo > 0) return minimoRetributivo;
-        return reddito;
-      };
-      const baseQuota = resolveBase(baseTipo);
-      const baseDatore = resolveBase(baseDatoreTipo);
-      const quotaMinima = baseQuota * quotaMinPerc;
-      const datorePotenziale = baseDatore * datorePerc;
-      const datoreRiconosciuto = budget >= quotaMinima ? datorePotenziale : 0;
-      const limiteDeducibileOrdinario = FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP;
-      const quotaFpStimata = Math.min(budget, Math.max(limiteDeducibileOrdinario - datoreRiconosciuto, 0));
-      const splitVersamento = this.model._chooseBestPaymentSplit({
-        quotaFp: quotaFpStimata,
-        quotaDatore: datoreRiconosciuto,
-        quotaMinAderente: quotaMinima,
-        modalitaVersamentoFp: modalitaVersamento,
-        reddito: reddito + Math.max(readGuidedNumber('guided-premi'), 0),
-        contributiInpsPerc: Math.max(readGuidedNumber('guided-contributi-inps', FINANCIAL_CONSTANTS.CONTRIBUTI_INPS_DEFAULT * 100), 0) / 100,
-        massimaleContributivoInps: FINANCIAL_CONSTANTS.MASSIMALE_CONTRIBUTIVO_INPS,
-        sogliaIvsAggiuntivo: FINANCIAL_CONSTANTS.SOGLIA_IVS_AGGIUNTIVO,
-        aliquotaIvsAggiuntivaPerc: FINANCIAL_CONSTANTS.ALIQUOTA_IVS_AGGIUNTIVO,
-        addizionaliPerc: Math.max(readGuidedNumber('guided-addizionali'), 0) / 100,
-        ulterioriDetrazioni: Math.max(readGuidedNumber('guided-ulteriori-detrazioni'), 0),
-        limiteDeduzioneTotale: limiteDeducibileOrdinario
-      });
-      const quotaBusta = splitVersamento.quotaBusta;
-      const quotaBonifico = Math.max(quotaFpStimata - quotaBusta, 0);
-      const quotaBustaPerc = baseQuota > 0 ? (quotaBusta / baseQuota) * 100 : 0;
-
-      document.getElementById('guided-min-contribution').textContent = formatMoney(quotaMinima);
-      document.getElementById('guided-employer-contribution').textContent = formatMoney(datoreRiconosciuto);
-      document.getElementById('guided-employer-status').textContent = budget >= quotaMinima
-        ? 'Quota minima raggiunta'
-        : `Mancano ${formatMoney(Math.max(quotaMinima - budget, 0))}`;
-      document.getElementById('guided-fp-contribution').textContent = formatMoney(quotaFpStimata);
-      document.getElementById('guided-payroll-contribution').textContent = formatMoney(quotaBusta);
-      document.getElementById('guided-payroll-percentage').textContent = quotaBusta > 0
-        ? formatPercent(quotaBustaPerc)
-        : '0,00%';
-      document.getElementById('guided-bank-transfer-contribution').textContent = formatMoney(quotaBonifico);
+      // Le card (quote, extra, busta/bonifico) sono aggiornate da updateFpSplitCards
+      // sugli stessi dati del pannello: nessun calcolo duplicato qui.
     }
 
     /**
@@ -472,6 +720,11 @@ export class FinancialController {
         const selected = document.querySelector(`input[name="${name}"]:checked`);
         return selected ? selected.value : fallback;
       };
+      // Con andamento Costante gli aumenti non devono entrare nel modello.
+      const readVariationNumber = (selectId, inputId) => {
+        const crescente = document.getElementById(selectId)?.value === 'crescente';
+        return crescente ? readNumber(inputId) : 0;
+      };
 
       // Raccogli tutti i valori di input
       const primaOccupazionePost2006 = document.getElementById('primaOccupazionePost2006').checked;
@@ -481,14 +734,21 @@ export class FinancialController {
         durata: readNumber('durata', 1),
         reddito: readNumber('reddito'),
         premiStraordinari: readNumber('premiStraordinari'),
+        altriRedditi: readNumber('altriRedditi'),
+        variazionePremiTipo: readRadio('variazionePremiTipo', 'percentuale'),
+        variazionePremiFrequenza: readVariationNumber('variazionePremiAndamento', 'variazionePremiFrequenza'),
+        variazionePremiValore: readVariationNumber('variazionePremiAndamento', 'variazionePremiValore'),
+        variazioneAltriRedditiTipo: readRadio('variazioneAltriRedditiTipo', 'percentuale'),
+        variazioneAltriRedditiFrequenza: readVariationNumber('variazioneAltriRedditiAndamento', 'variazioneAltriRedditiFrequenza'),
+        variazioneAltriRedditiValore: readVariationNumber('variazioneAltriRedditiAndamento', 'variazioneAltriRedditiValore'),
         investimento: readNumber('investimento'),
         modalitaConfronto: document.getElementById('modalitaConfronto').value,
         variazioneRedditoTipo: readRadio('variazioneRedditoTipo', 'percentuale'),
-        variazioneRedditoFrequenza: readNumber('variazioneRedditoFrequenza'),
-        variazioneRedditoValore: readNumber('variazioneRedditoValore'),
+        variazioneRedditoFrequenza: readVariationNumber('variazioneRedditoAndamento', 'variazioneRedditoFrequenza'),
+        variazioneRedditoValore: readVariationNumber('variazioneRedditoAndamento', 'variazioneRedditoValore'),
         variazioneInvestimentoTipo: readRadio('variazioneInvestimentoTipo', 'percentuale'),
-        variazioneInvestimentoFrequenza: readNumber('variazioneInvestimentoFrequenza'),
-        variazioneInvestimentoValore: readNumber('variazioneInvestimentoValore'),
+        variazioneInvestimentoFrequenza: readVariationNumber('variazioneInvestimentoAndamento', 'variazioneInvestimentoFrequenza'),
+        variazioneInvestimentoValore: readVariationNumber('variazioneInvestimentoAndamento', 'variazioneInvestimentoValore'),
 
         // Percentuali contributi
         quotaDatoreFpPerc: readNumber('contribuzioneDatoreFpPerc') / 100,
@@ -499,8 +759,8 @@ export class FinancialController {
         baseDatoreFpTipo: document.getElementById('baseDatoreFpTipo').value,
         baseDatoreFp: readNumber('baseDatoreFp'),
         variazioneBaseContributivaTipo: readRadio('variazioneBaseContributivaTipo', 'percentuale'),
-        variazioneBaseContributivaFrequenza: readNumber('variazioneBaseContributivaFrequenza'),
-        variazioneBaseContributivaValore: readNumber('variazioneBaseContributivaValore'),
+        variazioneBaseContributivaFrequenza: readVariationNumber('variazioneBaseContributivaAndamento', 'variazioneBaseContributivaFrequenza'),
+        variazioneBaseContributivaValore: readVariationNumber('variazioneBaseContributivaAndamento', 'variazioneBaseContributivaValore'),
         contributiInpsPerc: readNumber('contributiInpsPerc', 9.19) / 100,
         massimaleContributivoInps: readNumber('massimaleContributivoInps', 120607),
         sogliaIvsAggiuntivo: readNumber('sogliaIvsAggiuntivo', 55448),
@@ -530,7 +790,8 @@ export class FinancialController {
         // Maggiorazione deduzione per prima occupazione post 2006
         primaOccupazionePost2006,
         plafondExtraPrimaOccupazione: readNumber('plafondExtraPrimaOccupazione'),
-        anniResiduiMaggiorazione: this.calculateFirstEmploymentRemainingYears(anzianitaPregressaFp, primaOccupazionePost2006)
+        anniResiduiMaggiorazione: this.calculateFirstEmploymentRemainingYears(anzianitaPregressaFp, primaOccupazionePost2006),
+        anniAttesaMaggiorazione: this.calculateFirstEmploymentWaitYears(anzianitaPregressaFp, primaOccupazionePost2006)
       };
   
       // Calcola i risultati usando il model
@@ -538,10 +799,12 @@ export class FinancialController {
       this.latestResults = { ...results, config };
       
       // Aggiorna la view
-      this.view.createTable(results.results, this.tableView);
+      this.view.createTable(this.getStrategyRows(), this.tableView, this.getStrategyExitLabel());
+      this.view.highlightTableYear(this.annualExplorerYear);
       this.view.updateMetricsDashboard(results.results);
       this.view.updateChoiceSequence(results.results);
       this.view.updateResultExplanation(results.results);
+      this.view.updateAnnualExplorer(this.getStrategyRows(), config, this.annualExplorerYear);
       this.view.updateInputWarnings(buildInputWarnings(config));
       this.view.updateChart(results.results);
 
@@ -552,8 +815,8 @@ export class FinancialController {
         config.baseContributivaFpTipo,
         config.baseContributivaFp
       );
-      this.updateContributionSummary(config, results.results);
       this.updateInvestmentModeSummary(config, results.results);
+      this.updateFpSplitCards(results.results, config);
 
       // Aggiorna il contenuto CSV per il download
       this.csvContent = this.model.convertToCSV(results.results);
@@ -628,63 +891,56 @@ export class FinancialController {
 
     updateFirstEmploymentFields() {
       const enabled = document.getElementById('primaOccupazionePost2006').checked;
-      const yearsInput = document.getElementById('anniResiduiMaggiorazione');
+      const yearsDisplay = document.getElementById('anniResiduiMaggiorazione');
+      const anzianita = parseFloat(document.getElementById('anzianitaPregressaFp').value) || 0;
       document.getElementById('plafondExtraPrimaOccupazione').disabled = !enabled;
-      yearsInput.value = String(this.calculateFirstEmploymentRemainingYears(
-        parseFloat(document.getElementById('anzianitaPregressaFp').value) || 0,
-        enabled
-      ));
-      yearsInput.disabled = true;
+      // Campo plafond e card anni residui compaiono solo con toggle su Sì.
+      document.getElementById('plafond-extra-field')?.toggleAttribute('hidden', !enabled);
+      document.getElementById('prima-occupazione-fields')?.toggleAttribute('hidden', !enabled);
+      yearsDisplay.textContent = `${this.calculateFirstEmploymentRemainingYears(anzianita, enabled)} anni`;
+      const hint = document.getElementById('anniResiduiMaggiorazioneHint');
+      if (hint) {
+        const waitYears = this.calculateFirstEmploymentWaitYears(anzianita, enabled);
+        hint.textContent = waitYears > 0
+          ? `Recupero dal 6° anno di partecipazione: parte tra ${waitYears} ann${waitYears === 1 ? 'o' : 'i'}.`
+          : 'Calcolati da anzianità FP già maturata.';
+      }
     }
 
     updateGuidedFirstEmploymentFields() {
       const enabled = document.getElementById('guided-prima-occupazione').checked;
-      const yearsInput = document.getElementById('guided-anni-maggiorazione');
+      const yearsDisplay = document.getElementById('guided-anni-maggiorazione');
+      const anzianita = parseFloat(document.getElementById('guided-anzianita').value) || 0;
       document.getElementById('guided-plafond-extra').disabled = !enabled;
-      yearsInput.value = String(this.calculateFirstEmploymentRemainingYears(
-        parseFloat(document.getElementById('guided-anzianita').value) || 0,
-        enabled
-      ));
-      yearsInput.disabled = true;
+      // Come nel pannello: campo plafond e card anni residui solo con toggle su Sì.
+      document.getElementById('guided-plafond-extra-field')?.toggleAttribute('hidden', !enabled);
+      document.getElementById('guided-prima-occupazione-fields')?.toggleAttribute('hidden', !enabled);
+      yearsDisplay.textContent = `${this.calculateFirstEmploymentRemainingYears(anzianita, enabled)} anni`;
+      const hint = document.getElementById('guided-anni-maggiorazione-hint');
+      if (hint) {
+        const waitYears = this.calculateFirstEmploymentWaitYears(anzianita, enabled);
+        hint.textContent = waitYears > 0
+          ? `Recupero dal 6° anno di partecipazione: parte tra ${waitYears} ann${waitYears === 1 ? 'o' : 'i'}.`
+          : 'Calcolati da anzianità FP già maturata.';
+      }
     }
 
     calculateFirstEmploymentRemainingYears(anzianitaPregressaFp, enabled = true) {
       if (!enabled) return 0;
 
+      // Il recupero copre gli anni di partecipazione dal 6° al 25°: chi è
+      // ancora nel quinquennio iniziale ha davanti l'intera finestra di 20 anni.
       const completedYears = Math.max(Math.floor(anzianitaPregressaFp || 0), 0);
-      if (completedYears < 5) return 0;
-
       return Math.min(
-        Math.max(25 - completedYears, 0),
+        Math.max(25 - Math.max(completedYears, 5), 0),
         FINANCIAL_CONSTANTS.MAGGIORAZIONE_PRIMA_OCCUPAZIONE_ANNI
       );
     }
 
-    resetVariation(kind) {
-      const map = {
-        reddito: {
-          typeName: 'variazioneRedditoTipo',
-          frequencyId: 'variazioneRedditoFrequenza',
-          valueId: 'variazioneRedditoValore'
-        },
-        investimento: {
-          typeName: 'variazioneInvestimentoTipo',
-          frequencyId: 'variazioneInvestimentoFrequenza',
-          valueId: 'variazioneInvestimentoValore'
-        },
-        baseContributiva: {
-          typeName: 'variazioneBaseContributivaTipo',
-          frequencyId: 'variazioneBaseContributivaFrequenza',
-          valueId: 'variazioneBaseContributivaValore'
-        }
-      };
-      const config = map[kind];
-      if (!config) return;
-
-      const percentRadio = document.querySelector(`input[name="${config.typeName}"][value="percentuale"]`);
-      if (percentRadio) percentRadio.checked = true;
-      document.getElementById(config.frequencyId).value = '0';
-      document.getElementById(config.valueId).value = '0';
+    calculateFirstEmploymentWaitYears(anzianitaPregressaFp, enabled = true) {
+      if (!enabled) return 0;
+      const completedYears = Math.max(Math.floor(anzianitaPregressaFp || 0), 0);
+      return Math.max(5 - completedYears, 0);
     }
 
     updateContributionBaseFields() {
@@ -693,6 +949,10 @@ export class FinancialController {
       const minimo = Math.max(rawMinimo, 0);
       const baseInput = document.getElementById('baseContributivaFp');
       const baseDatoreInput = document.getElementById('baseDatoreFp');
+      const baseTipo = document.getElementById('baseContributivaFpTipo').value;
+      const baseDatoreTipo = document.getElementById('baseDatoreFpTipo').value;
+      const minimumFields = document.getElementById('minimum-wage-fields');
+      const usesMinimumWage = baseTipo === 'minimoRetributivo' || baseDatoreTipo === 'minimoRetributivo';
 
       if (rawMinimo !== minimo) {
         minimoInput.value = String(minimo);
@@ -700,36 +960,22 @@ export class FinancialController {
 
       baseInput.value = String(minimo);
       baseDatoreInput.value = String(minimo);
+      if (minimumFields) {
+        minimumFields.hidden = !usesMinimumWage;
+      }
+    }
+
+    updateGuidedContributionBaseFields() {
+      const baseTipo = document.getElementById('guided-base-tipo')?.value;
+      const baseDatoreTipo = document.getElementById('guided-base-datore-tipo')?.value;
+      const minimumFields = document.getElementById('guided-minimum-wage-fields');
+      if (!minimumFields) return;
+
+      minimumFields.hidden = baseTipo !== 'minimoRetributivo' && baseDatoreTipo !== 'minimoRetributivo';
     }
 
     updateContributionBaseLabels() {
       this.updateContributionBaseFields();
-    }
-
-    updateInpsContributionFields() {
-      const preset = document.getElementById('contributiInpsPreset').value;
-      const input = document.getElementById('contributiInpsPerc');
-
-      if (preset === 'manuale') {
-        input.disabled = false;
-        return;
-      }
-
-      input.value = preset;
-      input.disabled = true;
-    }
-
-    updateGuidedInpsContributionFields() {
-      const preset = document.getElementById('guided-contributi-inps-preset').value;
-      const input = document.getElementById('guided-contributi-inps');
-
-      if (preset === 'manuale') {
-        input.disabled = false;
-        return;
-      }
-
-      input.value = preset;
-      input.disabled = true;
     }
 
     updateGuidedReturnFields() {
@@ -742,6 +988,36 @@ export class FinancialController {
       document.querySelectorAll('[data-guided-return-extra="pac"]').forEach((element) => {
         element.hidden = pacMode !== 'lordo';
       });
+
+      // Stesse card informative del pannello: tassa effettiva e netto calcolato.
+      const readNumber = (id) => {
+        const value = parseFloat(document.getElementById(id)?.value);
+        return Number.isFinite(value) ? value : 0;
+      };
+      const formatPercent = (value) => `${value.toLocaleString('it-IT', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}%`;
+      const setText = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value;
+      };
+
+      const quotaFpAgevolata = fpMode === 'lordo' ? Math.min(Math.max(readNumber('guided-quota-agevolata-fp'), 0), 100) / 100 : 0;
+      const quotaPacAgevolata = pacMode === 'lordo' ? Math.min(Math.max(readNumber('guided-quota-agevolata-pac'), 0), 100) / 100 : 0;
+      const costiFp = fpMode === 'lordo' ? Math.min(Math.max(readNumber('guided-costi-fp'), 0), 5) : 0;
+      const costiPac = pacMode === 'lordo' ? Math.min(Math.max(readNumber('guided-costi-pac'), 0), 5) : 0;
+      const tassaFp = (quotaFpAgevolata * 0.125) + ((1 - quotaFpAgevolata) * 0.20);
+      const tassaPac = (quotaPacAgevolata * 0.125) + ((1 - quotaPacAgevolata) * 0.26);
+
+      setText('guided-tassa-effettiva-fp', formatPercent(tassaFp * 100));
+      setText('guided-tassa-effettiva-pac', formatPercent(tassaPac * 100));
+      setText('guided-rendimento-netto-fp', formatPercent(
+        this.calculateNetReturnFromValues(readNumber('guided-rendimento-fp'), costiFp, tassaFp)
+      ));
+      setText('guided-rendimento-netto-pac', formatPercent(
+        this.calculateNetReturnFromValues(readNumber('guided-rendimento-pac'), costiPac, tassaPac)
+      ));
     }
 
     populateLocalTaxSelectors() {
@@ -948,12 +1224,13 @@ export class FinancialController {
       const regionSelect = document.getElementById('guided-regione-addizionali');
       const municipalityInput = document.getElementById('guided-comune-addizionali');
       const addizionaliInput = document.getElementById('guided-addizionali');
-      const summary = document.getElementById('guided-addizionali-summary');
-      if (!regionSelect || !municipalityInput || !addizionaliInput || !summary) return;
+      const rateCards = document.getElementById('guided-local-tax-rate-cards');
+      const hideRateCards = () => rateCards?.setAttribute('aria-hidden', 'true');
+      if (!regionSelect || !municipalityInput || !addizionaliInput) return;
 
       if (this.guidedTaxMode !== 'auto') {
         addizionaliInput.disabled = false;
-        summary.textContent = 'Modalità manuale: inserisci la somma tra aliquota media regionale e aliquota media comunale.';
+        hideRateCards();
         return;
       }
 
@@ -970,13 +1247,21 @@ export class FinancialController {
       addizionaliInput.disabled = true;
       addizionaliInput.value = (selected.totalRate * 100).toFixed(2);
 
-      const parts = [
-        selected.region ? `Regione: ${(selected.regionalRate * 100).toFixed(2)}%` : null,
-        selected.municipality ? `Comune: ${(selected.municipalRate * 100).toFixed(2)}%` : null
-      ].filter(Boolean);
-      summary.textContent = parts.length
-        ? `${parts.join(' + ')} = ${(selected.totalRate * 100).toFixed(2)}% effettivo sul reddito impostato.`
-        : 'Seleziona Regione e, se disponibile, Comune. Il Comune imposta automaticamente la Regione.';
+      // Come nel pannello: le card regione/comune compaiono solo con un comune selezionato.
+      if (!selected.municipality || !rateCards) {
+        hideRateCards();
+        return;
+      }
+
+      const setText = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value;
+      };
+      rateCards.setAttribute('aria-hidden', 'false');
+      setText('guided-local-tax-region-title', `Aliquota regionale — ${selected.region?.name || '-'}`);
+      setText('guided-local-tax-region-rate', `${(selected.regionalRate * 100).toFixed(2)}%`);
+      setText('guided-local-tax-municipal-title', `Aliquota comunale — ${selected.municipality.name}`);
+      setText('guided-local-tax-municipal-rate', `${(selected.municipalRate * 100).toFixed(2)}%`);
     }
 
     updateLocalTaxFields() {
@@ -987,19 +1272,20 @@ export class FinancialController {
       const regionSelect = document.getElementById('regioneAddizionali');
       const municipalityInput = document.getElementById('comuneAddizionali');
       const addizionaliInput = document.getElementById('addizionaliPerc');
-      const summary = document.getElementById('addizionali-auto-summary');
+      const rateCards = document.getElementById('local-tax-rate-cards');
+      const hideRateCards = () => rateCards?.setAttribute('aria-hidden', 'true');
       if (!regionSelect || !municipalityInput || !addizionaliInput) return;
 
       if (this.localTaxMode !== 'auto') {
         addizionaliInput.disabled = false;
-        if (summary) {
-          summary.textContent = 'Modalità manuale: inserisci la somma tra aliquota media regionale e aliquota media comunale.';
-        }
+        hideRateCards();
         return;
       }
 
       const selected = calculateLocalTaxRate({
-        reddito: readNumber('reddito') + Math.max(readNumber('premiStraordinari'), 0),
+        reddito: readNumber('reddito')
+          + Math.max(readNumber('premiStraordinari'), 0)
+          + Math.max(readNumber('altriRedditi'), 0),
         regionId: regionSelect.value,
         municipalityCode: municipalityInput.value
       });
@@ -1012,20 +1298,25 @@ export class FinancialController {
       addizionaliInput.disabled = true;
       if (isAutomatic) {
         addizionaliInput.value = (selected.totalRate * 100).toFixed(2);
+      } else {
+        addizionaliInput.value = '0.00';
       }
 
-      if (summary) {
-        if (!isAutomatic) {
-          addizionaliInput.value = '0.00';
-          summary.textContent = 'Seleziona regione e, se disponibile, comune. Il Comune imposta automaticamente la Regione.';
-          return;
-        }
-        const parts = [
-          selected.region ? `Regione: ${(selected.regionalRate * 100).toFixed(2)}%` : null,
-          selected.municipality ? `Comune: ${(selected.municipalRate * 100).toFixed(2)}%` : null
-        ].filter(Boolean);
-        summary.textContent = `${parts.join(' + ')} = ${(selected.totalRate * 100).toFixed(2)}% effettivo sul reddito impostato.`;
+      // Le card regione/comune compaiono solo con un comune selezionato.
+      if (!selected.municipality || !rateCards) {
+        hideRateCards();
+        return;
       }
+
+      const setText = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value;
+      };
+      rateCards.setAttribute('aria-hidden', 'false');
+      setText('local-tax-region-title', `Aliquota regionale — ${selected.region?.name || '-'}`);
+      setText('local-tax-region-rate', `${(selected.regionalRate * 100).toFixed(2)}%`);
+      setText('local-tax-municipal-title', `Aliquota comunale — ${selected.municipality.name}`);
+      setText('local-tax-municipal-rate', `${(selected.municipalRate * 100).toFixed(2)}%`);
     }
 
     /**
@@ -1042,71 +1333,53 @@ export class FinancialController {
       }
     }
 
-    updateContributionSummary(config, results = []) {
-      const formatMoney = (value) => `${Math.round(Math.max(value, 0)).toLocaleString('it-IT')} €`;
-      const formatPercent = (value) => `${value.toLocaleString('it-IT', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      })}%`;
+    /**
+     * Card del sottogruppo "Quota FP extra": quota oltre la minima (EUR e %)
+     * e differenza tra versarla in busta o via bonifico nell'anno 1.
+     */
+    /**
+     * Card di quote, quota extra e busta/bonifico (anno 1), calcolate sulla
+     * strategia FP e mostrate identiche nel pannello e nella guidata.
+     */
+    updateFpSplitCards(results, config) {
+      // Stessa strategia mostrata in tabella ed esploratore: un'unica storia.
+      const row = this.getStrategyRows()?.[0] || results?.[0];
+      if (!row) return;
 
-      const yearSelect = document.getElementById('contribution-summary-year');
-      if (yearSelect) {
-        const previousYear = this.contributionSummaryYear || 1;
-        const currentOptions = Array.from(yearSelect.options).map((option) => option.value).join(',');
-        const nextOptions = results.map((row) => String(row.Anno)).join(',');
-        if (currentOptions !== nextOptions) {
-          yearSelect.replaceChildren(...results.map((row) => {
-            const option = document.createElement('option');
-            option.value = String(row.Anno);
-            option.textContent = `Anno ${row.Anno}`;
-            return option;
-          }));
-        }
-        const maxYear = results.length ? results.at(-1).Anno : 1;
-        this.contributionSummaryYear = Math.min(Math.max(previousYear, 1), maxYear);
-        yearSelect.value = String(this.contributionSummaryYear);
-      }
-
-      const selectedRow = results.find((row) => row.Anno === this.contributionSummaryYear) || results[0];
-      if (!selectedRow) return;
-
-      const anno = selectedRow.Anno || 1;
-      const redditoAnno = this.model._applyPeriodicVariation(
-        config.reddito,
-        anno,
-        config.variazioneRedditoTipo,
-        config.variazioneRedditoFrequenza,
-        config.variazioneRedditoValore
-      );
-      const baseQuota = this.model._resolveContributionBase({
-        redditoAnno,
-        anno,
-        baseContributivaFpTipo: config.baseContributivaFpTipo,
-        baseContributivaFp: config.baseContributivaFp,
-        variazioneBaseContributivaTipo: config.variazioneBaseContributivaTipo,
-        variazioneBaseContributivaFrequenza: config.variazioneBaseContributivaFrequenza,
-        variazioneBaseContributivaValore: config.variazioneBaseContributivaValore
-      });
-      const quotaMinima = baseQuota * config.quotaMinAderentePerc;
-      const datoreRiconosciuto = selectedRow.Datore || 0;
-      const quotaFpConsigliata = selectedRow['FP Cons'] || 0;
-      const quotaBusta = selectedRow['FP Busta'] || 0;
-      const quotaBonifico = selectedRow['FP Bonifico'] || 0;
-      const differenzaBustaBonifico = selectedRow['Diff Busta'] || 0;
-      const quotaBustaPerc = baseQuota > 0 ? (quotaBusta / baseQuota) * 100 : 0;
-      const formatSignedMoney = (value) => {
-        if (Math.abs(value) < 0.5) return '0 €';
-        return `${value > 0 ? '+' : '-'}${formatMoney(Math.abs(value))}`;
+      const setText = (ids, value) => {
+        ids.forEach((id) => {
+          const element = document.getElementById(id);
+          if (element) element.textContent = value;
+        });
       };
-      document.getElementById('quota-minima-display').textContent = formatMoney(quotaMinima);
-      document.getElementById('contributo-datore-display').textContent = formatMoney(datoreRiconosciuto);
-      document.getElementById('quota-fp-consigliata-display').textContent = formatMoney(quotaFpConsigliata);
-      document.getElementById('quota-busta-display').textContent = formatMoney(quotaBusta);
-      document.getElementById('quota-busta-perc-display').textContent = quotaBusta > 0
-        ? formatPercent(quotaBustaPerc)
-        : '0,00%';
-      document.getElementById('quota-bonifico-display').textContent = formatMoney(quotaBonifico);
-      document.getElementById('ottimizzazione-busta-display').textContent = formatSignedMoney(differenzaBustaBonifico);
+      const money = (value) => `${Math.round(value).toLocaleString('it-IT')} €`;
+
+      const base = config.baseContributivaFpTipo === 'ral' || (config.baseContributivaFp || 0) <= 0
+        ? config.reddito
+        : config.baseContributivaFp;
+      const quotaMinima = Math.max((base || 0) * (config.quotaMinAderentePerc || 0), 0);
+
+      setText(['fp-quota-aderente-display', 'guided-quota-aderente-display'], money(quotaMinima));
+      setText(['fp-quota-datore-display', 'guided-quota-datore-display'], money(row.Datore || 0));
+
+      const extra = Math.max((row['FP Cons'] || 0) - quotaMinima, 0);
+      const extraPerc = base > 0 ? (extra / base) * 100 : 0;
+      setText(['fp-extra-quota-display', 'guided-fp-extra-quota-display'],
+        `${money(extra)} · ${extraPerc.toLocaleString('it-IT', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })}%`);
+
+      // Positivo: conviene l'extra in busta; negativo: meglio il bonifico.
+      const diff = Math.round(row['Diff Busta'] || 0);
+      setText(['fp-split-diff-display', 'guided-fp-split-diff-display'],
+        `${diff > 0 ? '+' : ''}${diff.toLocaleString('it-IT')} €`);
+      const note = diff > 0
+        ? "Conviene versare l'extra in busta."
+        : diff < 0
+          ? "Conviene versare l'extra via bonifico."
+          : 'Nessuna differenza con questi input.';
+      setText(['fp-split-diff-note', 'guided-fp-split-diff-note'], note);
     }
 
     updateInvestmentModeSummary(config, results = []) {
@@ -1141,15 +1414,17 @@ export class FinancialController {
         if (equivalentLabel) equivalentLabel.textContent = 'PAC equivalente anno 1';
         if (equivalentDisplay) equivalentDisplay.textContent = formatMoney(pacEquivalente);
         if (explanation) {
-          explanation.textContent = `Anno 1: versi fino a ${formatMoney(investimentoAnno)} nel FP, ma il costo netto stimato è ${formatMoney(pacEquivalente)} dopo ${formatMoney(risparmioFiscale)} di beneficio fiscale. Il PAC viene quindi confrontato con quel costo netto, non con il lordo pieno.`;
+          explanation.textContent = 'Ti rientra in tasca: non viene investito.';
         }
         return;
       }
 
       if (grossDisplay) grossDisplay.textContent = formatMoney(investimentoAnno);
-      if (equivalentCard) equivalentCard.hidden = true;
+      if (equivalentCard) equivalentCard.hidden = false;
+      if (equivalentLabel) equivalentLabel.textContent = 'PAC equivalente anno 1';
+      if (equivalentDisplay) equivalentDisplay.textContent = formatMoney(investimentoAnno);
       if (explanation) {
-        explanation.textContent = `Anno 1: il mix alloca ${formatMoney(fpConsigliato)} al FP e ${formatMoney(pacConsigliato)} al PAC. Il beneficio fiscale stimato non è denaro regalato: in modalità budget annuo pianificato viene reinvestito dal ciclo successivo, senza mostrarlo come secondo importo duplicato.`;
+        explanation.textContent = "Da reinvestire attivamente ogni anno: la simulazione lo somma al budget dall'anno successivo.";
       }
     }
 
