@@ -4,6 +4,17 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Contatore visite (counterapi.dev): un incremento per caricamento;
+    // se il servizio non risponde, il chip resta nascosto.
+    fetch('https://api.counterapi.dev/v1/strategia-pensione-fpiped/homepage/up')
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (!data || !Number.isFinite(data.count)) return;
+            document.getElementById('visit-count').textContent = data.count.toLocaleString('it-IT');
+            document.getElementById('visit-counter').hidden = false;
+        })
+        .catch(function() { /* offline o servizio non disponibile */ });
+
     // Inizializza la navigazione a tab
     setupTabs();
 
