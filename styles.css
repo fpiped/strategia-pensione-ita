@@ -3550,7 +3550,7 @@ header {
     align-items: center;
     padding: 1.25rem 1.5rem;
     background:
-        linear-gradient(100deg, #ffffff 0%, #ffffff 72%, #eef7f3 100%),
+        linear-gradient(120deg, #ffffff 0%, #f8fbf8 46%, #e5f2ec 100%),
         #ffffff;
     border-color: var(--color-border-soft);
     border-radius: 10px;
@@ -3590,7 +3590,11 @@ header {
     padding-inline: 1.6rem;
     font-size: 1.02rem;
     border-radius: 8px;
-    box-shadow: 0 6px 18px rgb(15 118 110 / 0.28);
+    box-shadow: none;
+}
+
+.intro-actions .intro-primary:hover {
+    box-shadow: none;
 }
 
 .intro-link {
@@ -5411,7 +5415,7 @@ td {
     padding: 1.25rem 1.5rem;
     min-height: 8rem;
     background:
-        linear-gradient(100deg, #ffffff 0%, #ffffff 72%, #eef7f3 100%),
+        linear-gradient(120deg, #ffffff 0%, #f8fbf8 46%, #e5f2ec 100%),
         #ffffff;
     border: 1px solid var(--color-border-soft);
     border-radius: 10px;
