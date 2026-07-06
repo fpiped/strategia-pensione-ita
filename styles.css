@@ -1916,6 +1916,10 @@ td.best-value {
     margin-top: 0.75rem;
 }
 
+.footer .footer-visits {
+    margin-top: 0.35rem;
+}
+
 .footer .github-link a {
     color: var(--color-text-muted);
     text-decoration: none;
@@ -5617,38 +5621,10 @@ a.logo:hover h1 {
     letter-spacing: 0;
 }
 
-/* Header: tabs + contatore visite (hits.sh). */
+/* Header: tabs. */
 .header-side {
     display: flex;
     align-items: center;
     gap: 1rem;
     min-width: 0;
-}
-
-.hits-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.3rem 0.7rem;
-    color: var(--color-accent-primary);
-    background: #f2faf6;
-    border: 1px solid rgb(15 118 110 / 0.3);
-    border-radius: 999px;
-    font-size: 0.74rem;
-    line-height: 1;
-    white-space: nowrap;
-}
-
-.hits-chip strong {
-    color: var(--color-text-primary);
-    font-weight: 800;
-}
-
-.hits-chip > span {
-    color: var(--color-text-secondary);
-    font-weight: 600;
-}
-
-.hits-chip[hidden] {
-    display: none;
 }
