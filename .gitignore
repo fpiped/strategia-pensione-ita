@@ -1,0 +1,16 @@
+# Dipendenze locali (l'app è statica: node serve solo per test e dev server)
+node_modules/
+package-lock.json
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Log e temporanei
+*.log
+tmp/
