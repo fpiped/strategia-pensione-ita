@@ -1,6 +1,6 @@
 # Calcolatore Fondo Pensione vs PAC
 
-https://fpiped.github.io/calcolatore-fondo-pensione-vs-pac/
+https://fpiped.github.io/strategia-pensione-ita/
 
 Confronta **Fondo Pensione** e **PAC in ETF** nel contesto fiscale italiano.
 
@@ -50,8 +50,8 @@ Prerequisiti:
 - un browser moderno
 
 ```bash
-git clone https://github.com/fpiped/calcolatore-fondo-pensione-vs-pac.git
-cd calcolatore-fondo-pensione-vs-pac
+git clone https://github.com/fpiped/strategia-pensione-ita.git
+cd strategia-pensione-ita
 npm start
 ```
 
