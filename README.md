@@ -53,6 +53,8 @@ I test usano il runner nativo di Node.js e coprono la logica principale di calco
 index.html                         markup dell'app e contenuti della guida integrata
 styles.css                         stile e layout responsive
 js/app.js                          entrypoint
+js/store.js                        store centrale: unica fonte di verità degli input
+js/bindings.js                     binding dichiarativi input ↔ store (pannello e guidata)
 js/controllers/FinancialController.js
 js/models/FinancialModel.js        orchestrazione dei calcoli
 js/views/FinancialView.js          rendering di metriche, tabella e grafico

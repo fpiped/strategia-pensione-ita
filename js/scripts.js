@@ -409,9 +409,9 @@ function setupMobileTooltips() {
         },
         plafondExtraPrimaOccupazione: {
             title: 'Plafond extra residuo',
-            dove: 'Si calcola come 26.500 € meno i contributi effettivamente versati nei primi 5 anni di partecipazione.',
+            dove: 'Somma, per ciascuno dei primi 5 anni di partecipazione già trascorsi, di max(0, 5.300 € − contributi dedotti in quell\'anno). Massimo 26.500 €.',
             come: 'Quota di deduzione aggiuntiva ancora recuperabile; ogni anno puoi usarne al massimo 2.650 €.',
-            effetto: 'Se sei ancora nel quinquennio iniziale, la simulazione accumula da sola il plafond non usato negli anni simulati: qui inserisci solo il residuo già maturato prima della simulazione.'
+            effetto: 'Se sei ancora nel quinquennio iniziale, la simulazione accumula da sola il plafond non usato negli anni simulati: qui inserisci solo il residuo già maturato prima della simulazione. La card Plafond residuo mostra il totale disponibile a inizio recupero.'
         },
         anniResiduiMaggiorazione: {
             title: 'Anni residui maggiorazione calcolati',

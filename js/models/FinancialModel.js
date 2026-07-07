@@ -286,6 +286,7 @@ export class FinancialModel {
           quotaBonificoAnno: recommendedAllocation.quotaBonifico,
           risparmioOttimizzazioneBustaAnno: recommendedAllocation.extraRisparmioVersamento,
           sceltaAnno: recommendedAllocation.scelta,
+          plafondResiduo: recommendedPlan.firstEmployment.extraRemaining,
           exitFP,
           exitPAC,
           exitMix: exitRecommended
@@ -306,6 +307,7 @@ export class FinancialModel {
           quotaBonificoAnno: fpPaymentSplit.quotaBonifico,
           risparmioOttimizzazioneBustaAnno: fpPaymentSplit.extraRisparmioVersamento,
           sceltaAnno: fpAllocation.quotaExtraPac > 0 ? 'MIX' : 'FP',
+          plafondResiduo: fpPlan.firstEmployment.extraRemaining,
           exitFP,
           exitPAC,
           exitMix: exitFP
@@ -326,6 +328,7 @@ export class FinancialModel {
           quotaBonificoAnno: 0,
           risparmioOttimizzazioneBustaAnno: 0,
           sceltaAnno: 'PAC',
+          plafondResiduo: pacPlan.firstEmployment.extraRemaining,
           exitFP,
           exitPAC,
           exitMix: exitPAC
@@ -599,6 +602,7 @@ export class FinancialModel {
           quotaBonificoAnno: recommendedAllocation.quotaBonifico,
           risparmioOttimizzazioneBustaAnno: recommendedAllocation.extraRisparmioVersamento,
           sceltaAnno: recommendedAllocation.scelta,
+          plafondResiduo: recommendedPlan.firstEmployment.extraRemaining,
           exitFP,
           exitPAC,
           exitMix: exitRecommended
@@ -619,6 +623,7 @@ export class FinancialModel {
           quotaBonificoAnno: fpPaymentSplit.quotaBonifico,
           risparmioOttimizzazioneBustaAnno: fpPaymentSplit.extraRisparmioVersamento,
           sceltaAnno: fpAllocation.quotaExtraPac > 0 ? 'MIX' : 'FP',
+          plafondResiduo: fpPlan.firstEmployment.extraRemaining,
           exitFP,
           exitPAC,
           exitMix: exitFP
@@ -639,6 +644,7 @@ export class FinancialModel {
           quotaBonificoAnno: 0,
           risparmioOttimizzazioneBustaAnno: 0,
           sceltaAnno: 'PAC',
+          plafondResiduo: pacPlan.firstEmployment.extraRemaining,
           exitFP,
           exitPAC,
           exitMix: exitPAC
@@ -1103,6 +1109,7 @@ export class FinancialModel {
       quotaBonificoAnno,
       risparmioOttimizzazioneBustaAnno = 0,
       sceltaAnno,
+      plafondResiduo = 0,
       exitFP,
       exitPAC,
       exitMix
@@ -1122,6 +1129,8 @@ export class FinancialModel {
         "FP Bonifico": Math.round(quotaBonificoAnno),
         "Diff Busta": Math.round(risparmioOttimizzazioneBustaAnno),
         "Scelta": sceltaAnno,
+        // Plafond prima occupazione ancora disponibile a fine anno (0 se opzione spenta).
+        "Plafond Residuo": Math.round(plafondResiduo),
         "Exit FP": Math.round(exitFP),
         "Exit PAC": Math.round(exitPAC),
         "Exit Mix": Math.round(exitMix),

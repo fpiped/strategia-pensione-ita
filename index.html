@@ -326,6 +326,15 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="control-subgroup">
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="contributiInpsPerc"><span class="help-trigger" data-help="contributiInpsPerc">Aliquota INPS</span></label>
+                                                <div class="control-field"><input type="number" id="contributiInpsPerc" class="form-control" value="9.19" min="0" max="20" step="0.1"><span class="unit">%</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="control-subgroup">
                                         <div class="control-subgroup-title"><strong><span class="help-trigger" data-help="addizionaliPerc">Addizionali</span></strong></div>
                                         <div class="local-tax-panel" id="local-tax-panel" data-local-tax-mode-current="manual">
                                             <div class="local-tax-mode-toggle" role="group" aria-label="Modalità addizionali">
@@ -454,15 +463,6 @@
 
                                     <div class="control-subgroup">
                                         <div class="form-row">
-                                            <div class="form-group">
-                                                <label for="contributiInpsPerc"><span class="help-trigger" data-help="contributiInpsPerc">Aliquota INPS</span></label>
-                                                <div class="control-field"><input type="number" id="contributiInpsPerc" class="form-control" value="9.19" min="0" max="20" step="0.1"><span class="unit">%</span></div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="control-subgroup">
-                                        <div class="form-row">
                                             <div class="form-group option-field">
                                                 <label class="binary-toggle">
                                                     <input type="checkbox" id="primaOccupazionePost2006">
@@ -472,7 +472,7 @@
                                             </div>
                                             <div class="form-group" id="plafond-extra-field" hidden>
                                                 <label for="plafondExtraPrimaOccupazione"><span class="help-trigger" data-help="plafondExtraPrimaOccupazione">Plafond extra residuo</span></label>
-                                                <div class="control-field"><input type="number" id="plafondExtraPrimaOccupazione" class="form-control" value="13250" min="0" max="26500" step="100" disabled><span class="unit">EUR</span></div>
+                                                <div class="control-field"><input type="number" id="plafondExtraPrimaOccupazione" class="form-control" value="0" min="0" max="26500" step="100" disabled><span class="unit">EUR</span></div>
                                             </div>
                                         </div>
                                         <div class="mini-metrics" id="prima-occupazione-fields" hidden>
@@ -480,6 +480,11 @@
                                                 <span>Anni residui maggiorazione</span>
                                                 <strong id="anniResiduiMaggiorazione">0 anni</strong>
                                                 <p id="anniResiduiMaggiorazioneHint">Calcolati da anzianità FP già maturata.</p>
+                                            </div>
+                                            <div class="mini-metric output">
+                                                <span>Plafond residuo stimato</span>
+                                                <strong id="plafondResiduoDisplay">0 €</strong>
+                                                <p id="plafondResiduoHint">Campo inserito più accumulo stimato nei primi 5 anni simulati.</p>
                                             </div>
                                         </div>
                                     </div>
@@ -1185,6 +1190,11 @@
                                     <span>Anni residui maggiorazione</span>
                                     <strong id="guided-anni-maggiorazione">0 anni</strong>
                                     <p id="guided-anni-maggiorazione-hint">Calcolati da anzianità FP già maturata.</p>
+                                </div>
+                                <div class="mini-metric output">
+                                    <span>Plafond residuo stimato</span>
+                                    <strong id="guided-plafond-residuo-display">0 €</strong>
+                                    <p id="guided-plafond-residuo-hint">Campo inserito più accumulo stimato nei primi 5 anni simulati.</p>
                                 </div>
                             </div>
                             <div class="guided-note" data-help-note="primaOccupazionePost2006 plafondExtraPrimaOccupazione anniResiduiMaggiorazione"></div>
