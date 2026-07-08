@@ -1297,69 +1297,53 @@
                     <p><strong>La domanda a cui risponde:</strong> “dato un investimento annuo, quanta parte deducibile conviene mettere nel fondo pensione e quanta nel PAC?”. Non risponde a “conviene destinare anche il TFR al fondo?”.</p>
 
                     <h3>Confronto rapido</h3>
-                    <table>
-                        <tr>
-                            <th></th>
-                            <th>Fondo Pensione</th>
-                            <th>ETF</th>
-                        </tr>
-                        <tr>
-                            <td>Deducibilità</td>
-                            <td>Sì (fino €5.300)</td>
-                            <td>No</td>
-                        </tr>
-                        <tr>
-                            <td>Tassa sui versamenti</td>
-                            <td>9-15% (23% se riscatto anticipato)</td>
-                            <td>Nessuna</td>
-                        </tr>
-                        <tr>
-                            <td>Tassa sui rendimenti</td>
-                            <td>Ogni anno (12,5-20%); già inclusa se usi rendimento netto</td>
-                            <td>Alla vendita/exit (12,5-26%) se usi rendimento lordo; già inclusa se usi rendimento netto</td>
-                        </tr>
-                        <tr>
-                            <td>Contributo datore</td>
-                            <td>Sì</td>
-                            <td>No</td>
-                        </tr>
-                        <tr>
-                            <td>Liquidità</td>
-                            <td>Bloccata (vedi sotto)</td>
-                            <td>Totale</td>
-                        </tr>
-                    </table>
+                    <div class="docs-comparison-grid">
+                        <article class="docs-comparison-card">
+                            <h4>Fondo pensione</h4>
+                            <dl>
+                                <div><dt>Deducibilità</dt><dd>Sì, fino a €5.300</dd></div>
+                                <div><dt>Tassa sui versamenti</dt><dd>9-15%, oppure 23% con riscatto anticipato</dd></div>
+                                <div><dt>Tassa sui rendimenti</dt><dd>Annuale, 12,5-20%; già inclusa se usi rendimento netto</dd></div>
+                                <div><dt>Contributo datore</dt><dd>Sì, se raggiungi la quota minima aderente</dd></div>
+                                <div><dt>Liquidità</dt><dd>Vincolata, con anticipazioni in casi specifici</dd></div>
+                            </dl>
+                        </article>
+                        <article class="docs-comparison-card">
+                            <h4>PAC</h4>
+                            <dl>
+                                <div><dt>Deducibilità</dt><dd>No</dd></div>
+                                <div><dt>Tassa sui versamenti</dt><dd>Nessuna</dd></div>
+                                <div><dt>Tassa sui rendimenti</dt><dd>Alla vendita/exit, 12,5-26%, se usi rendimento lordo; già inclusa se usi rendimento netto</dd></div>
+                                <div><dt>Contributo datore</dt><dd>No</dd></div>
+                                <div><dt>Liquidità</dt><dd>Totale</dd></div>
+                            </dl>
+                        </article>
+                    </div>
 
                     <p>Con i dati dell'esempio, il FP parte con un vantaggio lordo stimato di €1.410 (€450 del datore + circa €960 di risparmio fiscale). L'ETF può recuperare se il rendimento netto composto resta più alto per abbastanza anni.</p>
 
                     <h3>Anticipazioni dal FP</h3>
                     <p>Il capitale è bloccato fino alla pensione, ma puoi chiedere anticipazioni in alcuni casi:</p>
-                    <table>
-                        <tr>
-                            <th>Motivo</th>
-                            <th>Max prelevabile</th>
-                            <th>Anzianità</th>
-                            <th>Tassazione</th>
-                        </tr>
-                        <tr>
-                            <td>Spese sanitarie</td>
-                            <td>75%</td>
-                            <td>Nessuna</td>
-                            <td>15% → 9%*</td>
-                        </tr>
-                        <tr>
-                            <td>Acquisto/ristrutturazione prima casa</td>
-                            <td>75%</td>
-                            <td>8 anni</td>
-                            <td>23%</td>
-                        </tr>
-                        <tr>
-                            <td>Altre esigenze (senza giustificativo)</td>
-                            <td>30%</td>
-                            <td>8 anni</td>
-                            <td>23%</td>
-                        </tr>
-                    </table>
+                    <div class="docs-info-grid">
+                        <article class="docs-info-card">
+                            <h4>Spese sanitarie</h4>
+                            <p><strong>Max prelevabile:</strong> 75%</p>
+                            <p><strong>Anzianità richiesta:</strong> nessuna</p>
+                            <p><strong>Tassazione:</strong> 15% → 9%*</p>
+                        </article>
+                        <article class="docs-info-card">
+                            <h4>Prima casa</h4>
+                            <p><strong>Max prelevabile:</strong> 75%</p>
+                            <p><strong>Anzianità richiesta:</strong> 8 anni</p>
+                            <p><strong>Tassazione:</strong> 23%</p>
+                        </article>
+                        <article class="docs-info-card">
+                            <h4>Altre esigenze</h4>
+                            <p><strong>Max prelevabile:</strong> 30%</p>
+                            <p><strong>Anzianità richiesta:</strong> 8 anni</p>
+                            <p><strong>Tassazione:</strong> 23%</p>
+                        </article>
+                    </div>
                     <p><small>*L'aliquota parte dal 15% e scende dello 0.3% per ogni anno oltre il 15°, fino al minimo del 9% (con 35+ anni di iscrizione).</small></p>
 
                     <div class="highlight">
@@ -1463,45 +1447,45 @@ Allocazione ottimale: €266.657
 
                     <h3>Quanto contano le ipotesi di rendimento</h3>
                     <p>La sequenza ottimale cambia molto se modifichi i rendimenti. Con gli stessi dati di Mario, ma cambiando solo FP e PAC:</p>
-                    <table>
-                        <tr>
-                            <th>Scenario</th>
-                            <th>FP</th>
-                            <th>PAC</th>
-                            <th>Sequenza ottimale</th>
-                            <th>Exit FP 30 anni</th>
-                            <th>Exit PAC 30 anni</th>
-                            <th>Allocazione ottimale 30 anni</th>
-                        </tr>
-                        <tr>
-                            <td>Conservativo</td>
-                            <td>3%</td>
-                            <td>5%</td>
-                            <td>1-23 Split · 24-30 FP</td>
-                            <td>€214.563</td>
-                            <td>€199.317</td>
-                            <td>€225.177</td>
-                        </tr>
-                        <tr>
-                            <td>Centrale</td>
-                            <td>4%</td>
-                            <td>6%</td>
-                            <td>1-23 Split · 24-30 FP</td>
-                            <td>€254.693</td>
-                            <td>€237.175</td>
-                            <td>€266.657</td>
-                        </tr>
-                        <tr>
-                            <td>Ottimistico PAC</td>
-                            <td>5%</td>
-                            <td>10%</td>
-                            <td>1-10 PAC · 11-27 Split · 28-30 FP</td>
-                            <td>€303.380</td>
-                            <td>€493.482</td>
-                            <td>€507.190</td>
-                        </tr>
-                    </table>
-                    <p>Questa tabella serve a leggere il risultato nel modo giusto: il calcolatore confronta scenari coerenti, ma non stabilisce quale rendimento si realizzerà davvero.</p>
+                    <div class="docs-scenario-grid">
+                        <article class="docs-scenario-card">
+                            <div class="docs-scenario-head">
+                                <h4>Conservativo</h4>
+                                <span>FP 3% · PAC 5%</span>
+                            </div>
+                            <p><strong>Sequenza:</strong> 1-23 Split · 24-30 FP</p>
+                            <dl>
+                                <div><dt>Exit FP</dt><dd>€214.563</dd></div>
+                                <div><dt>Exit PAC</dt><dd>€199.317</dd></div>
+                                <div><dt>Allocazione ottimale</dt><dd>€225.177</dd></div>
+                            </dl>
+                        </article>
+                        <article class="docs-scenario-card">
+                            <div class="docs-scenario-head">
+                                <h4>Centrale</h4>
+                                <span>FP 4% · PAC 6%</span>
+                            </div>
+                            <p><strong>Sequenza:</strong> 1-23 Split · 24-30 FP</p>
+                            <dl>
+                                <div><dt>Exit FP</dt><dd>€254.693</dd></div>
+                                <div><dt>Exit PAC</dt><dd>€237.175</dd></div>
+                                <div><dt>Allocazione ottimale</dt><dd>€266.657</dd></div>
+                            </dl>
+                        </article>
+                        <article class="docs-scenario-card">
+                            <div class="docs-scenario-head">
+                                <h4>Ottimistico PAC</h4>
+                                <span>FP 5% · PAC 10%</span>
+                            </div>
+                            <p><strong>Sequenza:</strong> 1-10 PAC · 11-27 Split · 28-30 FP</p>
+                            <dl>
+                                <div><dt>Exit FP</dt><dd>€303.380</dd></div>
+                                <div><dt>Exit PAC</dt><dd>€493.482</dd></div>
+                                <div><dt>Allocazione ottimale</dt><dd>€507.190</dd></div>
+                            </dl>
+                        </article>
+                    </div>
+                    <p>Questi scenari servono a leggere il risultato nel modo giusto: il calcolatore confronta ipotesi coerenti, ma non stabilisce quale rendimento si realizzerà davvero.</p>
 
                     <h3>L'orizzonte temporale conta</h3>
                     <p>Non tutti i versamenti hanno lo stesso orizzonte temporale:</p>
@@ -1593,13 +1577,24 @@ Ogni 0 anni o aumento 0: nessuna variazione</pre>
                     <div class="docs-collapsible-content">
 
                     <h3>La sintesi dei risultati</h3>
-                    <table>
-                        <tr><th>Voce</th><th>Significato</th></tr>
-                        <tr><td>Allocazione ottimale</td><td>Netto finale dell'allocazione anno per anno consigliata, con il vantaggio rispetto alle alternative</td></tr>
-                        <tr><td>Allocazione nel tempo</td><td>Intervalli di anni in cui l'allocazione sceglie PAC, FP o Split</td></tr>
-                        <tr><td>FP deducibile</td><td>Alternativa pura: netto finale mettendo nel FP solo la quota deducibile e nel PAC l'eventuale eccedenza</td></tr>
-                        <tr><td>Tutto PAC</td><td>Alternativa pura: netto finale mettendo tutto il budget nel PAC, usando la modalità rendimento PAC impostata</td></tr>
-                    </table>
+                    <dl class="docs-definition-list">
+                        <div>
+                            <dt>Allocazione ottimale</dt>
+                            <dd>Netto finale dell'allocazione anno per anno consigliata, con il vantaggio rispetto alle alternative.</dd>
+                        </div>
+                        <div>
+                            <dt>Allocazione nel tempo</dt>
+                            <dd>Intervalli di anni in cui l'allocazione sceglie PAC, FP o Split.</dd>
+                        </div>
+                        <div>
+                            <dt>FP deducibile</dt>
+                            <dd>Alternativa pura: netto finale mettendo nel FP solo la quota deducibile e nel PAC l'eventuale eccedenza.</dd>
+                        </div>
+                        <div>
+                            <dt>Tutto PAC</dt>
+                            <dd>Alternativa pura: netto finale mettendo tutto il budget nel PAC, usando la modalità rendimento PAC impostata.</dd>
+                        </div>
+                    </dl>
 
                     <h3>Le card sono selezionabili</h3>
                     <p>Le tre card della sintesi (Allocazione ottimale, FP deducibile, Tutto PAC) si possono cliccare: la card selezionata, evidenziata dalla sfumatura verde, decide quale strategia viene mostrata nella tabella annuale e nei calcoli esplorabili. Le colonne restano sempre le stesse: con FP deducibile la quota PAC è solo l'eccedenza oltre deduzione, con Tutto PAC le colonne FP, datore e risparmio fiscale valgono 0 e l'ultima colonna diventa Exit PAC.</p>
@@ -1616,17 +1611,40 @@ Quota oltre deduzione → sempre PAC</pre>
                     <p>Serve a evitare una lettura “a scatola chiusa”: se l'allocazione passa al FP negli ultimi anni, di solito significa che il rendimento composto del PAC ha poco tempo per recuperare il vantaggio immediato di deduzione fiscale e contributo datore.</p>
 
                     <h3>Le colonne della tabella</h3>
-                    <table>
-                        <tr><th>Colonna</th><th>Significato</th></tr>
-                        <tr><td>Scelta</td><td>FP, PAC o Split per indicare l'allocazione consigliata di quell'anno</td></tr>
-                        <tr><td>Quota FP</td><td>Quota dell'investimento annuo allocata nel FP dall'ottimizzazione, sempre entro il limite deducibile</td></tr>
-                        <tr><td>Quota PAC</td><td>Quota dell'investimento annuo allocata nel PAC dall'ottimizzazione: include eccedenza non deducibile e parte deducibile se conviene PAC</td></tr>
-                        <tr><td>FP busta</td><td>Parte della quota FP versata tramite busta paga</td></tr>
-                        <tr><td>FP bonifico</td><td>Parte della quota FP versata con bonifico diretto al fondo</td></tr>
-                        <tr><td>Datore</td><td>Contributo annuo versato dall'azienda</td></tr>
-                        <tr><td>Risparmio fiscale</td><td>Risparmio fiscale stimato dell'anno: IRPEF, addizionali, detrazioni e bonus da lavoro dipendente</td></tr>
-                        <tr><td>Exit ottimale</td><td>Netto se esci a quell'anno seguendo l'allocazione ottimale; il FP applica la tassazione in uscita sui contributi, il PAC la modalità rendimento scelta</td></tr>
-                    </table>
+                    <dl class="docs-definition-list">
+                        <div>
+                            <dt>Scelta</dt>
+                            <dd>FP, PAC o Split per indicare l'allocazione consigliata di quell'anno.</dd>
+                        </div>
+                        <div>
+                            <dt>Quota FP</dt>
+                            <dd>Quota dell'investimento annuo allocata nel FP dall'ottimizzazione, sempre entro il limite deducibile.</dd>
+                        </div>
+                        <div>
+                            <dt>Quota PAC</dt>
+                            <dd>Quota dell'investimento annuo allocata nel PAC dall'ottimizzazione: include eccedenza non deducibile e parte deducibile se conviene PAC.</dd>
+                        </div>
+                        <div>
+                            <dt>FP busta</dt>
+                            <dd>Parte della quota FP versata tramite busta paga.</dd>
+                        </div>
+                        <div>
+                            <dt>FP bonifico</dt>
+                            <dd>Parte della quota FP versata con bonifico diretto al fondo.</dd>
+                        </div>
+                        <div>
+                            <dt>Datore</dt>
+                            <dd>Contributo annuo versato dall'azienda.</dd>
+                        </div>
+                        <div>
+                            <dt>Risparmio fiscale</dt>
+                            <dd>Risparmio fiscale stimato dell'anno: IRPEF, addizionali, detrazioni e bonus da lavoro dipendente.</dd>
+                        </div>
+                        <div>
+                            <dt>Exit ottimale</dt>
+                            <dd>Netto se esci a quell'anno seguendo l'allocazione ottimale; il FP applica la tassazione in uscita sui contributi, il PAC la modalità rendimento scelta.</dd>
+                        </div>
+                    </dl>
 
                     <h3>Calcoli esplorabili per anno</h3>
                     <p>Selezionando un anno dal menu, o cliccando una riga della tabella, il pannello “Calcoli esplorabili per anno” scompone il risultato in sei passi: imponibile e IRPEF, capienza e limite di deduzione, quote FP e datore, ripartizione busta/bonifico, risparmio fiscale, somma e confronto delle exit.</p>
@@ -1650,141 +1668,64 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
 
                     <h3>Fonti normative usate nel calcolo</h3>
                     <p>Ogni costante del modello con la sua fonte e la decorrenza dell'ultimo aggiornamento.</p>
-                    <table>
-                        <tr>
-                            <th>Parametro</th>
-                            <th>Valore usato</th>
-                            <th>Fonte</th>
-                            <th>Aggiornamento</th>
-                        </tr>
-                        <tr>
-                            <td>Scaglioni IRPEF</td>
-                            <td>23% fino a 28.000, 35% fino a 50.000, 43% oltre</td>
-                            <td><a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2024-12-30;207" target="_blank" rel="noopener">L. 207/2024 (Bilancio 2025)</a></td>
-                            <td>Dal 2025, a regime</td>
-                        </tr>
-                        <tr>
-                            <td>Detrazione lavoro dipendente minima</td>
-                            <td>1.955 €</td>
-                            <td><a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2024-12-30;207" target="_blank" rel="noopener">L. 207/2024</a>, art. 13 TUIR</td>
-                            <td>Dal 2025</td>
-                        </tr>
-                        <tr>
-                            <td>Limite deduzione FP</td>
-                            <td>5.300 €/anno (datore incluso, TFR escluso)</td>
-                            <td><a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2025-12-30;199" target="_blank" rel="noopener">L. 199/2025 (Bilancio 2026)</a>, art. 1 c. 195-205, che modifica l'<a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2005-12-05;252" target="_blank" rel="noopener">art. 8 c. 4 D.Lgs. 252/2005</a></td>
-                            <td>Dal 1/1/2026 (primo adeguamento dal 2007)</td>
-                        </tr>
-                        <tr>
-                            <td>Tassazione uscita FP</td>
-                            <td>15%, −0,3%/anno oltre il 15°, minimo 9%</td>
-                            <td><a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2005-12-05;252" target="_blank" rel="noopener">Art. 11 c. 6 D.Lgs. 252/2005</a></td>
-                            <td>In vigore dal 2007</td>
-                        </tr>
-                        <tr>
-                            <td>Riscatto anticipato</td>
-                            <td>23% sui contributi dedotti</td>
-                            <td><a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2005-12-05;252" target="_blank" rel="noopener">Art. 14 c. 5 D.Lgs. 252/2005</a></td>
-                            <td>In vigore dal 2007</td>
-                        </tr>
-                        <tr>
-                            <td>Aliquota INPS lavoratore (default)</td>
-                            <td>9,19% (modificabile)</td>
-                            <td><a href="https://www.inps.it/it/it/inps-comunica/atti/circolari-messaggi-e-normativa.html" target="_blank" rel="noopener">Circolare INPS aliquote contributive</a> (FPLD dipendenti)</td>
-                            <td>Valori 2026</td>
-                        </tr>
-                        <tr>
-                            <td>Massimale contributivo INPS</td>
-                            <td>120.607 €</td>
-                            <td><a href="https://www.inps.it/it/it/inps-comunica/atti/circolari-messaggi-e-normativa.html" target="_blank" rel="noopener">Circolare INPS minimali e massimali</a> (art. 2 c. 18 L. 335/1995)</td>
-                            <td>Valori 2026</td>
-                        </tr>
-                        <tr>
-                            <td>IVS aggiuntivo</td>
-                            <td>+1% oltre 55.448 €</td>
-                            <td>Art. 3-ter L. 438/1992; soglia da <a href="https://www.inps.it/it/it/inps-comunica/atti/circolari-messaggi-e-normativa.html" target="_blank" rel="noopener">circolare INPS</a></td>
-                            <td>Soglia 2026</td>
-                        </tr>
-                        <tr>
-                            <td>Trattamento integrativo (ex Bonus Renzi)</td>
-                            <td>1.200 €/anno; pieno fino a 15.000 €, a capienza fino a 28.000 €</td>
-                            <td><a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2020-02-05;3" target="_blank" rel="noopener">D.L. 3/2020 conv. L. 21/2020</a>, mod. L. 234/2021</td>
-                            <td>Dal 2022</td>
-                        </tr>
-                        <tr>
-                            <td>Bonus cuneo dipendenti</td>
-                            <td>Somma integrativa fino a 20.000 € (7,1/5,3/4,8%); detrazione 1.000 € tra 20.000 e 40.000 €</td>
-                            <td><a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2024-12-30;207" target="_blank" rel="noopener">L. 207/2024, art. 1 c. 4-9</a></td>
-                            <td>Dal 2025, a regime</td>
-                        </tr>
-                        <tr>
-                            <td>Tassazione annua rendimenti FP</td>
-                            <td>20% ordinaria, 12,5% su quota titoli di Stato (in modalità lorda)</td>
-                            <td><a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2014-12-23;190" target="_blank" rel="noopener">L. 190/2014, art. 1 c. 621-624</a></td>
-                            <td>Dal 2015</td>
-                        </tr>
-                        <tr>
-                            <td>Capital gain PAC/ETF</td>
-                            <td>26% ordinaria, 12,5% su quota titoli di Stato (in modalità lorda)</td>
-                            <td><a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2014-04-24;66" target="_blank" rel="noopener">D.L. 66/2014 conv. L. 89/2014</a></td>
-                            <td>Dal 1/7/2014</td>
-                        </tr>
-                        <tr>
-                            <td>Addizionali regionali e comunali</td>
-                            <td>Dataset aliquote per Regione/Comune</td>
-                            <td><a href="https://www1.finanze.gov.it/finanze2/dipartimentopolitichefiscali/fiscalitalocale/" target="_blank" rel="noopener">MEF – Fiscalità locale</a></td>
-                            <td>Dati 2026 importati nel dataset locale</td>
-                        </tr>
-                    </table>
+                    <div class="docs-source-list">
+                        <article class="docs-source-item"><h4>Scaglioni IRPEF</h4><p><strong>Valore usato:</strong> 23% fino a 28.000, 35% fino a 50.000, 43% oltre.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2024-12-30;207" target="_blank" rel="noopener">L. 207/2024 (Bilancio 2025)</a>.</p><p><strong>Aggiornamento:</strong> dal 2025, a regime.</p></article>
+                        <article class="docs-source-item"><h4>Detrazione lavoro dipendente minima</h4><p><strong>Valore usato:</strong> 1.955 €.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2024-12-30;207" target="_blank" rel="noopener">L. 207/2024</a>, art. 13 TUIR.</p><p><strong>Aggiornamento:</strong> dal 2025.</p></article>
+                        <article class="docs-source-item"><h4>Limite deduzione FP</h4><p><strong>Valore usato:</strong> 5.300 €/anno, datore incluso e TFR escluso.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2025-12-30;199" target="_blank" rel="noopener">L. 199/2025 (Bilancio 2026)</a>, art. 1 c. 195-205, che modifica l'<a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2005-12-05;252" target="_blank" rel="noopener">art. 8 c. 4 D.Lgs. 252/2005</a>.</p><p><strong>Aggiornamento:</strong> dal 1/1/2026, primo adeguamento dal 2007.</p></article>
+                        <article class="docs-source-item"><h4>Tassazione uscita FP</h4><p><strong>Valore usato:</strong> 15%, -0,3%/anno oltre il 15°, minimo 9%.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2005-12-05;252" target="_blank" rel="noopener">Art. 11 c. 6 D.Lgs. 252/2005</a>.</p><p><strong>Aggiornamento:</strong> in vigore dal 2007.</p></article>
+                        <article class="docs-source-item"><h4>Riscatto anticipato</h4><p><strong>Valore usato:</strong> 23% sui contributi dedotti.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2005-12-05;252" target="_blank" rel="noopener">Art. 14 c. 5 D.Lgs. 252/2005</a>.</p><p><strong>Aggiornamento:</strong> in vigore dal 2007.</p></article>
+                        <article class="docs-source-item"><h4>Aliquota INPS lavoratore</h4><p><strong>Valore usato:</strong> 9,19%, modificabile.</p><p><strong>Fonte:</strong> <a href="https://www.inps.it/it/it/inps-comunica/atti/circolari-messaggi-e-normativa.html" target="_blank" rel="noopener">Circolare INPS aliquote contributive</a> per FPLD dipendenti.</p><p><strong>Aggiornamento:</strong> valori 2026.</p></article>
+                        <article class="docs-source-item"><h4>Massimale contributivo INPS</h4><p><strong>Valore usato:</strong> 120.607 €.</p><p><strong>Fonte:</strong> <a href="https://www.inps.it/it/it/inps-comunica/atti/circolari-messaggi-e-normativa.html" target="_blank" rel="noopener">Circolare INPS minimali e massimali</a>, art. 2 c. 18 L. 335/1995.</p><p><strong>Aggiornamento:</strong> valori 2026.</p></article>
+                        <article class="docs-source-item"><h4>IVS aggiuntivo</h4><p><strong>Valore usato:</strong> +1% oltre 55.448 €.</p><p><strong>Fonte:</strong> art. 3-ter L. 438/1992; soglia da <a href="https://www.inps.it/it/it/inps-comunica/atti/circolari-messaggi-e-normativa.html" target="_blank" rel="noopener">circolare INPS</a>.</p><p><strong>Aggiornamento:</strong> soglia 2026.</p></article>
+                        <article class="docs-source-item"><h4>Trattamento integrativo</h4><p><strong>Valore usato:</strong> 1.200 €/anno; pieno fino a 15.000 €, a capienza fino a 28.000 €.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2020-02-05;3" target="_blank" rel="noopener">D.L. 3/2020 conv. L. 21/2020</a>, mod. L. 234/2021.</p><p><strong>Aggiornamento:</strong> dal 2022.</p></article>
+                        <article class="docs-source-item"><h4>Bonus cuneo dipendenti</h4><p><strong>Valore usato:</strong> somma integrativa fino a 20.000 €; detrazione 1.000 € tra 20.000 e 40.000 €.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2024-12-30;207" target="_blank" rel="noopener">L. 207/2024, art. 1 c. 4-9</a>.</p><p><strong>Aggiornamento:</strong> dal 2025, a regime.</p></article>
+                        <article class="docs-source-item"><h4>Tassazione annua rendimenti FP</h4><p><strong>Valore usato:</strong> 20% ordinaria, 12,5% su quota titoli di Stato in modalità lorda.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2014-12-23;190" target="_blank" rel="noopener">L. 190/2014, art. 1 c. 621-624</a>.</p><p><strong>Aggiornamento:</strong> dal 2015.</p></article>
+                        <article class="docs-source-item"><h4>Capital gain PAC</h4><p><strong>Valore usato:</strong> 26% ordinaria, 12,5% su quota titoli di Stato in modalità lorda.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2014-04-24;66" target="_blank" rel="noopener">D.L. 66/2014 conv. L. 89/2014</a>.</p><p><strong>Aggiornamento:</strong> dal 1/7/2014.</p></article>
+                        <article class="docs-source-item"><h4>Addizionali regionali e comunali</h4><p><strong>Valore usato:</strong> dataset aliquote per Regione/Comune.</p><p><strong>Fonte:</strong> <a href="https://www1.finanze.gov.it/finanze2/dipartimentopolitichefiscali/fiscalitalocale/" target="_blank" rel="noopener">MEF - Fiscalità locale</a>.</p><p><strong>Aggiornamento:</strong> dati 2026 importati nel dataset locale.</p></article>
+                    </div>
 
                     <h3>Fonti informative sui rendimenti</h3>
                     <p>I rendimenti dei fondi pensione sono ipotesi ispirate ai dati storici pubblicati da <a href="https://www.covip.it/" target="_blank" rel="noopener">COVIP</a>. Se usi la modalità netta, sono trattati come già al netto di costi e tassazione annuale; se usi la modalità lorda, il modello applica costi annui e tassazione dei rendimenti. In ogni caso non sono rendimenti futuri garantiti.</p>
 
                     <p>Gli ETF indicati sotto sono esempi comuni per costruire un PAC globale. Non sono raccomandazioni di acquisto: servono a dare riferimenti concreti agli scenari del calcolatore.</p>
-                    <table>
-                        <tr>
-                            <th>ETF</th>
-                            <th>ISIN</th>
-                            <th>Allocazione</th>
-                            <th>Link</th>
-                        </tr>
-                        <tr>
-                            <td>MSCI World (SWDA)</td>
-                            <td>IE00B4L5Y983</td>
-                            <td>100% azioni paesi sviluppati</td>
-                            <td><a href="https://www.justetf.com/en/etf-profile.html?isin=IE00B4L5Y983" target="_blank" rel="noopener">JustETF</a></td>
-                        </tr>
-                        <tr>
-                            <td>FTSE All-World (VWCE)</td>
-                            <td>IE00BK5BQT80</td>
-                            <td>100% azioni globali</td>
-                            <td><a href="https://www.justetf.com/en/etf-profile.html?isin=IE00BK5BQT80" target="_blank" rel="noopener">JustETF</a></td>
-                        </tr>
-                        <tr>
-                            <td>LifeStrategy 80%</td>
-                            <td>IE00BMVB5R75</td>
-                            <td>80% azioni, 20% obbligazioni</td>
-                            <td><a href="https://www.justetf.com/en/etf-profile.html?isin=IE00BMVB5R75" target="_blank" rel="noopener">JustETF</a></td>
-                        </tr>
-                        <tr>
-                            <td>LifeStrategy 60%</td>
-                            <td>IE00BMVB5P51</td>
-                            <td>60% azioni, 40% obbligazioni</td>
-                            <td><a href="https://www.justetf.com/en/etf-profile.html?isin=IE00BMVB5P51" target="_blank" rel="noopener">JustETF</a></td>
-                        </tr>
-                        <tr>
-                            <td>LifeStrategy 40%</td>
-                            <td>IE00BMVB5M21</td>
-                            <td>40% azioni, 60% obbligazioni</td>
-                            <td><a href="https://www.justetf.com/en/etf-profile.html?isin=IE00BMVB5M21" target="_blank" rel="noopener">JustETF</a></td>
-                        </tr>
-                        <tr>
-                            <td>LifeStrategy 20%</td>
-                            <td>IE00BMVB5K07</td>
-                            <td>20% azioni, 80% obbligazioni</td>
-                            <td><a href="https://www.justetf.com/en/etf-profile.html?isin=IE00BMVB5K07" target="_blank" rel="noopener">JustETF</a></td>
-                        </tr>
-                    </table>
+                    <div class="docs-fund-grid">
+                        <article class="docs-fund-card">
+                            <h4>MSCI World (SWDA)</h4>
+                            <p><strong>ISIN:</strong> IE00B4L5Y983</p>
+                            <p><strong>Allocazione:</strong> 100% azioni paesi sviluppati</p>
+                            <a href="https://www.justetf.com/en/etf-profile.html?isin=IE00B4L5Y983" target="_blank" rel="noopener">JustETF</a>
+                        </article>
+                        <article class="docs-fund-card">
+                            <h4>FTSE All-World (VWCE)</h4>
+                            <p><strong>ISIN:</strong> IE00BK5BQT80</p>
+                            <p><strong>Allocazione:</strong> 100% azioni globali</p>
+                            <a href="https://www.justetf.com/en/etf-profile.html?isin=IE00BK5BQT80" target="_blank" rel="noopener">JustETF</a>
+                        </article>
+                        <article class="docs-fund-card">
+                            <h4>LifeStrategy 80%</h4>
+                            <p><strong>ISIN:</strong> IE00BMVB5R75</p>
+                            <p><strong>Allocazione:</strong> 80% azioni, 20% obbligazioni</p>
+                            <a href="https://www.justetf.com/en/etf-profile.html?isin=IE00BMVB5R75" target="_blank" rel="noopener">JustETF</a>
+                        </article>
+                        <article class="docs-fund-card">
+                            <h4>LifeStrategy 60%</h4>
+                            <p><strong>ISIN:</strong> IE00BMVB5P51</p>
+                            <p><strong>Allocazione:</strong> 60% azioni, 40% obbligazioni</p>
+                            <a href="https://www.justetf.com/en/etf-profile.html?isin=IE00BMVB5P51" target="_blank" rel="noopener">JustETF</a>
+                        </article>
+                        <article class="docs-fund-card">
+                            <h4>LifeStrategy 40%</h4>
+                            <p><strong>ISIN:</strong> IE00BMVB5M21</p>
+                            <p><strong>Allocazione:</strong> 40% azioni, 60% obbligazioni</p>
+                            <a href="https://www.justetf.com/en/etf-profile.html?isin=IE00BMVB5M21" target="_blank" rel="noopener">JustETF</a>
+                        </article>
+                        <article class="docs-fund-card">
+                            <h4>LifeStrategy 20%</h4>
+                            <p><strong>ISIN:</strong> IE00BMVB5K07</p>
+                            <p><strong>Allocazione:</strong> 20% azioni, 80% obbligazioni</p>
+                            <a href="https://www.justetf.com/en/etf-profile.html?isin=IE00BMVB5K07" target="_blank" rel="noopener">JustETF</a>
+                        </article>
+                    </div>
 
                     <h3>Ipotesi e limiti del modello</h3>
                     <ul>
