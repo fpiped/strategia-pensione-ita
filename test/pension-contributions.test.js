@@ -5,11 +5,7 @@ import { FINANCIAL_CONSTANTS } from '../js/constants/financial-constants.js';
 import {
   applyPeriodicVariation,
   calculateEmployerContribution,
-  consumeFirstEmploymentAllowance,
-  createFirstEmploymentState,
-  getAvailableDeductionLimit,
   getInitialEmployerContribution,
-  getTotalDeductionLimit,
   resolveContributionBase,
   resolveEmployerContributionBase,
   splitBudget
@@ -61,38 +57,14 @@ test('calcola contributo datore percentuale, fisso e soglia minima aderente', ()
   }), 0);
 });
 
-test('gestisce maggiorazione prima occupazione e consumo plafond', () => {
-  const firstEmployment = createFirstEmploymentState({
-    enabled: true,
-    extraRemaining: 3000,
-    yearsRemaining: 2
-  });
-
-  assert.equal(
-    getTotalDeductionLimit(firstEmployment),
-    FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP + FINANCIAL_CONSTANTS.MAGGIORAZIONE_PRIMA_OCCUPAZIONE_ANNUA
-  );
-  assert.equal(
-    getAvailableDeductionLimit(firstEmployment, 450),
-    FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP + FINANCIAL_CONSTANTS.MAGGIORAZIONE_PRIMA_OCCUPAZIONE_ANNUA - 450
-  );
-
-  consumeFirstEmploymentAllowance(firstEmployment, 6000, 450);
-
-  assert.equal(Math.round(firstEmployment.extraRemaining), 1850);
-  assert.equal(firstEmployment.yearsRemaining, 1);
-});
-
 test('divide budget tra quota deducibile, PAC extra e contributo datore', () => {
-  const firstEmployment = createFirstEmploymentState();
-
-  assert.deepEqual(splitBudget(200, 300, 450, firstEmployment), {
+  assert.deepEqual(splitBudget(200, 300, 450), {
     quotaDeducibile: 200,
     quotaExtraPac: 0,
     quotaDatore: 0
   });
 
-  const overLimitAllocation = splitBudget(6000, 300, 450, firstEmployment);
+  const overLimitAllocation = splitBudget(6000, 300, 450);
   assert.equal(overLimitAllocation.quotaDeducibile, FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP - 450);
   assert.equal(Math.round(overLimitAllocation.quotaExtraPac * 100), 115000);
   assert.equal(overLimitAllocation.quotaDatore, 450);

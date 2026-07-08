@@ -40,7 +40,6 @@ test('calcola lo scenario cumulativo predefinito', () => {
     'FP Bonifico': 0,
     'Diff Busta': 0,
     Scelta: 'MIX',
-    'Plafond Residuo': 0,
     'Exit FP': 3650,
     'Exit PAC': 3000,
     'Exit Mix': 3434
@@ -61,7 +60,6 @@ test('calcola lo scenario cumulativo predefinito', () => {
     'FP Bonifico': 3629,
     'Diff Busta': 267,
     Scelta: 'FP',
-    'Plafond Residuo': 0,
     'Exit FP': 229276,
     'Exit PAC': 237175,
     'Exit Mix': 262053
@@ -466,27 +464,6 @@ test('manda sempre nel PAC la quota oltre deduzione', () => {
   assert.equal(result.results[0].Scelta, 'MIX');
 });
 
-test('applica la maggiorazione deducibile per prima occupazione post 2006', () => {
-  const model = new FinancialModel();
-  const result = model.calculateResults({
-    ...baseConfig,
-    durata: 2,
-    investimento: 8000,
-    addizionaliPerc: 0.02,
-    primaOccupazionePost2006: true,
-    plafondExtraPrimaOccupazione: 3000,
-    anniResiduiMaggiorazione: 20
-  });
-
-  assert.equal(result.results[0]['Entro Ded'], 7500);
-  assert.equal(result.results[0]['Extra Ded'], 500);
-  assert.equal(result.results[0]['FP Cons'], 7500);
-  assert.equal(result.results[0].Risparmio, 1902);
-
-  assert.equal(result.results[1]['Entro Ded'], 5200);
-  assert.equal(result.results[1]['Extra Ded'], 4702);
-});
-
 test('altri redditi e premi crescenti alzano il reddito fiscale e il risparmio', () => {
   const model = new FinancialModel();
   const base = model.calculateResults({ ...baseConfig, durata: 4, addizionaliPerc: 0.02 });
@@ -511,89 +488,6 @@ test('altri redditi e premi crescenti alzano il reddito fiscale e il risparmio',
   // I premi crescenti aumentano il beneficio negli anni successivi.
   assert.ok(conPremiCrescenti.results[3].Risparmio >= conPremiCrescenti.results[0].Risparmio);
   assert.ok(conPremiCrescenti.results[0].Risparmio >= base.results[0].Risparmio);
-});
-
-test('con anzianità sotto i 5 anni la maggiorazione parte dal 6° anno e accumula il plafond', () => {
-  const model = new FinancialModel();
-  const ordinaryLimit = 5300;
-  const result = model.calculateResults({
-    ...baseConfig,
-    durata: 8,
-    investimento: 9000,
-    addizionaliPerc: 0.02,
-    primaOccupazionePost2006: true,
-    plafondExtraPrimaOccupazione: 0,
-    anniResiduiMaggiorazione: 20,
-    anniAttesaMaggiorazione: 5
-  });
-
-  // Quinquennio iniziale: vale solo il limite ordinario.
-  for (let anno = 0; anno < 5; anno++) {
-    assert.ok(result.results[anno]['Entro Ded'] <= Math.round(ordinaryLimit),
-      `anno ${anno + 1}: deduzione oltre il limite ordinario`);
-  }
-
-  // Dal 6° anno il limite si alza grazie al plafond accumulato nel quinquennio.
-  assert.ok(result.results[5]['Entro Ded'] > Math.round(ordinaryLimit),
-    'anno 6: la maggiorazione non risulta applicata');
-});
-
-test('espone il plafond residuo per anno: accumulo nel quinquennio e consumo dal 6° anno', () => {
-  const model = new FinancialModel();
-  const ordinaryLimit = 5300;
-  const result = model.calculateResults({
-    ...baseConfig,
-    durata: 8,
-    investimento: 9000,
-    addizionaliPerc: 0.02,
-    primaOccupazionePost2006: true,
-    plafondExtraPrimaOccupazione: 1000,
-    anniResiduiMaggiorazione: 20,
-    anniAttesaMaggiorazione: 2
-  });
-
-  const rows = result.strategies.fp;
-  // Anni di attesa: il plafond cresce del limite ordinario non versato.
-  const expectedYear1 = 1000 + Math.max(ordinaryLimit - (rows[0]['Entro Ded'] + rows[0].Datore), 0);
-  assert.equal(rows[0]['Plafond Residuo'], Math.round(expectedYear1));
-  assert.ok(rows[1]['Plafond Residuo'] >= rows[0]['Plafond Residuo']);
-
-  // Dal 6° anno di partecipazione il plafond viene consumato, mai sotto zero.
-  for (let anno = 2; anno < rows.length; anno++) {
-    assert.ok(rows[anno]['Plafond Residuo'] <= rows[anno - 1]['Plafond Residuo'],
-      `anno ${anno + 1}: il plafond non deve crescere durante il recupero`);
-    assert.ok(rows[anno]['Plafond Residuo'] >= 0);
-  }
-
-  // La strategia PAC non versa nel FP: accumula il plafond pieno e non lo consuma.
-  const pacRows = result.strategies.pac;
-  assert.equal(pacRows[1]['Plafond Residuo'], 1000 + ordinaryLimit * 2);
-  assert.equal(pacRows.at(-1)['Plafond Residuo'], pacRows[1]['Plafond Residuo']);
-});
-
-test('senza anni di attesa il comportamento della maggiorazione resta invariato', () => {
-  const model = new FinancialModel();
-  const withDefault = model.calculateResults({
-    ...baseConfig,
-    durata: 2,
-    investimento: 8000,
-    addizionaliPerc: 0.02,
-    primaOccupazionePost2006: true,
-    plafondExtraPrimaOccupazione: 3000,
-    anniResiduiMaggiorazione: 20
-  });
-  const withExplicitZero = model.calculateResults({
-    ...baseConfig,
-    durata: 2,
-    investimento: 8000,
-    addizionaliPerc: 0.02,
-    primaOccupazionePost2006: true,
-    plafondExtraPrimaOccupazione: 3000,
-    anniResiduiMaggiorazione: 20,
-    anniAttesaMaggiorazione: 0
-  });
-
-  assert.deepEqual(withDefault.results, withExplicitZero.results);
 });
 
 test('l allocazione ottimale puo dividere la quota deducibile prima del FP pieno', () => {
@@ -639,7 +533,7 @@ test('converte i risultati in CSV con intestazione coerente', () => {
 
   assert.equal(
     model.convertToCSV(result.results),
-    'Anno,Entro Min,Extra Min,Entro Ded,Extra Ded,Aderente,Datore,Risparmio,FP Cons,PAC Cons,FP Busta,FP Bonifico,Diff Busta,Scelta,Plafond Residuo,Exit FP,Exit PAC,Exit Mix\r\n' +
-      '1,300,2700,3000,0,3000,450,717,3000,0,300,2700,182,FP,0,3650,3000,3650\r\n'
+    'Anno,Entro Min,Extra Min,Entro Ded,Extra Ded,Aderente,Datore,Risparmio,FP Cons,PAC Cons,FP Busta,FP Bonifico,Diff Busta,Scelta,Exit FP,Exit PAC,Exit Mix\r\n' +
+      '1,300,2700,3000,0,3000,450,717,3000,0,300,2700,182,FP,3650,3000,3650\r\n'
   );
 });

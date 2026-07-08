@@ -484,34 +484,6 @@
                                         </div>
                                     </div>
 
-                                    <div class="control-subgroup">
-                                        <div class="form-row">
-                                            <div class="form-group option-field">
-                                                <label class="binary-toggle">
-                                                    <input type="checkbox" id="primaOccupazionePost2006">
-                                                    <span class="help-trigger" data-help="primaOccupazionePost2006">Prima occupazione post 2006</span>
-                                                    <span class="binary-toggle-state" aria-hidden="true"><span>No</span><span>Sì</span></span>
-                                                </label>
-                                            </div>
-                                            <div class="form-group" id="plafond-extra-field" hidden>
-                                                <label for="plafondExtraPrimaOccupazione"><span class="help-trigger" data-help="plafondExtraPrimaOccupazione">Plafond extra residuo</span></label>
-                                                <div class="control-field"><input type="number" id="plafondExtraPrimaOccupazione" class="form-control" value="0" min="0" max="26500" step="100" disabled><span class="unit">EUR</span></div>
-                                            </div>
-                                        </div>
-                                        <div class="mini-metrics" id="prima-occupazione-fields" hidden>
-                                            <div class="mini-metric output">
-                                                <span>Anni residui maggiorazione</span>
-                                                <strong id="anniResiduiMaggiorazione">0 anni</strong>
-                                                <p id="anniResiduiMaggiorazioneHint">Calcolati da anzianità FP già maturata.</p>
-                                            </div>
-                                            <div class="mini-metric output">
-                                                <span>Plafond residuo stimato</span>
-                                                <strong id="plafondResiduoDisplay">0 €</strong>
-                                                <p id="plafondResiduoHint">Campo inserito più accumulo stimato nei primi 5 anni simulati.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
                                     <input type="hidden" id="massimaleContributivoInps" value="120607">
                                     <input type="hidden" id="sogliaIvsAggiuntivo" value="55448">
                                     <input type="hidden" id="aliquotaIvsAggiuntivaPerc" value="1">
@@ -741,7 +713,6 @@
                                     <div class="step-formula" id="annual-limit-formula">-</div>
                                     <div class="step-rows">
                                         <div class="step-row"><div><span>Limite ordinario</span><b>Art. 8 D.Lgs. 252/2005</b></div><strong id="annual-limit-ordinary-value">-</strong></div>
-                                        <div class="step-row"><div><span>Maggiorazione 1ª occupazione</span><b>Plafond extra disponibile nell'anno</b></div><strong id="annual-limit-extra-value">-</strong></div>
                                         <div class="step-row"><div><span>Dedotto vs limite</span><b>Quota aderente + datore</b></div><strong id="annual-limit-used-value">-</strong></div>
                                         <div class="step-row"><div><span>Capienza residua</span><b>Margine deducibile non usato</b></div><strong id="annual-limit-headroom-value">-</strong></div>
                                     </div>
@@ -1193,37 +1164,6 @@
                         </section>
                         <section class="guided-step" data-guided-step="9">
                             <div class="guided-step-head">
-                                <h3>Deducibilità prima occupazione</h3>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group option-field">
-                                    <label class="binary-toggle">
-                                        <input type="checkbox" id="guided-prima-occupazione">
-                                        <span class="binary-toggle-text">Prima occupazione post 2006</span>
-                                        <span class="binary-toggle-state" aria-hidden="true"><span>No</span><span>Sì</span></span>
-                                    </label>
-                                </div>
-                                <div class="form-group" id="guided-plafond-extra-field" hidden>
-                                    <label for="guided-plafond-extra">Plafond extra residuo</label>
-                                    <div class="control-field"><input type="number" id="guided-plafond-extra" class="form-control" min="0" max="26500" step="100" disabled><span class="unit">EUR</span></div>
-                                </div>
-                            </div>
-                            <div class="mini-metrics" id="guided-prima-occupazione-fields" hidden>
-                                <div class="mini-metric output">
-                                    <span>Anni residui maggiorazione</span>
-                                    <strong id="guided-anni-maggiorazione">0 anni</strong>
-                                    <p id="guided-anni-maggiorazione-hint">Calcolati da anzianità FP già maturata.</p>
-                                </div>
-                                <div class="mini-metric output">
-                                    <span>Plafond residuo stimato</span>
-                                    <strong id="guided-plafond-residuo-display">0 €</strong>
-                                    <p id="guided-plafond-residuo-hint">Campo inserito più accumulo stimato nei primi 5 anni simulati.</p>
-                                </div>
-                            </div>
-                            <div class="guided-note" data-help-note="primaOccupazionePost2006 plafondExtraPrimaOccupazione anniResiduiMaggiorazione"></div>
-                        </section>
-                        <section class="guided-step" data-guided-step="10">
-                            <div class="guided-step-head">
                                 <h3>Rendimento fondo pensione</h3>
                             </div>
                             <div class="form-row">
@@ -1261,7 +1201,7 @@
                             </div>
                             <div class="guided-note" data-help-note="rendimentoAnnualeFpPerc rendimentoFpMode costiAnnuiFpPerc quotaAgevolataFpPerc"></div>
                         </section>
-                        <section class="guided-step" data-guided-step="11">
+                        <section class="guided-step" data-guided-step="10">
                             <div class="guided-step-head">
                                 <h3>Rendimento PAC</h3>
                             </div>
@@ -1467,13 +1407,6 @@ Risparmio fiscale stimato anno 1: ~€960</pre>
 - Datore:      €450
 = Per te:      €4.850</pre>
 
-                    <h3>Maggiorazione prima occupazione post 2006</h3>
-                    <p>Se la tua prima occupazione è successiva al 31/12/2006, puoi recuperare nei 20 anni successivi ai primi 5 anni di partecipazione la deduzione non usata nei primi 5 anni. Il recupero extra massimo è €2.650/anno, entro il plafond residuo disponibile.</p>
-<pre>Plafond teorico primi 5 anni: 5.300 × 5 = 26.500
-Plafond extra residuo: 26.500 - contributi versati nei primi 5 anni
-Limite annuo massimo: 5.300 + min(plafond residuo, 2.650)</pre>
-                    <p>Nel calcolatore questa opzione va attivata manualmente, inserendo il plafond extra residuo. Gli anni residui di maggiorazione sono calcolati dall'anzianità FP già maturata: il recupero è disponibile dal 6° al 25° anno di partecipazione. Se sei ancora nel quinquennio iniziale, negli anni simulati che restano da attendere la simulazione accumula da sola nel plafond la parte di limite ordinario non versata. Il plafond viene consumato anno per anno solo per la parte di contributi FP che supera il limite ordinario.</p>
-
                     <h3>Vantaggi FP e reinvestimento</h3>
 <pre>Mario versa nel FP:          €3.000
 + Datore:                   €450
@@ -1629,7 +1562,6 @@ Ogni 0 anni o aumento 0: nessuna variazione</pre>
                         <li><strong>Ulteriori detrazioni:</strong> importo annuo di bonus o detrazioni personali che riducono l'imposta netta. Non sono deduzioni e non riducono il reddito imponibile.</li>
                         <li><strong>Versamento extra:</strong> Automatico (default), Extra via bonifico o Extra in busta. La quota minima passa sempre dalla busta paga; la scelta riguarda solo la quota extra. La deduzione IRPEF vale in ogni caso, ma gli effetti su detrazioni lavoro dipendente, ex Bonus Renzi e bonus cuneo vengono stimati solo sulla parte in busta paga: con Automatico il calcolatore sceglie anno per anno l'opzione più conveniente.</li>
                         <li><strong>Bonus fiscali da lavoro dipendente:</strong> ex Bonus Renzi e bonus cuneo fiscale sono calcolati automaticamente. Nel modello la quota FP in busta riduce anche il reddito complessivo usato per il bonus cuneo; la quota via bonifico incide solo come deduzione fiscale.</li>
-                        <li><strong>Prima occupazione post 2006:</strong> abilita la maggiorazione del limite deducibile se hai plafond extra residuo da recuperare. Ogni strategia consuma il proprio plafond in base ai contributi FP simulati.</li>
                     </ul>
                     <p>Le aliquote regionali e comunali sono dati MEF 2026 importati nel dataset locale. Il repo non include una pipeline di scraping: usa direttamente il dataset normalizzato, non i PDF/file sorgente.</p>
 
@@ -1707,7 +1639,7 @@ Anno 35+:   9% (minimo)
 
 I RENDIMENTI non vengono tassati all'uscita
 perché sono già stati tassati ogni anno (12.5-20%).</pre>
-                    <p>Se hai già anni di partecipazione a forme pensionistiche complementari, inseriscili in <strong>Anzianità FP</strong>: il calcolatore li somma agli anni simulati per determinare la tassazione di uscita e la finestra della maggiorazione prima occupazione, senza aggiungere un montante iniziale.</p>
+                    <p>Se hai già anni di partecipazione a forme pensionistiche complementari, inseriscili in <strong>Anzianità FP</strong>: il calcolatore li somma agli anni simulati per determinare la tassazione di uscita, senza aggiungere un montante iniziale.</p>
                     <p><strong>Esempio:</strong> versi €3.450 nell'anno 1; con la capitalizzazione posticipata rendono dall'anno 2, crescendo a €3.588. La tassa 15% si applica solo sui €3.450 di contributi, non sui €138 di rendimento (già tassato).</p>
                     </div>
                     </section>
@@ -1742,12 +1674,6 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
                             <td>5.300 €/anno (datore incluso, TFR escluso)</td>
                             <td><a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2025-12-30;199" target="_blank" rel="noopener">L. 199/2025 (Bilancio 2026)</a>, art. 1 c. 195-205, che modifica l'<a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2005-12-05;252" target="_blank" rel="noopener">art. 8 c. 4 D.Lgs. 252/2005</a></td>
                             <td>Dal 1/1/2026 (primo adeguamento dal 2007)</td>
-                        </tr>
-                        <tr>
-                            <td>Maggiorazione prima occupazione</td>
-                            <td>2.650 €/anno extra, plafond max 26.500 €, recupero dal 6° al 25° anno</td>
-                            <td><a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2025-12-30;199" target="_blank" rel="noopener">L. 199/2025</a> su art. 8 c. 6 D.Lgs. 252/2005</td>
-                            <td>Dal 1/1/2026</td>
                         </tr>
                         <tr>
                             <td>Tassazione uscita FP</td>
