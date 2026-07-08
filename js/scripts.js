@@ -49,13 +49,9 @@ function setupThemeToggle() {
     const applyTheme = (theme) => {
         const normalized = theme === 'dark' ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', normalized);
+        toggle.dataset.theme = normalized;
         toggle.setAttribute('aria-pressed', String(normalized === 'dark'));
         toggle.setAttribute('aria-label', normalized === 'dark' ? 'Attiva tema chiaro' : 'Attiva tema scuro');
-        const icon = toggle.querySelector('i');
-        if (icon) {
-            icon.classList.toggle('fa-moon', normalized !== 'dark');
-            icon.classList.toggle('fa-sun', normalized === 'dark');
-        }
     };
 
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
