@@ -2,7 +2,7 @@
 
 Web app per confrontare una strategia basata su fondo pensione con un PAC in ETF nel contesto fiscale italiano.
 
-Demo: https://fpiped.github.io/strategia-pensione-ita/
+Demo: https://strategiapensione.it/
 
 ## Progetto
 
