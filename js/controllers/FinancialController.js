@@ -228,7 +228,6 @@ export class FinancialController {
       if (this.applyLocalTaxAutoRate(state)) return;
       this.syncSegmentedControls();
       this.syncVariationFields();
-      this.updateFirstEmploymentFields(state);
       this.updateContributionBaseFields(state);
       this.updateReturnFields(state);
       this.updateLocalTaxUi(state);
@@ -278,7 +277,6 @@ export class FinancialController {
       if (this.latestResults.config) {
         this.view.updateAnnualExplorer(this.getStrategyRows(), this.latestResults.config, this.annualExplorerYear);
         this.updateFpSplitCards(this.latestResults.results, this.latestResults.config);
-        this.updatePlafondResiduoCard(this.latestResults.config);
       }
     }
 
@@ -401,13 +399,7 @@ export class FinancialController {
         reinvestiRisparmio: true,
         modalitaCumulativa: true,
         riscattoAnticipato: state.riscattoAnticipato,
-        anzianitaPregressaFp: state.anzianitaPregressaFp,
-
-        // Maggiorazione deduzione per prima occupazione post 2006
-        primaOccupazionePost2006: state.primaOccupazionePost2006,
-        plafondExtraPrimaOccupazione: state.plafondExtraPrimaOccupazione,
-        anniResiduiMaggiorazione: this.calculateFirstEmploymentRemainingYears(state.anzianitaPregressaFp, state.primaOccupazionePost2006),
-        anniAttesaMaggiorazione: this.calculateFirstEmploymentWaitYears(state.anzianitaPregressaFp, state.primaOccupazionePost2006)
+        anzianitaPregressaFp: state.anzianitaPregressaFp
       };
 
       // Calcola i risultati usando il model
@@ -433,7 +425,6 @@ export class FinancialController {
       );
       this.updateInvestmentModeSummary(config, results.results);
       this.updateFpSplitCards(results.results, config);
-      this.updatePlafondResiduoCard(config);
 
       // Aggiorna il contenuto CSV per il download
       this.csvContent = this.model.convertToCSV(results.results);
@@ -495,85 +486,6 @@ export class FinancialController {
       const annualCosts = Math.min(Math.max(annualCostsPerc, 0), 100) / 100;
       const safeTaxRate = Math.min(Math.max(taxRate, 0), 1);
       return ((((1 + (grossReturn * (1 - safeTaxRate))) * (1 - annualCosts)) - 1) * 100);
-    }
-
-    /**
-     * Campi legati alla maggiorazione prima occupazione post 2006: plafond
-     * abilitato, card anni residui e hint, nel pannello e nella guidata.
-     */
-    updateFirstEmploymentFields(state) {
-      const enabled = state.primaOccupazionePost2006;
-      const remainingYears = this.calculateFirstEmploymentRemainingYears(state.anzianitaPregressaFp, enabled);
-      const waitYears = this.calculateFirstEmploymentWaitYears(state.anzianitaPregressaFp, enabled);
-      const hintText = waitYears > 0
-        ? `Recupero dal 6° anno di partecipazione: parte tra ${waitYears} ann${waitYears === 1 ? 'o' : 'i'}.`
-        : 'Calcolati da anzianità FP già maturata.';
-
-      [
-        ['plafondExtraPrimaOccupazione', 'plafond-extra-field', 'prima-occupazione-fields', 'anniResiduiMaggiorazione', 'anniResiduiMaggiorazioneHint'],
-        ['guided-plafond-extra', 'guided-plafond-extra-field', 'guided-prima-occupazione-fields', 'guided-anni-maggiorazione', 'guided-anni-maggiorazione-hint']
-      ].forEach(([plafondId, plafondFieldId, fieldsId, yearsId, hintId]) => {
-        const plafondInput = byId(plafondId);
-        if (plafondInput) plafondInput.disabled = !enabled;
-        // Campo plafond e card anni residui compaiono solo con toggle su Sì.
-        byId(plafondFieldId)?.toggleAttribute('hidden', !enabled);
-        byId(fieldsId)?.toggleAttribute('hidden', !enabled);
-        setText(yearsId, `${remainingYears} anni`);
-        setText(hintId, hintText);
-      });
-    }
-
-    calculateFirstEmploymentRemainingYears(anzianitaPregressaFp, enabled = true) {
-      if (!enabled) return 0;
-
-      // Il recupero copre gli anni di partecipazione dal 6° al 25°: chi è
-      // ancora nel quinquennio iniziale ha davanti l'intera finestra di 20 anni.
-      const completedYears = Math.max(Math.floor(anzianitaPregressaFp || 0), 0);
-      return Math.min(
-        Math.max(25 - Math.max(completedYears, 5), 0),
-        FINANCIAL_CONSTANTS.MAGGIORAZIONE_PRIMA_OCCUPAZIONE_ANNI
-      );
-    }
-
-    /**
-     * Card "Plafond residuo stimato": stima del plafond prima occupazione
-     * disponibile a inizio recupero, per la strategia selezionata.
-     *
-     * Stima = campo "Plafond extra residuo" (accumulo degli anni del quinquennio
-     * GIÀ TRASCORSI, che non possiamo simulare) + accumulo simulato del limite
-     * ordinario non versato nei soli anni del quinquennio che cadono DENTRO la
-     * simulazione. Gli anni già trascorsi (anzianità pregressa) non vengono
-     * simulati: il loro contributo sta nel campo inserito. Con quinquennio già
-     * concluso (anzianità ≥ 5) la stima coincide col campo inserito.
-     */
-    updatePlafondResiduoCard(config) {
-      if (!config.primaOccupazionePost2006) return;
-      const rows = this.getStrategyRows();
-      const money = (value) => `${Math.round(Math.max(value, 0)).toLocaleString('it-IT')} €`;
-      // Anni del quinquennio ancora da simulare = 5 − anzianità pregressa.
-      const waitYears = config.anniAttesaMaggiorazione || 0;
-
-      let value = config.plafondExtraPrimaOccupazione;
-      let hint = 'Solo il campo inserito: quinquennio già trascorso, in consumo negli anni di recupero (max 2.650 €/anno).';
-      if (waitYears > 0 && rows.length) {
-        // Fine dell'accumulo: ultimo anno simulato del quinquennio (le righe
-        // riportano il plafond a fine anno, dopo accumulo/consumo).
-        const accrualRow = rows[Math.min(waitYears, rows.length) - 1];
-        value = accrualRow['Plafond Residuo'] || 0;
-        const anni = `${waitYears} ann${waitYears === 1 ? 'o' : 'i'}`;
-        hint = waitYears >= rows.length
-          ? 'Stima parziale: la simulazione finisce dentro i primi 5 anni, l\'accumulo prosegue oltre.'
-          : `Stima: campo inserito + accumulo dei primi ${anni} simulati (anni già trascorsi esclusi). Disponibile dal 6° anno.`;
-      }
-
-      setText(['plafondResiduoDisplay', 'guided-plafond-residuo-display'], money(value));
-      setText(['plafondResiduoHint', 'guided-plafond-residuo-hint'], hint);
-    }
-
-    calculateFirstEmploymentWaitYears(anzianitaPregressaFp, enabled = true) {
-      if (!enabled) return 0;
-      const completedYears = Math.max(Math.floor(anzianitaPregressaFp || 0), 0);
-      return Math.max(5 - completedYears, 0);
     }
 
     // Campi minimo retributivo visibili solo se una delle basi lo usa.

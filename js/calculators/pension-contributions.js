@@ -106,72 +106,21 @@ export function calculateEmployerContribution(baseContributiva, quotaDatoreFpPer
   return Math.max(baseContributiva * quotaDatoreFpPerc, 0) + Math.max(contributoDatoreFisso, 0);
 }
 
-export function createFirstEmploymentState({ enabled = false, extraRemaining = 0, yearsRemaining = 0, waitYears = 0 } = {}) {
-  return {
-    enabled: Boolean(enabled),
-    extraRemaining: Math.max(extraRemaining, 0),
-    yearsRemaining: Math.max(Math.floor(yearsRemaining), 0),
-    // Anni ancora dentro il quinquennio iniziale: il recupero parte dal 6° anno
-    // di partecipazione e nel frattempo il plafond non usato si accumula.
-    waitYears: Math.max(Math.floor(waitYears), 0)
-  };
+export function getTotalDeductionLimit() {
+  return FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP;
 }
 
-export function getTotalDeductionLimit(firstEmployment = {}) {
-  const ordinaryLimit = FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP;
-  if (
-    !firstEmployment.enabled ||
-    firstEmployment.waitYears > 0 ||
-    firstEmployment.yearsRemaining <= 0 ||
-    firstEmployment.extraRemaining <= 0
-  ) {
-    return ordinaryLimit;
-  }
-
-  return ordinaryLimit + Math.min(
-    firstEmployment.extraRemaining,
-    FINANCIAL_CONSTANTS.MAGGIORAZIONE_PRIMA_OCCUPAZIONE_ANNUA
-  );
+export function getAvailableDeductionLimit(quotaDatore = 0) {
+  return Math.max(getTotalDeductionLimit() - quotaDatore, 0);
 }
 
-export function getAvailableDeductionLimit(firstEmployment, quotaDatore = 0) {
-  return Math.max(getTotalDeductionLimit(firstEmployment) - quotaDatore, 0);
-}
-
-export function consumeFirstEmploymentAllowance(firstEmployment, quotaFp, quotaDatore) {
-  if (!firstEmployment.enabled) return;
-
-  if (firstEmployment.waitYears > 0) {
-    // Quinquennio iniziale: la parte di limite ordinario non versata
-    // alimenta il plafond recuperabile (fino al tetto x 5 anni complessivi).
-    const unused = Math.max(FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP - Math.max(quotaFp + quotaDatore, 0), 0);
-    firstEmployment.extraRemaining = Math.min(
-      firstEmployment.extraRemaining + unused,
-      FINANCIAL_CONSTANTS.PLAFOND_PRIMA_OCCUPAZIONE_MAX
-    );
-    firstEmployment.waitYears -= 1;
-    return;
-  }
-
-  if (firstEmployment.yearsRemaining <= 0) return;
-
-  const extraUsed = Math.min(
-    Math.max(quotaFp + quotaDatore - FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP, 0),
-    FINANCIAL_CONSTANTS.MAGGIORAZIONE_PRIMA_OCCUPAZIONE_ANNUA,
-    firstEmployment.extraRemaining
-  );
-
-  firstEmployment.extraRemaining = Math.max(firstEmployment.extraRemaining - extraUsed, 0);
-  firstEmployment.yearsRemaining = Math.max(firstEmployment.yearsRemaining - 1, 0);
-}
-
-export function splitBudget(budget, quotaMinAderente, quotaDatorePotenziale, firstEmployment) {
+export function splitBudget(budget, quotaMinAderente, quotaDatorePotenziale) {
   if (budget <= 0) {
     return { quotaDeducibile: 0, quotaExtraPac: 0, quotaDatore: 0 };
   }
 
   const quotaDatore = budget >= quotaMinAderente ? quotaDatorePotenziale : 0;
-  const limiteDeduzione = getAvailableDeductionLimit(firstEmployment, quotaDatore);
+  const limiteDeduzione = getAvailableDeductionLimit(quotaDatore);
   const quotaDeducibile = Math.min(budget, limiteDeduzione);
 
   return {

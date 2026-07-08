@@ -3,11 +3,6 @@ import {
   calculateIncomeTax,
   calculateIrpefTaxableIncome
 } from '../calculators/tax-calculator.js';
-import {
-  consumeFirstEmploymentAllowance,
-  createFirstEmploymentState,
-  getTotalDeductionLimit
-} from '../calculators/pension-contributions.js';
 import { calculateEffectiveTaxRate } from '../calculators/investment-growth.js';
 import { FinancialModel } from '../models/FinancialModel.js';
 
@@ -480,21 +475,9 @@ export class FinancialView {
       const addizionali = imponibileIrpef * (config.addizionaliPerc || 0);
       const aliquotaMarginale = imponibileIrpef <= 28000 ? 23 : imponibileIrpef <= 50000 ? 35 : 43;
 
-      // Step 2 - Capienza deduzione: replay dello stato prima occupazione fino all'anno selezionato.
-      const firstEmployment = createFirstEmploymentState({
-        enabled: Boolean(config.primaOccupazionePost2006),
-        extraRemaining: config.plafondExtraPrimaOccupazione || 0,
-        yearsRemaining: config.anniResiduiMaggiorazione ?? FINANCIAL_CONSTANTS.MAGGIORAZIONE_PRIMA_OCCUPAZIONE_ANNI,
-        waitYears: config.anniAttesaMaggiorazione || 0
-      });
-      let limiteAnno = getTotalDeductionLimit(firstEmployment);
-      for (const item of results) {
-        if (item.Anno > safeYear) break;
-        limiteAnno = getTotalDeductionLimit(firstEmployment);
-        consumeFirstEmploymentAllowance(firstEmployment, item['FP Cons'] || 0, item.Datore || 0);
-      }
+      // Step 2 - Capienza deduzione.
+      const limiteAnno = FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP;
       const limiteOrdinario = FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP;
-      const maggiorazioneAnno = Math.max(limiteAnno - limiteOrdinario, 0);
       const deduzioneUsata = quotaFp + datore;
       const capienzaResidua = Math.max(limiteAnno - deduzioneUsata, 0);
 
@@ -536,13 +519,9 @@ export class FinancialView {
 
       // Step 2 - Capienza e limite deduzione
       setText('annual-limit-step-value', moneyExact(limiteAnno));
-      setText('annual-limit-formula', maggiorazioneAnno > 0
-        ? `${moneyExact(limiteOrdinario)} ordinario + ${moneyExact(maggiorazioneAnno)} prima occupazione = ${moneyExact(limiteAnno)}; dedotti ${money(deduzioneUsata)}.`
-        : `Limite anno = ${moneyExact(limiteOrdinario)} ordinario; dedotti ${money(deduzioneUsata)} (aderente + datore).`);
+      setText('annual-limit-formula', `Limite anno = ${moneyExact(limiteOrdinario)} ordinario; dedotti ${money(deduzioneUsata)} (aderente + datore).`);
       setText('annual-limit-ordinary-value', moneyExact(limiteOrdinario));
-      setText('annual-limit-extra-value', maggiorazioneAnno > 0
-        ? `+${moneyExact(maggiorazioneAnno)}`
-        : config.primaOccupazionePost2006 ? 'Non attiva quest\'anno' : 'Non attiva');
+      setText('annual-limit-extra-value', 'Non prevista');
       setText('annual-limit-used-value', `${money(deduzioneUsata)} / ${moneyExact(limiteAnno)}`);
       setText('annual-limit-headroom-value', money(capienzaResidua));
 

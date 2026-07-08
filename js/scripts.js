@@ -398,26 +398,8 @@ function setupMobileTooltips() {
         anzianitaPregressaFp: {
             title: 'Anzianità pregressa FP',
             dove: 'Area riservata del fondo: anni dalla prima adesione a forme pensionistiche complementari.',
-            come: 'Anticipa la riduzione della tassazione in uscita dal 15% verso il 9% e determina gli anni residui della maggiorazione prima occupazione.',
-            effetto: 'Non aggiunge un montante iniziale: conta solo per fiscalità e finestra di recupero.'
-        },
-        primaOccupazionePost2006: {
-            title: 'Prima occupazione post 2006',
-            dove: 'La tua storia lavorativa: prima occupazione successiva al 31/12/2006.',
-            come: 'Attiva il recupero della deduzione non usata nei primi 5 anni di partecipazione: vale dal 6° al 25° anno, fino a 2.650 € extra all\'anno oltre il limite ordinario di 5.300 €.',
-            effetto: 'Se attiva, il modello alza il limite deducibile negli anni in cui hai plafond disponibile.'
-        },
-        plafondExtraPrimaOccupazione: {
-            title: 'Plafond extra residuo',
-            dove: 'Somma, per ciascuno dei primi 5 anni di partecipazione già trascorsi, di max(0, 5.300 € − contributi dedotti in quell\'anno). Massimo 26.500 €.',
-            come: 'Quota di deduzione aggiuntiva ancora recuperabile; ogni anno puoi usarne al massimo 2.650 €.',
-            effetto: 'Se sei ancora nel quinquennio iniziale, la simulazione accumula da sola il plafond non usato negli anni simulati: qui inserisci solo il residuo già maturato prima della simulazione. La card Plafond residuo mostra il totale disponibile a inizio recupero.'
-        },
-        anniResiduiMaggiorazione: {
-            title: 'Anni residui maggiorazione calcolati',
-            dove: 'Valore informativo calcolato dall\'anzianità FP già maturata.',
-            come: 'Il recupero è disponibile dal 6° al 25° anno di partecipazione.',
-            effetto: 'Prima del 6° anno non è ancora utilizzabile; dopo il 25° non ci sono anni residui.'
+            come: 'Anticipa la riduzione della tassazione in uscita dal 15% verso il 9%.',
+            effetto: 'Non aggiunge un montante iniziale: conta solo per fiscalità in uscita.'
         },
         rendimentoAnnualeFpPerc: {
             title: 'Rendimento fondo pensione ipotizzato',

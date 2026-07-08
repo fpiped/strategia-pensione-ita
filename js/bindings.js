@@ -1,5 +1,3 @@
-import { FINANCIAL_CONSTANTS } from './constants/financial-constants.js';
-
 /**
  * Binding dichiarativo campo ↔ store.
  *
@@ -56,8 +54,6 @@ export const FIELDS = [
   { key: 'addizionaliPerc', type: 'number', panel: 'addizionaliPerc', guided: 'guided-addizionali', min: 0, max: 10 },
   { key: 'anzianitaPregressaFp', type: 'number', panel: 'anzianitaPregressaFp', guided: 'guided-anzianita', min: 0, max: 50 },
   { key: 'riscattoAnticipato', type: 'checkbox', panel: 'riscattoAnticipato', guided: 'guided-riscatto-anticipato' },
-  { key: 'primaOccupazionePost2006', type: 'checkbox', panel: 'primaOccupazionePost2006', guided: 'guided-prima-occupazione' },
-  { key: 'plafondExtraPrimaOccupazione', type: 'number', panel: 'plafondExtraPrimaOccupazione', guided: 'guided-plafond-extra', min: 0, max: FINANCIAL_CONSTANTS.PLAFOND_PRIMA_OCCUPAZIONE_MAX },
 
   { key: 'rendimentoAnnualeFpPerc', type: 'number', panel: 'rendimentoAnnualeFpPerc', guided: 'guided-rendimento-fp', min: 0, max: 100 },
   { key: 'rendimentoAnnualePacPerc', type: 'number', panel: 'rendimentoAnnualePacPerc', guided: 'guided-rendimento-pac', min: 0, max: 100 },

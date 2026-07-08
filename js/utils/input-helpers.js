@@ -91,20 +91,5 @@ export function buildInputWarnings(config) {
     warnings.push('Ulteriori detrazioni elevate possono ridurre molto la capienza fiscale e quindi il beneficio della deduzione.');
   }
 
-  const attesaMaggiorazione = Math.max(config.anniAttesaMaggiorazione || 0, 0);
-
-  if (
-    config.primaOccupazionePost2006 &&
-    config.plafondExtraPrimaOccupazione <= 0 &&
-    attesaMaggiorazione <= 0 &&
-    config.anniResiduiMaggiorazione > 0
-  ) {
-    warnings.push('Prima occupazione post 2006 attiva ma plafond extra residuo pari a zero: il limite deducibile resta quello ordinario.');
-  }
-
-  if (config.primaOccupazionePost2006 && config.anniResiduiMaggiorazione <= 0) {
-    warnings.push('Prima occupazione post 2006 attiva ma anni residui maggiorazione pari a zero: il recupero extra non viene applicato.');
-  }
-
   return warnings;
 }
