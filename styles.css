@@ -1855,31 +1855,137 @@ td.best-value {
     overflow-wrap: break-word;
 }
 
-/* Tables - clean and simple */
-.docs-section table {
-    width: 100%;
-    border-collapse: collapse;
+.docs-comparison-grid,
+.docs-info-grid,
+.docs-scenario-grid,
+.docs-fund-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.875rem;
     margin: 1rem 0;
-    font-size: 0.875rem;
 }
 
-.docs-section th,
-.docs-section td {
-    padding: 0.625rem 0.875rem;
-    text-align: left;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    border: 1px solid var(--color-border);
+.docs-comparison-card,
+.docs-info-card,
+.docs-scenario-card,
+.docs-fund-card,
+.docs-source-item,
+.docs-definition-list > div {
+    border: 1px solid var(--color-border-soft);
+    border-radius: var(--radius-sm);
+    background: #ffffff;
 }
 
-.docs-section th {
-    background: #f8fbf9;
+.docs-comparison-card,
+.docs-info-card,
+.docs-scenario-card,
+.docs-fund-card,
+.docs-source-item {
+    padding: 1rem;
+}
+
+.docs-comparison-card h4,
+.docs-info-card h4,
+.docs-scenario-card h4,
+.docs-fund-card h4,
+.docs-source-item h4 {
+    margin: 0 0 0.75rem 0;
+}
+
+.docs-comparison-card dl,
+.docs-scenario-card dl,
+.docs-definition-list {
+    margin: 0;
+}
+
+.docs-comparison-card dl > div,
+.docs-scenario-card dl > div {
+    padding: 0.625rem 0;
+    border-top: 1px solid var(--color-border-soft);
+}
+
+.docs-comparison-card dl > div:first-child,
+.docs-scenario-card dl > div:first-child {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.docs-section dt {
     font-weight: 600;
     color: var(--color-text-primary);
 }
 
-.docs-section td {
+.docs-section dd {
+    margin: 0.2rem 0 0 0;
     color: var(--color-text-secondary);
+    line-height: 1.6;
+}
+
+.docs-info-card p,
+.docs-fund-card p,
+.docs-source-item p {
+    margin-bottom: 0.45rem;
+}
+
+.docs-info-card p:last-child,
+.docs-fund-card p:last-child,
+.docs-source-item p:last-child {
+    margin-bottom: 0;
+}
+
+.docs-scenario-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.docs-scenario-head span {
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: #f8fbf9;
+    border: 1px solid var(--color-blue-line);
+    color: var(--color-text-primary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    white-space: nowrap;
+}
+
+.docs-scenario-card dl > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.docs-scenario-card dd {
+    color: var(--color-text-primary);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.docs-definition-list {
+    display: grid;
+    gap: 0.625rem;
+    margin: 1rem 0;
+}
+
+.docs-definition-list > div {
+    padding: 0.875rem 1rem;
+}
+
+.docs-source-list {
+    display: grid;
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+
+.docs-fund-card a {
+    display: inline-flex;
+    margin-top: 0.25rem;
+    font-weight: 600;
 }
 
 /* Highlight box for important info */
@@ -3049,17 +3155,35 @@ tr:hover td {
         margin-bottom: 0.75rem;
     }
 
-    .docs-section table {
-        font-size: 0.75rem;
-        margin-bottom: 0.75rem;
-        table-layout: fixed;
-        width: 100%;
+    .docs-comparison-grid,
+    .docs-info-grid,
+    .docs-scenario-grid,
+    .docs-fund-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        margin: 0.75rem 0;
     }
 
-    .docs-section th,
-    .docs-section td {
-        padding: 0.4rem 0.5rem;
-        font-size: 0.7rem;
+    .docs-comparison-card,
+    .docs-info-card,
+    .docs-scenario-card,
+    .docs-fund-card,
+    .docs-source-item,
+    .docs-definition-list > div {
+        padding: 0.875rem;
+    }
+
+    .docs-scenario-head {
+        display: block;
+    }
+
+    .docs-scenario-head span {
+        display: inline-flex;
+        margin-top: 0.35rem;
+    }
+
+    .docs-scenario-card dl > div {
+        display: block;
     }
 
     .highlight {
@@ -3078,14 +3202,13 @@ tr:hover td {
         font-size: 0.6875rem;
     }
 
-    .docs-section table {
-        font-size: 0.65rem;
-    }
-
-    .docs-section th,
-    .docs-section td {
-        padding: 0.3rem 0.4rem;
-        font-size: 0.65rem;
+    .docs-comparison-card,
+    .docs-info-card,
+    .docs-scenario-card,
+    .docs-fund-card,
+    .docs-source-item,
+    .docs-definition-list > div {
+        padding: 0.75rem;
     }
 
     .docs-nav a {
