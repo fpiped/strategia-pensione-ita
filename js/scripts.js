@@ -4,6 +4,8 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
+    setupThemeToggle();
+
     // Contatore visite (counterapi.dev): un incremento per caricamento;
     // se il servizio non risponde, il chip resta nascosto.
     fetch('https://api.counterapi.dev/v1/strategia-pensione-fpiped/homepage/up')
@@ -38,6 +40,38 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inizializza tooltip mobile
     setupMobileTooltips();
 });
+
+function setupThemeToggle() {
+    const STORAGE_KEY = 'strategia-pensione-theme';
+    const toggle = document.getElementById('theme-toggle');
+    if (!toggle) return;
+
+    const applyTheme = (theme) => {
+        const normalized = theme === 'dark' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', normalized);
+        toggle.setAttribute('aria-pressed', String(normalized === 'dark'));
+        toggle.setAttribute('aria-label', normalized === 'dark' ? 'Attiva tema chiaro' : 'Attiva tema scuro');
+        const icon = toggle.querySelector('i');
+        if (icon) {
+            icon.classList.toggle('fa-moon', normalized !== 'dark');
+            icon.classList.toggle('fa-sun', normalized === 'dark');
+        }
+    };
+
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    applyTheme(currentTheme);
+
+    toggle.addEventListener('click', () => {
+        const nextTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        applyTheme(nextTheme);
+        try {
+            localStorage.setItem(STORAGE_KEY, nextTheme);
+        } catch (error) {
+            // Storage non disponibile (es. navigazione privata): il tema resta solo per la sessione.
+        }
+        window.dispatchEvent(new CustomEvent('strategia-theme-change', { detail: { theme: nextTheme } }));
+    });
+}
 
 /**
  * Inizializza il toggle per mostrare/nascondere i parametri principali:

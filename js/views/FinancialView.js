@@ -603,11 +603,15 @@ export class FinancialView {
       const exitPAC = results.map(r => r['Exit PAC'] || 0);
       const exitMix = results.map(r => r['Exit Mix'] || 0);
 
+      const styles = getComputedStyle(document.documentElement);
+      const textColor = styles.getPropertyValue('--color-text-secondary').trim() || '#4b5563';
+      const gridColor = styles.getPropertyValue('--color-border-soft').trim() || '#e2e7de';
+
       // Colori
       const colors = {
-        fp: '#2563eb',
-        pac: '#d97706',
-        mix: '#0f766e'
+        fp: styles.getPropertyValue('--color-metric-fp').trim() || '#2563eb',
+        pac: styles.getPropertyValue('--color-metric-pac').trim() || '#d97706',
+        mix: styles.getPropertyValue('--color-metric-mix').trim() || '#0f766e'
       };
 
       // Distruggi il grafico esistente se presente
@@ -666,7 +670,8 @@ export class FinancialView {
                 usePointStyle: true,
                 padding: 20,
                 boxWidth: 8,
-                boxHeight: 8
+                boxHeight: 8,
+                color: textColor
               }
             },
             tooltip: {
@@ -682,14 +687,19 @@ export class FinancialView {
             x: {
               grid: {
                 display: false
+              },
+              ticks: {
+                color: textColor
               }
             },
             y: {
               beginAtZero: true,
               grid: {
-                display: false
+                display: false,
+                color: gridColor
               },
               ticks: {
+                color: textColor,
                 callback: function(value) {
                   return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ' €';
                 }

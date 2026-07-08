@@ -7,6 +7,14 @@
     --color-bg-card: #ffffff;
     --color-bg-header: #ffffff;
     --color-bg-input: #ffffff;
+    --color-bg-page-top: #e8f3ee;
+    --color-bg-panel: #fbfcf8;
+    --color-bg-panel-strong: #f8fbf9;
+    --color-bg-subtle: #edf7f3;
+    --color-bg-soft-blue: #f8fbff;
+    --color-bg-success-soft: #f0faf5;
+    --color-bg-warning-soft: #fff7ed;
+    --color-bg-overlay: rgb(15 23 42 / 0.46);
 
     --color-text-primary: #172033;
     --color-text-secondary: #4b5563;
@@ -18,6 +26,10 @@
     --color-border-focus: #0f766e;
     --color-blue-soft: #eef5f3;
     --color-blue-line: #d6e2dc;
+    --color-link: #1d4ed8;
+    --color-info-text: #1e3a8a;
+    --color-warning-text: #7c3f00;
+    --color-warning-border: #fed7aa;
 
     /* Accent Colors */
     --color-accent-primary: #0f766e;
@@ -2904,6 +2916,10 @@ tr:hover td {
         gap: 0.75rem;
     }
 
+    .header-side {
+        width: 100%;
+    }
+
     .tabs {
         width: 100%;
         justify-content: stretch;
@@ -3619,7 +3635,7 @@ tr:hover td {
 
 body {
     background:
-        linear-gradient(180deg, #e8f3ee 0, var(--color-bg-page) 260px),
+        linear-gradient(180deg, var(--color-bg-page-top) 0, var(--color-bg-page) 260px),
         var(--color-bg-page);
 }
 
@@ -5637,6 +5653,213 @@ html[data-active-tab="documentation"] .tab[data-tab="documentation"] {
     border-color: var(--color-border-soft);
 }
 
+/* ============================================
+   Dark theme
+   ============================================ */
+html[data-theme="dark"] {
+    color-scheme: dark;
+    --color-bg-page: #0f1513;
+    --color-bg-card: #171f1c;
+    --color-bg-header: #111815;
+    --color-bg-input: #101815;
+    --color-bg-page-top: #14211c;
+    --color-bg-panel: #131b18;
+    --color-bg-panel-strong: #18231f;
+    --color-bg-subtle: #1c2b26;
+    --color-bg-soft-blue: #16231f;
+    --color-bg-success-soft: #13251b;
+    --color-bg-warning-soft: #2a2013;
+    --color-bg-overlay: rgb(2 6 5 / 0.72);
+
+    --color-text-primary: #edf5ef;
+    --color-text-secondary: #b8c7bf;
+    --color-text-inverse: #edf5ef;
+    --color-text-muted: #8fa099;
+
+    --color-border: #33413b;
+    --color-border-soft: #26332e;
+    --color-border-focus: #2dd4bf;
+    --color-blue-soft: #172720;
+    --color-blue-line: #2a3b34;
+    --color-link: #8bbcff;
+    --color-info-text: #b7d5ff;
+    --color-warning-text: #f2c57c;
+    --color-warning-border: #7c4b1d;
+
+    --color-accent-primary: #2dd4bf;
+    --color-accent-success: #4ade80;
+    --color-accent-warning: #f59e0b;
+    --color-accent-danger: #f87171;
+    --color-accent-purple: #a78bfa;
+
+    --color-metric-fp: #60a5fa;
+    --color-metric-pac: #f59e0b;
+    --color-metric-mix: #2dd4bf;
+    --color-metric-breakeven: #a78bfa;
+
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.32);
+    --shadow-md: 0 10px 28px rgb(0 0 0 / 0.34);
+    --shadow-lg: 0 24px 70px rgb(0 0 0 / 0.48);
+}
+
+html[data-theme="dark"] body {
+    background:
+        linear-gradient(180deg, var(--color-bg-page-top) 0, var(--color-bg-page) 260px),
+        var(--color-bg-page);
+}
+
+html[data-theme="dark"] .logo-mark {
+    filter: brightness(1.25) saturate(0.9);
+}
+
+html[data-theme="dark"] a {
+    color: var(--color-link);
+}
+
+html[data-theme="dark"] .intro-section {
+    background:
+        linear-gradient(120deg, #17231f 0%, #13201b 46%, #10251d 100%),
+        var(--color-bg-card);
+}
+
+html[data-theme="dark"] .metric-card,
+html[data-theme="dark"] .result-explanation,
+html[data-theme="dark"] .decision-panel,
+html[data-theme="dark"] .decision-tile,
+html[data-theme="dark"] .param-card,
+html[data-theme="dark"] .local-tax-panel,
+html[data-theme="dark"] .variation-grid,
+html[data-theme="dark"] .results-section,
+html[data-theme="dark"] .annual-explorer-section,
+html[data-theme="dark"] .chart-section,
+html[data-theme="dark"] .docs-section,
+html[data-theme="dark"] .docs-comparison-card,
+html[data-theme="dark"] .docs-info-card,
+html[data-theme="dark"] .docs-scenario-card,
+html[data-theme="dark"] .docs-fund-card,
+html[data-theme="dark"] .docs-source-item,
+html[data-theme="dark"] .docs-definition-list > div,
+html[data-theme="dark"] .guided-dialog,
+html[data-theme="dark"] .help-modal-content,
+html[data-theme="dark"] .mini-metric,
+html[data-theme="dark"] .annual-input,
+html[data-theme="dark"] .calc-step,
+html[data-theme="dark"] .step-row,
+html[data-theme="dark"] .warning-item,
+html[data-theme="dark"] .autocomplete-results {
+    background: var(--color-bg-card);
+    border-color: var(--color-border-soft);
+}
+
+html[data-theme="dark"] .param-card .card-header,
+html[data-theme="dark"] .guided-header,
+html[data-theme="dark"] .help-modal-header,
+html[data-theme="dark"] .local-tax-panel-header,
+html[data-theme="dark"] .result-explanation-header,
+html[data-theme="dark"] .table-view-tabs,
+html[data-theme="dark"] .variation-header,
+html[data-theme="dark"] .docs-section pre,
+html[data-theme="dark"] .step-formula,
+html[data-theme="dark"] .mini-metric.output,
+html[data-theme="dark"] .investment-mode-summary .mini-metric,
+html[data-theme="dark"] .annual-explorer-select,
+html[data-theme="dark"] .docs-scenario-head span {
+    background: var(--color-bg-panel-strong);
+    border-color: var(--color-border-soft);
+}
+
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+    background-color: var(--color-bg-input);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
+}
+
+html[data-theme="dark"] .form-control:focus,
+html[data-theme="dark"] input:focus,
+html[data-theme="dark"] select:focus,
+html[data-theme="dark"] textarea:focus {
+    border-color: var(--color-border-focus);
+    box-shadow: 0 0 0 3px rgb(45 212 191 / 0.18);
+}
+
+html[data-theme="dark"] .segmented-control,
+html[data-theme="dark"] .table-view-tabs,
+html[data-theme="dark"] .strategy-selector,
+html[data-theme="dark"] .docs-nav,
+html[data-theme="dark"] .footer,
+html[data-theme="dark"] .chart-content,
+html[data-theme="dark"] .table-container {
+    background: var(--color-bg-panel);
+    border-color: var(--color-border-soft);
+}
+
+html[data-theme="dark"] .segmented-control button,
+html[data-theme="dark"] .table-view-tab,
+html[data-theme="dark"] [data-strategy-select],
+html[data-theme="dark"] .docs-nav a {
+    color: var(--color-text-secondary);
+}
+
+html[data-theme="dark"] .segmented-control button.active,
+html[data-theme="dark"] .table-view-tab.active,
+html[data-theme="dark"] [data-strategy-select].active,
+html[data-theme="dark"] .docs-nav a:hover {
+    background: var(--color-bg-subtle);
+    color: var(--color-accent-primary);
+    border-color: var(--color-border-focus);
+}
+
+html[data-theme="dark"] #output-table th {
+    background: var(--color-bg-panel-strong);
+    color: var(--color-text-primary);
+}
+
+html[data-theme="dark"] #output-table td {
+    background: var(--color-bg-card);
+    color: var(--color-text-secondary);
+    border-color: var(--color-border-soft);
+}
+
+html[data-theme="dark"] #output-table tbody tr.active td {
+    background: var(--color-bg-subtle);
+    color: var(--color-text-primary);
+}
+
+html[data-theme="dark"] .highlight,
+html[data-theme="dark"] .docs-section .highlight,
+html[data-theme="dark"] .guided-note,
+html[data-theme="dark"] .help-entry,
+html[data-theme="dark"] .local-tax-summary,
+html[data-theme="dark"] .tax-mode-panel,
+html[data-theme="dark"] .return-net-note {
+    background: var(--color-bg-subtle);
+    border-color: var(--color-blue-line);
+}
+
+html[data-theme="dark"] .help-trigger,
+html[data-theme="dark"] .choice-highlight,
+html[data-theme="dark"] .summary-value,
+html[data-theme="dark"] .annual-input strong,
+html[data-theme="dark"] .step-row strong,
+html[data-theme="dark"] .docs-section dt,
+html[data-theme="dark"] .docs-scenario-card dd {
+    color: var(--color-text-primary);
+}
+
+html[data-theme="dark"] .guided-backdrop,
+html[data-theme="dark"] .help-modal-backdrop {
+    background: var(--color-bg-overlay);
+}
+
+html[data-theme="dark"] .theme-toggle {
+    background: var(--color-bg-subtle);
+    color: var(--color-accent-primary);
+    border-color: var(--color-border-focus);
+}
+
 /* Grafico: come la tabella, larghezza minima con scroll orizzontale. */
 .chart-content {
     overflow-x: auto;
@@ -5754,4 +5977,306 @@ a.logo:hover h1 {
     align-items: center;
     gap: 1rem;
     min-width: 0;
+}
+
+.theme-toggle {
+    width: 2.35rem;
+    height: 2.35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    border: 1px solid var(--color-border-soft);
+    background: var(--color-bg-card);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.theme-toggle:hover {
+    color: var(--color-accent-primary);
+    border-color: var(--color-border-focus);
+    background: var(--color-bg-subtle);
+}
+
+.theme-toggle:focus-visible {
+    outline: 3px solid rgb(15 118 110 / 0.28);
+    outline-offset: 2px;
+}
+
+html[data-theme="dark"] .explorer-strategy-select button {
+    background: var(--color-bg-panel-strong);
+    color: var(--color-text-primary);
+    border-color: var(--color-border-soft);
+}
+
+html[data-theme="dark"] .explorer-strategy-select button.active {
+    color: #07110f;
+    background: var(--color-accent-primary);
+    border-color: var(--color-accent-primary);
+}
+
+html[data-theme="dark"] .year-answer-card,
+html[data-theme="dark"] .annual-input {
+    background: var(--color-bg-card);
+    border-color: var(--color-border-soft);
+}
+
+html[data-theme="dark"] .year-answer-card.main {
+    background: var(--color-bg-success-soft);
+    border-color: var(--color-border-focus);
+}
+
+/* Dark final pass: resta in fondo perché il redesign 2026 ridefinisce molte
+   superfici dopo il primo blocco tema. */
+html[data-theme="dark"] header,
+html[data-theme="dark"] .config-workspace,
+html[data-theme="dark"] .control-shell .param-card,
+html[data-theme="dark"] .control-shell .control-subgroup,
+html[data-theme="dark"] .docs-collapsible,
+html[data-theme="dark"] .guided-dialog .guided-step.active,
+html[data-theme="dark"] .guided-dialog #guided-minimum-wage-fields,
+html[data-theme="dark"] .help-modal-content {
+    background: var(--color-bg-card);
+    border-color: var(--color-border-soft);
+}
+
+html[data-theme="dark"] .control-shell .card-header,
+html[data-theme="dark"] .docs-section h2.docs-collapsible-title,
+html[data-theme="dark"] .guided-dialog .guided-header,
+html[data-theme="dark"] .guided-dialog .guided-footer,
+html[data-theme="dark"] .guided-dialog .guided-body.control-shell,
+html[data-theme="dark"] .help-modal-header,
+html[data-theme="dark"] .docs-section pre,
+html[data-theme="dark"] .docs-index,
+html[data-theme="dark"] .control-shell .unit,
+html[data-theme="dark"] .control-shell .mini-metric,
+html[data-theme="dark"] .control-shell .toggle-label,
+html[data-theme="dark"] .control-shell .variation-toggle,
+html[data-theme="dark"] .control-shell .local-tax-mode-toggle,
+html[data-theme="dark"] .control-shell .segmented-control,
+html[data-theme="dark"] .control-shell .binary-toggle-state,
+html[data-theme="dark"] .guided-dialog .variation-grid,
+html[data-theme="dark"] .guided-dialog .guided-note .help-entry {
+    background: var(--color-bg-panel-strong);
+    border-color: var(--color-border-soft);
+}
+
+html[data-theme="dark"] .control-shell .mini-metric.output,
+html[data-theme="dark"] .year-answer-card.main,
+html[data-theme="dark"] .results-workspace [data-strategy].strategy-active,
+html[data-theme="dark"] [data-strategy].strategy-active {
+    background: var(--color-bg-success-soft);
+    border-color: var(--color-border-focus);
+}
+
+html[data-theme="dark"] .control-shell .control-field,
+html[data-theme="dark"] .control-shell .form-control,
+html[data-theme="dark"] .control-shell .computed-output,
+html[data-theme="dark"] .control-shell .control-field .form-control,
+html[data-theme="dark"] .param-card .form-control,
+html[data-theme="dark"] .param-card .computed-output,
+html[data-theme="dark"] .guided-dialog .form-control,
+html[data-theme="dark"] .guided-dialog input,
+html[data-theme="dark"] .guided-dialog select {
+    background: var(--color-bg-input);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
+}
+
+html[data-theme="dark"] .control-shell .form-control:disabled,
+html[data-theme="dark"] .control-shell .metric-input:disabled,
+html[data-theme="dark"] .param-card .form-control:disabled,
+html[data-theme="dark"] .param-card .computed-output[aria-disabled="true"] {
+    background: var(--color-bg-panel);
+    color: var(--color-text-muted);
+}
+
+html[data-theme="dark"] .control-shell label,
+html[data-theme="dark"] .control-shell .control-label,
+html[data-theme="dark"] .control-shell .binary-toggle > .help-trigger,
+html[data-theme="dark"] .guided-dialog .binary-toggle > .binary-toggle-text,
+html[data-theme="dark"] .param-card .form-group label,
+html[data-theme="dark"] .param-card .control-section-heading,
+html[data-theme="dark"] .param-card .local-tax-title,
+html[data-theme="dark"] .control-shell .card-header h3,
+html[data-theme="dark"] .docs-index strong,
+html[data-theme="dark"] .docs-section h2.docs-collapsible-title,
+html[data-theme="dark"] .guided-dialog .guided-step-head h3 {
+    color: var(--color-text-primary);
+}
+
+html[data-theme="dark"] .control-shell .unit,
+html[data-theme="dark"] .control-shell .card-header p,
+html[data-theme="dark"] .control-shell .card-header > span,
+html[data-theme="dark"] .control-shell .mini-metric span,
+html[data-theme="dark"] .control-shell .mini-metric p,
+html[data-theme="dark"] .guided-dialog .variation-header > span,
+html[data-theme="dark"] .guided-dialog .guided-step-head p {
+    color: var(--color-text-secondary);
+}
+
+html[data-theme="dark"] .control-shell .variation-toggle label:has(input:checked),
+html[data-theme="dark"] .control-shell .local-tax-mode-button.active,
+html[data-theme="dark"] .control-shell .segmented-control button.active,
+html[data-theme="dark"] .control-shell .binary-toggle input[type="checkbox"]:not(:checked) ~ .binary-toggle-state span:first-child,
+html[data-theme="dark"] .control-shell .binary-toggle input[type="checkbox"]:checked ~ .binary-toggle-state span:last-child,
+html[data-theme="dark"] .param-card .local-tax-mode-button.active,
+html[data-theme="dark"] .docs-index a {
+    background: var(--color-accent-primary);
+    border-color: var(--color-accent-primary);
+    color: #07110f;
+}
+
+html[data-theme="dark"] .docs-index a:hover {
+    background: #5eead4;
+    border-color: #5eead4;
+    color: #07110f;
+}
+
+html[data-theme="dark"] .control-shell > .input-warnings .input-warning {
+    background: var(--color-bg-warning-soft);
+    border-color: var(--color-warning-border);
+    color: var(--color-warning-text);
+}
+
+/* Dark result surfaces: override the final single-page layout rules that use
+   literal white backgrounds for dashboard, result cards and charts. */
+html[data-theme="dark"] .logo h1 {
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .workspace-section,
+html[data-theme="dark"] .results-workspace,
+html[data-theme="dark"] .results-section,
+html[data-theme="dark"] .chart-section,
+html[data-theme="dark"] .annual-explorer-section,
+html[data-theme="dark"] .results-body,
+html[data-theme="dark"] .chart-content,
+html[data-theme="dark"] .chart-container {
+    background: var(--color-bg-card);
+    border-color: var(--color-border-soft);
+}
+
+html[data-theme="dark"] .section-heading,
+html[data-theme="dark"] .results-title,
+html[data-theme="dark"] .chart-title,
+html[data-theme="dark"] #config-title,
+html[data-theme="dark"] #toggle-results,
+html[data-theme="dark"] #annual-explorer-title,
+html[data-theme="dark"] #toggle-chart {
+    color: var(--color-text-primary);
+    background: transparent;
+    border-color: var(--color-border-soft);
+}
+
+html[data-theme="dark"] .section-heading h2,
+html[data-theme="dark"] .section-heading h3,
+html[data-theme="dark"] .section-heading p {
+    color: var(--color-text-primary);
+}
+
+html[data-theme="dark"] .results-workspace .result-decision-panel,
+html[data-theme="dark"] .results-workspace .metric-card,
+html[data-theme="dark"] .results-workspace .metric-card.best,
+html[data-theme="dark"] .results-workspace .result-explanation-card,
+html[data-theme="dark"] .year-answer-card,
+html[data-theme="dark"] .annual-input,
+html[data-theme="dark"] .calc-step {
+    background: var(--color-bg-panel-strong);
+    border-color: var(--color-border-soft);
+    color: var(--color-text-primary);
+}
+
+html[data-theme="dark"] .results-workspace .result-explanation,
+html[data-theme="dark"] .result-explanation {
+    background: transparent;
+    border-color: var(--color-border-soft);
+}
+
+html[data-theme="dark"] .results-workspace .result-explanation-header,
+html[data-theme="dark"] .result-explanation-header {
+    background: transparent;
+    border-color: var(--color-border-soft);
+}
+
+html[data-theme="dark"] .results-workspace .metric-card.best,
+html[data-theme="dark"] .year-answer-card.main {
+    background: var(--color-bg-success-soft);
+    border-color: var(--color-border-focus);
+}
+
+html[data-theme="dark"] .metric-label,
+html[data-theme="dark"] .metric-subtitle,
+html[data-theme="dark"] .result-explanation-label,
+html[data-theme="dark"] .result-explanation-detail,
+html[data-theme="dark"] .result-decision-main p,
+html[data-theme="dark"] .result-decision-side p,
+html[data-theme="dark"] .year-answer-card p,
+html[data-theme="dark"] .annual-input p,
+html[data-theme="dark"] .calc-step p {
+    color: var(--color-text-secondary);
+}
+
+html[data-theme="dark"] .metric-value,
+html[data-theme="dark"] .result-best-value,
+html[data-theme="dark"] .result-sequence-value,
+html[data-theme="dark"] .result-explanation-value,
+html[data-theme="dark"] .year-answer-card strong,
+html[data-theme="dark"] .annual-input strong {
+    color: var(--color-text-primary);
+}
+
+html[data-theme="dark"] th,
+html[data-theme="dark"] .results-section th {
+    background: var(--color-bg-panel-strong);
+    color: var(--color-text-primary);
+    border-color: var(--color-border-soft);
+}
+
+html[data-theme="dark"] td,
+html[data-theme="dark"] .results-section td {
+    background: var(--color-bg-card);
+    color: var(--color-text-secondary);
+    border-color: var(--color-border-soft);
+}
+
+html[data-theme="dark"] .results-section tr:hover td,
+html[data-theme="dark"] .results-section tr:hover td:first-child,
+html[data-theme="dark"] .results-section tr.active td,
+html[data-theme="dark"] .results-section tr.active td:first-child {
+    background: var(--color-bg-success-soft);
+    color: var(--color-text-primary);
+}
+
+html[data-theme="dark"] .go-to-top,
+html[data-theme="dark"] .go-to-top:visited {
+    background: var(--color-accent-primary);
+    border: 1px solid rgb(94 234 212 / 0.35);
+    color: #07110f;
+    box-shadow: 0 14px 32px rgb(0 0 0 / 0.42);
+}
+
+html[data-theme="dark"] .go-to-top i {
+    color: #07110f;
+}
+
+html[data-theme="dark"] .go-to-top:hover,
+html[data-theme="dark"] .go-to-top:focus-visible {
+    background: #5eead4;
+    color: #07110f;
+    border-color: #5eead4;
+}
+
+html[data-theme="dark"] .btn-primary,
+html[data-theme="dark"] .intro-primary,
+html[data-theme="dark"] #guided-next,
+html[data-theme="dark"] #guided-finish {
+    color: #07110f;
+}
+
+html[data-theme="dark"] .btn-primary i,
+html[data-theme="dark"] .intro-primary i {
+    color: #07110f;
 }

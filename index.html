@@ -36,6 +36,10 @@
         // refresh sulla pagina Informazioni non mostra per un attimo i Calcoli.
         (function () {
             try {
+                var savedTheme = localStorage.getItem('strategia-pensione-theme');
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var theme = savedTheme || (prefersDark ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-theme', theme);
                 var savedTab = localStorage.getItem('strategia-pensione-active-tab');
                 if (savedTab) document.documentElement.setAttribute('data-active-tab', savedTab);
             } catch (error) { /* storage non disponibile */ }
@@ -56,14 +60,19 @@
                 <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36">
                 <h1>Strategia Pensione</h1>
             </a>
-            <nav class="tabs" aria-label="Sezioni principali">
-                <div class="tab active" data-tab="calculator">
-                    Calcola
-                </div>
-                <div class="tab" data-tab="documentation">
-                    Informazioni
-                </div>
-            </nav>
+            <div class="header-side">
+                <nav class="tabs" aria-label="Sezioni principali">
+                    <div class="tab active" data-tab="calculator">
+                        Calcola
+                    </div>
+                    <div class="tab" data-tab="documentation">
+                        Informazioni
+                    </div>
+                </nav>
+                <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Attiva tema scuro" aria-pressed="false">
+                    <i class="fas fa-moon" aria-hidden="true"></i>
+                </button>
+            </div>
         </div>
     </header>
 
