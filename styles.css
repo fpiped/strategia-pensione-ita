@@ -6280,3 +6280,773 @@ html[data-theme="dark"] .btn-primary i,
 html[data-theme="dark"] .intro-primary i {
     color: #07110f;
 }
+
+/* =========================================================
+   Design system canonical layer
+   ---------------------------------------------------------
+   Keep visual changes below this point. Earlier blocks contain legacy layout
+   rules; this layer defines the maintainable palette and surface hierarchy
+   used by both light and dark modes.
+   ========================================================= */
+:root {
+    color-scheme: light;
+
+    --ds-page: #f4f8f6;
+    --ds-page-top: #e8f3ee;
+    --ds-header: #ffffff;
+    --ds-surface: #ffffff;
+    --ds-surface-raised: #ffffff;
+    --ds-surface-panel: #f8fbf9;
+    --ds-surface-muted: #edf7f3;
+    --ds-surface-selected: #eef8f2;
+    --ds-surface-warning: #fff7ed;
+    --ds-overlay: rgb(15 23 42 / 0.46);
+
+    --ds-text: #172033;
+    --ds-text-soft: #52645f;
+    --ds-text-muted: #6f7f7a;
+    --ds-text-on-accent: #ffffff;
+
+    --ds-border: #bfd2ca;
+    --ds-border-soft: #d7e3de;
+    --ds-border-strong: #0f766e;
+
+    --ds-accent: #0f766e;
+    --ds-accent-hover: #0b5f59;
+    --ds-success: #15803d;
+    --ds-warning: #b45309;
+    --ds-warning-text: #7c3f00;
+    --ds-warning-border: #fed7aa;
+    --ds-link: #1d4ed8;
+
+    --ds-metric-fp: #2563eb;
+    --ds-metric-pac: #d97706;
+    --ds-metric-mix: #0f766e;
+    --ds-metric-extra: #7c3aed;
+
+    --ds-hero: linear-gradient(120deg, #ffffff 0%, #f8fbf8 46%, #e5f2ec 100%);
+    --ds-focus-ring: 0 0 0 3px rgb(15 118 110 / 0.16);
+    --ds-shadow-sm: 0 1px 2px rgb(23 32 51 / 0.04);
+    --ds-shadow-md: 0 8px 20px rgb(23 32 51 / 0.08), 0 1px 2px rgb(23 32 51 / 0.05);
+    --ds-shadow-lg: 0 18px 50px rgb(23 32 51 / 0.16);
+
+    --ds-radius-sm: 6px;
+    --ds-radius-md: 8px;
+    --ds-radius-lg: 10px;
+
+    --color-bg-page: var(--ds-page);
+    --color-bg-page-top: var(--ds-page-top);
+    --color-bg-header: var(--ds-header);
+    --color-bg-card: var(--ds-surface);
+    --color-bg-input: var(--ds-surface-raised);
+    --color-bg-panel: var(--ds-surface-panel);
+    --color-bg-panel-strong: var(--ds-surface-muted);
+    --color-bg-subtle: var(--ds-surface-muted);
+    --color-bg-soft-blue: var(--ds-surface-muted);
+    --color-bg-success-soft: var(--ds-surface-selected);
+    --color-bg-warning-soft: var(--ds-surface-warning);
+    --color-bg-overlay: var(--ds-overlay);
+
+    --color-text-primary: var(--ds-text);
+    --color-text-secondary: var(--ds-text-soft);
+    --color-text-muted: var(--ds-text-muted);
+    --color-text-inverse: var(--ds-text-on-accent);
+
+    --color-border: var(--ds-border);
+    --color-border-soft: var(--ds-border-soft);
+    --color-border-focus: var(--ds-border-strong);
+    --color-blue-soft: var(--ds-surface-muted);
+    --color-blue-line: var(--ds-border-soft);
+    --color-link: var(--ds-link);
+    --color-warning-text: var(--ds-warning-text);
+    --color-warning-border: var(--ds-warning-border);
+
+    --color-accent-primary: var(--ds-accent);
+    --color-accent-success: var(--ds-success);
+    --color-accent-warning: var(--ds-warning);
+    --color-metric-fp: var(--ds-metric-fp);
+    --color-metric-pac: var(--ds-metric-pac);
+    --color-metric-mix: var(--ds-metric-mix);
+    --color-metric-breakeven: var(--ds-metric-extra);
+
+    --shadow-sm: var(--ds-shadow-sm);
+    --shadow-md: var(--ds-shadow-md);
+    --shadow-lg: var(--ds-shadow-lg);
+}
+
+html[data-theme="dark"] {
+    color-scheme: dark;
+
+    --ds-page: #0f1513;
+    --ds-page-top: #14211c;
+    --ds-header: #111815;
+    --ds-surface: #171f1c;
+    --ds-surface-raised: #101815;
+    --ds-surface-panel: #131b18;
+    --ds-surface-muted: #1c2b26;
+    --ds-surface-selected: #13251b;
+    --ds-surface-warning: #2a2013;
+    --ds-overlay: rgb(2 6 5 / 0.72);
+
+    --ds-text: #edf5ef;
+    --ds-text-soft: #b8c7bf;
+    --ds-text-muted: #8fa099;
+    --ds-text-on-accent: #07110f;
+
+    --ds-border: #33413b;
+    --ds-border-soft: #26332e;
+    --ds-border-strong: #2dd4bf;
+
+    --ds-accent: #2dd4bf;
+    --ds-accent-hover: #5eead4;
+    --ds-success: #4ade80;
+    --ds-warning: #f59e0b;
+    --ds-warning-text: #f2c57c;
+    --ds-warning-border: #7c4b1d;
+    --ds-link: #8bbcff;
+
+    --ds-metric-fp: #60a5fa;
+    --ds-metric-pac: #f59e0b;
+    --ds-metric-mix: #2dd4bf;
+    --ds-metric-extra: #a78bfa;
+
+    --ds-hero: linear-gradient(120deg, #17231f 0%, #13201b 46%, #10251d 100%);
+    --ds-focus-ring: 0 0 0 3px rgb(45 212 191 / 0.18);
+    --ds-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.32);
+    --ds-shadow-md: 0 10px 28px rgb(0 0 0 / 0.34);
+    --ds-shadow-lg: 0 24px 70px rgb(0 0 0 / 0.48);
+}
+
+body {
+    background:
+        linear-gradient(180deg, var(--ds-page-top) 0, var(--ds-page) 260px),
+        var(--ds-page);
+    color: var(--ds-text);
+}
+
+a {
+    color: var(--ds-link);
+}
+
+header {
+    background: var(--ds-header);
+    border-bottom-color: var(--ds-border-soft);
+}
+
+.logo h1 {
+    color: var(--ds-text);
+}
+
+html[data-theme="dark"] .logo h1 {
+    color: var(--ds-text);
+}
+
+.tab {
+    color: var(--ds-text-soft);
+}
+
+.tab.active,
+.tab:hover {
+    color: var(--ds-accent);
+    border-bottom-color: var(--ds-accent);
+}
+
+.theme-toggle {
+    background: var(--ds-surface);
+    border-color: var(--ds-border-soft);
+    color: var(--ds-text-soft);
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+    background: var(--ds-surface-muted);
+    border-color: var(--ds-border-strong);
+    color: var(--ds-accent);
+}
+
+.intro-section,
+.docs-index {
+    background: var(--ds-hero);
+    border-color: var(--ds-border-soft);
+    border-radius: var(--ds-radius-lg);
+    box-shadow: var(--ds-shadow-sm);
+}
+
+.workspace-section,
+.config-workspace,
+.results-section,
+.chart-section,
+.annual-explorer-section,
+.docs-collapsible,
+.guided-dialog,
+.help-modal-content {
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-border-soft);
+    border-radius: var(--ds-radius-md);
+    box-shadow: var(--ds-shadow-sm);
+}
+
+.results-workspace {
+    padding: 1.1rem;
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-border-soft);
+    border-radius: var(--ds-radius-md);
+    box-shadow: var(--ds-shadow-sm);
+}
+
+.config-workspace #input-form,
+.results-body,
+.chart-content,
+.table-container,
+.guided-dialog .guided-body.control-shell,
+.guided-dialog .guided-footer,
+.docs-section h2.docs-collapsible-title {
+    background: var(--ds-surface-panel);
+    border-color: var(--ds-border-soft);
+}
+
+.results-body {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.section-heading,
+.results-title,
+.chart-title,
+#config-title,
+#toggle-results,
+#annual-explorer-title,
+#toggle-chart {
+    color: var(--ds-text);
+    background: transparent;
+    border-color: var(--ds-border-soft);
+}
+
+.param-card,
+.control-subgroup,
+.result-decision-panel,
+.metric-card,
+.results-workspace .metric-card,
+.results-workspace .metric-card.best,
+.result-explanation-card,
+.year-answer-card,
+.annual-input,
+.calc-step,
+.mini-metric,
+.guided-dialog .guided-note .help-entry,
+.docs-comparison-card,
+.docs-info-card,
+.docs-scenario-card,
+.docs-fund-card,
+.docs-source-item,
+.docs-definition-list > div,
+.warning-item,
+.autocomplete-results {
+    background: var(--ds-surface-raised);
+    border: 1px solid var(--ds-border-soft);
+    border-radius: var(--ds-radius-md);
+    box-shadow: none;
+}
+
+.param-card .card-header,
+.control-shell .unit,
+.control-shell .toggle-label,
+.control-shell .variation-toggle,
+.control-shell .local-tax-mode-toggle,
+.control-shell .segmented-control,
+.control-shell .binary-toggle-state,
+.guided-dialog .guided-header,
+.guided-dialog .guided-progress,
+.guided-dialog .variation-grid,
+.guided-dialog #guided-minimum-wage-fields,
+.help-modal-header,
+.help-modal-text,
+.step-formula,
+th,
+.results-section th,
+.explorer-strategy-select button {
+    background: var(--ds-surface-muted);
+    border-color: var(--ds-border-soft);
+}
+
+.result-explanation,
+.result-explanation-header,
+.decision-subsection,
+.docs-section,
+.local-tax-panel,
+.guided-dialog .guided-step.active {
+    background: transparent;
+}
+
+.form-control,
+.computed-output,
+.control-shell .control-field,
+.control-shell .form-control,
+.control-shell .computed-output,
+.param-card .form-control,
+.param-card .computed-output,
+.guided-dialog .form-control,
+.guided-dialog input,
+.guided-dialog select,
+.year-select .form-control {
+    background: var(--ds-surface-raised);
+    border-color: var(--ds-border);
+    color: var(--ds-text);
+}
+
+.form-control:focus,
+.control-shell .form-control:focus,
+.guided-dialog .form-control:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--ds-border-strong);
+    box-shadow: var(--ds-focus-ring);
+}
+
+.form-control:disabled,
+.control-shell .form-control:disabled,
+.control-shell .metric-input:disabled,
+.param-card .form-control:disabled,
+.param-card .computed-output[aria-disabled="true"] {
+    background: var(--ds-surface-panel);
+    color: var(--ds-text-muted);
+}
+
+.control-shell label,
+.control-shell .control-label,
+.param-card .form-group label,
+.param-card .control-section-heading,
+.param-card .local-tax-title,
+.control-subgroup-title strong,
+.param-card .card-header h3,
+.section-heading h2,
+.section-heading h3,
+.docs-index strong,
+.docs-section h2.docs-collapsible-title,
+.guided-dialog .guided-step-head h3,
+.metric-value,
+.result-best-value,
+.result-sequence-value,
+.result-explanation-value,
+.year-answer-card strong,
+.annual-input strong,
+.step-row strong,
+td:first-child {
+    color: var(--ds-text);
+}
+
+.intro-copy p,
+.section-heading p:not(.section-kicker),
+.control-shell .unit,
+.control-shell .card-header p,
+.control-shell .card-header > span,
+.control-shell .mini-metric span,
+.control-shell .mini-metric p,
+.metric-label,
+.metric-subtitle,
+.result-explanation-label,
+.result-explanation-detail,
+.result-decision-main p,
+.result-decision-side p,
+.year-answer-card p,
+.annual-input p,
+.calc-step p,
+.guided-dialog .variation-header > span,
+.guided-dialog .guided-step-head p,
+td,
+.results-section td {
+    color: var(--ds-text-soft);
+}
+
+.btn-primary,
+.intro-primary,
+#guided-next,
+#guided-finish,
+.docs-index a,
+.go-to-top,
+.go-to-top:visited,
+.control-shell .variation-toggle label:has(input:checked),
+.control-shell .local-tax-mode-button.active,
+.control-shell .segmented-control button.active,
+.control-shell .binary-toggle input[type="checkbox"]:not(:checked) ~ .binary-toggle-state span:first-child,
+.control-shell .binary-toggle input[type="checkbox"]:checked ~ .binary-toggle-state span:last-child,
+.param-card .local-tax-mode-button.active,
+.explorer-strategy-select button.active {
+    background: var(--ds-accent);
+    border-color: var(--ds-accent);
+    color: var(--ds-text-on-accent);
+}
+
+.btn-primary i,
+.intro-primary i,
+.go-to-top i {
+    color: var(--ds-text-on-accent);
+}
+
+.btn-primary:hover,
+.intro-primary:hover,
+#guided-next:hover,
+#guided-finish:hover,
+.docs-index a:hover,
+.go-to-top:hover,
+.go-to-top:focus-visible {
+    background: var(--ds-accent-hover);
+    border-color: var(--ds-accent-hover);
+    color: var(--ds-text-on-accent);
+}
+
+.control-shell .segmented-control button,
+.control-shell .variation-toggle label,
+.control-shell .local-tax-mode-button,
+.control-shell .binary-toggle-state span,
+.explorer-strategy-select button {
+    color: var(--ds-text-soft);
+}
+
+.control-shell .mini-metric.output,
+.year-answer-card.main,
+.results-workspace [data-strategy].strategy-active,
+[data-strategy].strategy-active,
+.results-section tr:hover td,
+.results-section tr:hover td:first-child,
+.results-section tr.active td,
+.results-section tr.active td:first-child {
+    background: var(--ds-surface-selected);
+    border-color: var(--ds-border-strong);
+}
+
+.metric-card.metric-fp {
+    border-top-color: var(--ds-metric-fp);
+}
+
+.metric-card.metric-pac {
+    border-top-color: var(--ds-metric-pac);
+}
+
+.metric-card.metric-mix,
+.result-decision-panel {
+    border-top-color: var(--ds-metric-mix);
+}
+
+.result-explanation-card i,
+.help-trigger,
+.section-kicker,
+.decision-eyebrow,
+.guided-dialog .guided-eyebrow {
+    color: var(--ds-accent);
+}
+
+.help-trigger::after {
+    background: color-mix(in srgb, var(--ds-accent) 72%, transparent);
+    color: var(--ds-text-on-accent);
+}
+
+.help-trigger:hover::after {
+    background: var(--ds-accent);
+}
+
+.control-shell > .input-warnings .input-warning {
+    background: var(--ds-surface-warning);
+    border-color: var(--ds-warning-border);
+    color: var(--ds-warning-text);
+}
+
+.control-shell > .input-warnings .input-warning i {
+    color: var(--ds-warning);
+}
+
+table,
+th,
+td {
+    border-color: var(--ds-border-soft);
+}
+
+th,
+.results-section th {
+    color: var(--ds-text);
+}
+
+td,
+.results-section td {
+    background: var(--ds-surface);
+}
+
+.guided-backdrop,
+.help-modal-backdrop {
+    background: var(--ds-overlay);
+}
+
+/* Result composition: the result workspace is already the containing card.
+   Keep inner gaps neutral and avoid single-strategy color strips. */
+.results-workspace .results-body,
+.results-workspace .decision-subsection,
+.results-workspace .result-explanation {
+    background: transparent;
+}
+
+.results-workspace .metric-card,
+.results-workspace .metric-card.metric-fp,
+.results-workspace .metric-card.metric-pac,
+.results-workspace .metric-card.metric-mix,
+.results-workspace .metric-card.best {
+    border: 1px solid var(--ds-border-soft);
+}
+
+.results-workspace .result-decision-panel,
+.results-workspace [data-strategy].strategy-active,
+[data-strategy].strategy-active {
+    outline: 0;
+    border: 1px solid var(--ds-border-strong);
+    box-shadow: none;
+}
+
+.results-workspace [data-strategy]:not(.strategy-active) {
+    outline: 0;
+    border-color: var(--ds-border-soft);
+}
+
+html[data-theme="dark"] .results-workspace [data-strategy]:not(.strategy-active) {
+    background: var(--ds-surface-raised);
+    border-color: color-mix(in srgb, var(--ds-border-soft) 78%, transparent);
+}
+
+html[data-theme="dark"] .results-workspace [data-strategy].strategy-active {
+    background: var(--ds-surface-selected);
+    border-color: var(--ds-accent);
+}
+
+/* Toggle headers: macro and micro section openers should not introduce a
+   separate strip. The card/content surface below defines the visual area. */
+.results-title,
+.chart-title,
+#config-title,
+#toggle-results,
+#annual-explorer-title,
+#toggle-chart,
+.param-card .card-header,
+.docs-section h2.docs-collapsible-title,
+.guided-dialog .guided-header,
+.help-modal-header,
+.variation-header,
+.control-subgroup-title {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.param-card .card-header,
+.docs-section h2.docs-collapsible-title,
+.guided-dialog .guided-header,
+.help-modal-header {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.docs-section h2.docs-collapsible-title {
+    margin-bottom: 0.9rem;
+    padding-top: 0;
+}
+
+.docs-collapsible.collapsed .docs-collapsible-title {
+    margin-bottom: 0;
+}
+
+.control-shell .variation-grid[open] > .variation-header,
+.guided-dialog .variation-grid[open] > .variation-header {
+    border-bottom: 1px solid var(--ds-border-soft);
+}
+
+/* Control panel: the outer card owns the surface. The form/grid between
+   cards must not add a tinted filler background. */
+.config-workspace #input-form,
+.control-shell,
+.control-shell .params-grid {
+    background: transparent;
+}
+
+/* Tables: header and selected row need visible separation in both themes. */
+.table-container table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.results-section thead th,
+th {
+    background: var(--ds-surface);
+    border-bottom: 1px solid var(--ds-border-soft);
+}
+
+.results-section tbody td,
+td {
+    border-bottom: 1px solid var(--ds-border-soft);
+}
+
+.results-section tbody tr.active td,
+.results-section tbody tr.active td:first-child {
+    background: var(--ds-surface-selected);
+    border-bottom-color: transparent;
+}
+
+.results-section tbody tr:hover td,
+.results-section tbody tr:hover td:first-child {
+    background: var(--ds-surface-selected);
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+}
+
+html[data-theme="dark"] .results-section tbody tr.active td,
+html[data-theme="dark"] .results-section tbody tr.active td:first-child {
+    background: var(--ds-surface-selected);
+}
+
+.chart-section .chart-content {
+    background: transparent;
+    border-color: transparent;
+}
+
+.chart-section .chart-container {
+    background: var(--ds-surface-raised);
+    border-color: var(--ds-border-soft);
+}
+
+/* Documentation composition
+   One rule for content blocks inside guide cards: the section card is the
+   primary surface, every nested reusable block uses the secondary surface. */
+.docs-collapsible-content {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.docs-collapsible-content > * {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.docs-collapsible-content > h3 {
+    margin-top: 0.8rem;
+}
+
+.docs-comparison-grid,
+.docs-info-grid,
+.docs-scenario-grid,
+.docs-fund-grid,
+.docs-source-list,
+.docs-definition-list {
+    margin: 0.25rem 0;
+}
+
+.docs-comparison-card,
+.docs-info-card,
+.docs-scenario-card,
+.docs-fund-card,
+.docs-source-item,
+.docs-definition-list > div,
+.docs-section pre,
+.docs-section .highlight {
+    background: var(--ds-surface-panel);
+    border: 1px solid var(--ds-border-soft);
+    border-radius: var(--ds-radius-md);
+    box-shadow: none;
+}
+
+.docs-section pre,
+.docs-section .highlight {
+    margin: 0.25rem 0;
+}
+
+.docs-section .highlight {
+    border-left: 3px solid var(--ds-accent);
+}
+
+.docs-section pre {
+    color: var(--ds-text);
+}
+
+.step-formula {
+    color: var(--ds-text);
+}
+
+.docs-info-card h4,
+.docs-comparison-card h4,
+.docs-scenario-card h4,
+.docs-fund-card h4,
+.docs-source-item h4 {
+    color: var(--ds-text);
+}
+
+.docs-info-card p,
+.docs-fund-card p,
+.docs-source-item p,
+.docs-section .highlight,
+.docs-section pre,
+.step-formula {
+    color: var(--ds-text-soft);
+}
+
+.docs-section .highlight strong {
+    color: var(--ds-text);
+}
+
+.docs-collapsible-content > small,
+.docs-collapsible-content p small,
+.docs-section small {
+    color: var(--ds-text-muted);
+}
+
+/* Theme toggle: self-contained icon, no icon-font dependency. */
+.theme-toggle {
+    width: 2.35rem;
+    height: 2.35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    border: 1px solid var(--ds-border-soft);
+    background: var(--ds-surface);
+    color: var(--ds-text-soft);
+    line-height: 1;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+    background: var(--ds-surface-muted);
+    border-color: var(--ds-border-strong);
+    color: var(--ds-accent);
+}
+
+.theme-toggle-icon {
+    position: relative;
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 999px;
+    color: currentColor;
+    box-shadow: inset -0.34rem -0.12rem 0 0 currentColor;
+    transition: var(--transition);
+}
+
+html[data-theme="dark"] .theme-toggle-icon {
+    border: 2px solid currentColor;
+    box-shadow: none;
+}
+
+html[data-theme="dark"] .theme-toggle-icon::before {
+    content: "";
+    position: absolute;
+    inset: -0.42rem;
+    border-radius: 999px;
+    box-shadow:
+        0 -0.5rem 0 -0.32rem currentColor,
+        0 0.5rem 0 -0.32rem currentColor,
+        0.5rem 0 0 -0.32rem currentColor,
+        -0.5rem 0 0 -0.32rem currentColor,
+        0.36rem 0.36rem 0 -0.34rem currentColor,
+        -0.36rem 0.36rem 0 -0.34rem currentColor,
+        0.36rem -0.36rem 0 -0.34rem currentColor,
+        -0.36rem -0.36rem 0 -0.34rem currentColor;
+}
