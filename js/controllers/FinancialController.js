@@ -80,6 +80,7 @@ export class FinancialController {
         this.updateResults();
       });
       form.addEventListener('change', () => this.updateResults());
+      window.addEventListener('strategia-theme-change', () => this.updateResults());
 
       const guidedDialog = document.querySelector('#guided-modal .guided-dialog');
       guidedDialog.addEventListener('input', (event) => {
