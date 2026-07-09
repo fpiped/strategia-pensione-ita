@@ -141,7 +141,9 @@ function setupTabs() {
     const STORAGE_KEY = 'strategia-pensione-active-tab';
 
     const clearHash = () => {
-        if (window.location.hash) {
+        // Il fragment #s= trasporta uno scenario condiviso: lo legge (e poi
+        // lo rimuove) il controller, non va toccato dalla navigazione a tab.
+        if (window.location.hash && !window.location.hash.startsWith('#s=')) {
             history.replaceState(null, '', window.location.pathname + window.location.search);
         }
     };

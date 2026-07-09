@@ -7502,3 +7502,61 @@ html[data-theme="dark"] #toggle-chart,
 html[data-theme="dark"] .docs-section h2.docs-collapsible-title {
     background: transparent;
 }
+
+/* =========================================================
+   Condivisione e ripristino scenario
+   ========================================================= */
+
+.workspace-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.85rem;
+}
+
+.workspace-header .results-title {
+    margin: 0;
+}
+
+.btn-compact {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+}
+
+/* Secondo bottone dell'intro: stessa larghezza del primario, più leggero. */
+.intro-actions .intro-secondary {
+    min-height: 2.6rem;
+    border-radius: 8px;
+}
+
+.intro-actions .intro-primary,
+.intro-actions .intro-secondary {
+    justify-content: center;
+}
+
+/* La traccia implicita si stringerebbe al contenuto: i bottoni riempiono
+   sempre il contenitore (17rem su desktop, tutta la card su mobile). */
+.intro-actions {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (max-width: 980px) {
+    .intro-actions {
+        width: 100%;
+    }
+}
+
+/* Il tema scuro ridefinisce solo il primario: qui il secondario. */
+html[data-theme="dark"] .btn-secondary {
+    color: var(--color-accent-primary);
+    background: var(--color-bg-subtle);
+    border-color: var(--color-blue-line);
+}
+
+html[data-theme="dark"] .btn-secondary:hover {
+    color: var(--color-text-primary);
+    background: var(--color-blue-soft);
+    border-color: var(--color-border);
+}
