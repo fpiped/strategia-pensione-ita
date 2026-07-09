@@ -800,9 +800,9 @@ export class FinancialController {
       const quotaMinima = Math.max((base || 0) * (config.quotaMinAderentePerc || 0), 0);
 
       setText(['fp-quota-aderente-display', 'guided-quota-aderente-display'], money(quotaMinima));
-      setText(['fp-quota-datore-display', 'guided-quota-datore-display'], money(row.Datore || 0));
+      setText(['fp-quota-datore-display', 'guided-quota-datore-display'], money(row.quotaDatore || 0));
 
-      const extra = Math.max((row['FP Cons'] || 0) - quotaMinima, 0);
+      const extra = Math.max((row.quotaFpConsigliata || 0) - quotaMinima, 0);
       const extraPerc = base > 0 ? (extra / base) * 100 : 0;
       setText(['fp-extra-quota-display', 'guided-fp-extra-quota-display'],
         `${money(extra)} · ${extraPerc.toLocaleString('it-IT', {
@@ -811,7 +811,7 @@ export class FinancialController {
         })}%`);
 
       // Positivo: conviene l'extra in busta; negativo: meglio il bonifico.
-      const diff = Math.round(row['Diff Busta'] || 0);
+      const diff = Math.round(row.diffBustaBonifico || 0);
       setText(['fp-split-diff-display', 'guided-fp-split-diff-display'],
         `${diff > 0 ? '+' : ''}${diff.toLocaleString('it-IT')} €`);
       const note = diff > 0
@@ -834,7 +834,7 @@ export class FinancialController {
         config.variazioneInvestimentoFrequenza,
         config.variazioneInvestimentoValore
       );
-      const risparmioFiscale = firstYear.Risparmio || 0;
+      const risparmioFiscale = firstYear.risparmioFiscale || 0;
 
       const equivalentCard = byId('investment-year1-equivalent-card');
       if (equivalentCard) equivalentCard.hidden = false;
