@@ -1,6 +1,31 @@
-import { MUNICIPAL_TAX_2026, REGIONAL_TAX_2026 } from '../constants/local-tax-data.js';
+import { REGIONAL_TAX_2026 } from '../constants/regional-tax-data.js';
 
 const IRPEF_BRACKET_LIMITS = [15000, 28000, 50000, Infinity];
+
+// I dati comunali (~700 KB) si caricano on demand: prima del load le
+// funzioni sui comuni rispondono "nessun risultato" e chi ha richiesto
+// il caricamento riallinea la UI alla risoluzione della promise.
+let MUNICIPAL_TAX_2026 = [];
+let municipalTaxDataPromise = null;
+
+export function loadMunicipalTaxData() {
+  if (!municipalTaxDataPromise) {
+    municipalTaxDataPromise = import('../constants/local-tax-data.js')
+      .then((module) => {
+        MUNICIPAL_TAX_2026 = module.MUNICIPAL_TAX_2026;
+      })
+      .catch((error) => {
+        // Rete assente o modulo non raggiungibile: si potrà ritentare.
+        municipalTaxDataPromise = null;
+        throw error;
+      });
+  }
+  return municipalTaxDataPromise;
+}
+
+export function isMunicipalTaxDataLoaded() {
+  return MUNICIPAL_TAX_2026.length > 0;
+}
 
 export function findRegionById(regionId) {
   return REGIONAL_TAX_2026.find((region) => region.id === regionId) || null;

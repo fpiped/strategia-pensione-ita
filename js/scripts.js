@@ -33,9 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Card del pannello di controllo apri/chiudi
     document.querySelectorAll('.control-shell .param-card .card-header').forEach(function(header) {
-        header.addEventListener('click', function() {
-            header.closest('.param-card').classList.toggle('collapsed');
-        });
+        makeHeadingToggle(header.querySelector('h3'), header.closest('.param-card'), header);
     });
 
     // Inizializza tooltip mobile
@@ -43,16 +41,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function setupSiteIcons() {
-    window.renderSiteIcons = function renderSiteIcons() {
-        if (!window.lucide || typeof window.lucide.createIcons !== 'function') return;
-        window.lucide.createIcons({
-            attrs: {
-                'stroke-width': 2,
-                'aria-hidden': 'true'
-            }
-        });
-    };
-    window.renderSiteIcons();
+    // window.renderSiteIcons è definita in js/icons.js (SVG inline).
+    if (window.renderSiteIcons) window.renderSiteIcons();
 }
 
 function setupThemeToggle() {
@@ -73,14 +63,57 @@ function setupThemeToggle() {
 
     toggle.addEventListener('click', () => {
         const nextTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        applyTheme(nextTheme);
+        const applyAndNotify = () => {
+            applyTheme(nextTheme);
+            try {
+                localStorage.setItem(STORAGE_KEY, nextTheme);
+            } catch (error) {
+                // Storage non disponibile (es. navigazione privata): il tema resta solo per la sessione.
+            }
+            // Il controller ridisegna grafico e risultati in sincrono su
+            // questo evento: dentro la callback finisce nel crossfade.
+            window.dispatchEvent(new CustomEvent('strategia-theme-change', { detail: { theme: nextTheme } }));
+        };
 
-        try {
-            localStorage.setItem(STORAGE_KEY, nextTheme);
-        } catch (error) {
-            // Storage non disponibile (es. navigazione privata): il tema resta solo per la sessione.
+        // Cambio tema con crossfade unico dell'intera pagina (View
+        // Transitions) invece della ricolorazione a pezzi elemento per
+        // elemento; senza supporto o con movimento ridotto, cambio secco.
+        const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (typeof document.startViewTransition === 'function' && !reduceMotion) {
+            document.documentElement.setAttribute('data-theme-switching', '');
+            const transition = document.startViewTransition(applyAndNotify);
+            transition.finished.finally(() => {
+                document.documentElement.removeAttribute('data-theme-switching');
+            });
+        } else {
+            applyAndNotify();
         }
-        window.dispatchEvent(new CustomEvent('strategia-theme-change', { detail: { theme: nextTheme } }));
+    });
+}
+
+/**
+ * Rende un titolo-barra apri/chiudi usabile anche da tastiera e screen
+ * reader: sposta il contenuto del titolo dentro un vero <button> con
+ * aria-expanded. Il listener sta su clickArea (l'intera barra), dove
+ * arriva per bubbling anche il click sintetico di Enter/Spazio sul button.
+ */
+function makeHeadingToggle(heading, target, clickArea) {
+    if (!heading || !target) return;
+    const area = clickArea || heading;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'heading-toggle';
+    while (heading.firstChild) button.appendChild(heading.firstChild);
+    heading.appendChild(button);
+
+    const syncExpanded = () => {
+        button.setAttribute('aria-expanded', String(!target.classList.contains('collapsed')));
+    };
+    syncExpanded();
+
+    area.addEventListener('click', function() {
+        target.classList.toggle('collapsed');
+        syncExpanded();
     });
 }
 
@@ -90,13 +123,7 @@ function setupThemeToggle() {
  */
 function setupConfigToggle() {
     const toggleConfig = document.getElementById('config-title');
-    const configSection = toggleConfig?.closest('.config-workspace');
-
-    if (!toggleConfig || !configSection) return;
-
-    toggleConfig.addEventListener('click', function() {
-        configSection.classList.toggle('collapsed');
-    });
+    makeHeadingToggle(toggleConfig, toggleConfig?.closest('.config-workspace'));
 }
 
 /**
@@ -105,32 +132,15 @@ function setupConfigToggle() {
 function setupResultsToggle() {
     // Toggle tabella
     const toggleResults = document.getElementById('toggle-results');
-    const resultsSection = toggleResults?.closest('.results-section');
+    makeHeadingToggle(toggleResults, toggleResults?.closest('.results-section'));
 
-    if (toggleResults && resultsSection) {
-        toggleResults.addEventListener('click', function() {
-            resultsSection.classList.toggle('collapsed');
-        });
-    }
+    // Toggle esploratore annuale
+    const toggleExplorer = document.getElementById('annual-explorer-title');
+    makeHeadingToggle(toggleExplorer, toggleExplorer?.closest('.annual-explorer-section'));
 
     // Toggle grafico
-    const toggleExplorer = document.getElementById('annual-explorer-title');
-    const explorerSection = toggleExplorer?.closest('.annual-explorer-section');
-
-    if (toggleExplorer && explorerSection) {
-        toggleExplorer.addEventListener('click', function() {
-            explorerSection.classList.toggle('collapsed');
-        });
-    }
-
     const toggleChart = document.getElementById('toggle-chart');
-    const chartSection = toggleChart?.closest('.chart-section');
-
-    if (toggleChart && chartSection) {
-        toggleChart.addEventListener('click', function() {
-            chartSection.classList.toggle('collapsed');
-        });
-    }
+    makeHeadingToggle(toggleChart, toggleChart?.closest('.chart-section'));
 }
 
 /**
@@ -154,8 +164,12 @@ function setupTabs() {
         const content = document.getElementById(`${tabId}-content`);
         if (!tab || !content) return;
 
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => {
+            t.classList.remove('active');
+            t.removeAttribute('aria-current');
+        });
         tab.classList.add('active');
+        tab.setAttribute('aria-current', 'true');
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         content.classList.add('active');
     };
@@ -199,11 +213,9 @@ function setupTabs() {
  */
 function setupDocsSections() {
     // Le sezioni sono già incapsulate staticamente nel markup: qui si
-    // agganciano solo i toggle (niente ristrutturazione del DOM al load).
+    // agganciano solo i toggle.
     document.querySelectorAll('.docs-collapsible > .docs-collapsible-title').forEach((title) => {
-        title.addEventListener('click', () => {
-            title.closest('.docs-collapsible').classList.toggle('collapsed');
-        });
+        makeHeadingToggle(title, title.closest('.docs-collapsible'));
     });
 
     // I link dell'indice riaprono la sezione e scrollano via JS,

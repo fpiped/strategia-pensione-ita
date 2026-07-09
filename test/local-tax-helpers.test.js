@@ -5,8 +5,12 @@ import {
   calculateLocalTaxRate,
   findMunicipalityByCode,
   findRegionByProvince,
+  loadMunicipalTaxData,
   searchMunicipalities
 } from '../js/utils/local-tax-helpers.js';
+
+// I dati comunali sono lazy: nei test vanno caricati prima di tutto.
+await loadMunicipalTaxData();
 
 test('forza la regione dalla provincia del comune selezionato', () => {
   const result = calculateLocalTaxRate({

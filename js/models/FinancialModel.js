@@ -261,10 +261,10 @@ export class FinancialModel {
         if (isNetSacrifice) {
           const netSacrificeBudget = Math.max(ctx.budgetBase - risparmioFpAnnoEffettivo, 0);
           pacContributoAnno = netSacrificeBudget;
-          recommendedAllocation = this._optimizeNetSacrificeAllocation({
+          recommendedAllocation = this._optimizeAllocation({
             ...optimizerInputs,
             netBudget: netSacrificeBudget,
-            grossReferenceBudget: ctx.budgetBase
+            grossBudget: ctx.budgetBase
           });
           mixQuote = {
             quotaEntroDedAnno: recommendedAllocation.quotaFp,
@@ -279,9 +279,9 @@ export class FinancialModel {
         } else {
           const recommendedBudget = ctx.budgetBase + (reinvestiRisparmio ? recommendedPlan.risparmioDaReinvestire : 0);
           pacContributoAnno = ctx.budgetBase;
-          recommendedAllocation = this._optimizeRecommendedAllocation({
+          recommendedAllocation = this._optimizeAllocation({
             ...optimizerInputs,
-            budget: recommendedBudget
+            grossBudget: recommendedBudget
           });
           const recommendedCapacity = this._splitBudget(recommendedBudget, ctx.quotaMinAderente, ctx.quotaDatorePotenziale);
           const pacCapacity = this._splitBudget(ctx.budgetBase, ctx.quotaMinAderente, ctx.quotaDatorePotenziale);
@@ -521,8 +521,16 @@ export class FinancialModel {
       return splitBudget(budget, quotaMinAderente, quotaDatorePotenziale);
     }
 
-    _optimizeRecommendedAllocation({
-      budget,
+    /**
+     * Cerca la quota FP (candidati euro per euro fino al limite deducibile)
+     * che massimizza il totale netto a scadenza. Copre entrambi i confronti:
+     * a parità di budget lordo (netBudget assente) e a parità di sacrificio
+     * netto (netBudget presente), che differiscono solo nel budget PAC
+     * residuo e nel trattamento del risparmio fiscale.
+     */
+    _optimizeAllocation({
+      grossBudget,
+      netBudget = null,
       quotaMinAderente,
       quotaDatorePotenziale,
       reddito,
@@ -541,7 +549,8 @@ export class FinancialModel {
       anniResidui,
       tassazioneFP
     }) {
-      if (budget <= 0) {
+      const isNetSacrifice = netBudget !== null;
+      if (grossBudget <= 0) {
         return {
           quotaFp: 0,
           quotaPac: 0,
@@ -554,9 +563,9 @@ export class FinancialModel {
       }
 
       const candidates = new Set([0]);
-      const maxWithoutEmployer = Math.min(budget, this._getAvailableDeductionLimit(0));
+      const maxWithoutEmployer = Math.min(grossBudget, this._getAvailableDeductionLimit(0));
       const maxWithEmployer = Math.min(
-        budget,
+        grossBudget,
         this._getAvailableDeductionLimit(quotaDatorePotenziale)
       );
 
@@ -565,7 +574,15 @@ export class FinancialModel {
       }
       candidates.add(maxWithoutEmployer);
       candidates.add(maxWithEmployer);
-      candidates.add(Math.min(quotaMinAderente, budget));
+      candidates.add(Math.min(quotaMinAderente, grossBudget));
+
+      // Il montante a scadenza di un contributo singolo è lineare nel
+      // contributo: il fattore di capitalizzazione si calcola una volta sola
+      // invece di rifare il loop sugli anni residui per ognuno dei
+      // (potenziali) ~5.300 candidati.
+      const fpFactor = this._projectFpContribution(1, rFP, anniResidui, fpGrowthOptions);
+      const pacFactor = this._projectPacContribution(1, rPAC, anniResidui, pacGrowthOptions);
+      const limiteDeduzioneTotale = this._getTotalDeductionLimit();
 
       let best = null;
 
@@ -574,9 +591,8 @@ export class FinancialModel {
         const quotaDatore = quotaFp >= quotaMinAderente ? quotaDatorePotenziale : 0;
         const limiteDeduzione = this._getAvailableDeductionLimit(quotaDatore);
 
-        if (quotaFp > budget || quotaFp > limiteDeduzione) continue;
+        if (quotaFp > grossBudget || quotaFp > limiteDeduzione) continue;
 
-        const quotaPac = budget - quotaFp;
         const paymentSplit = this._chooseBestPaymentSplit({
           quotaFp,
           quotaDatore,
@@ -589,14 +605,23 @@ export class FinancialModel {
           aliquotaIvsAggiuntivaPerc,
           addizionaliPerc,
           ulterioriDetrazioni,
-          limiteDeduzioneTotale: this._getTotalDeductionLimit()
+          limiteDeduzioneTotale
         });
         const risparmio = paymentSplit.risparmio;
+        const quotaPacGrezza = isNetSacrifice
+          ? netBudget - quotaFp + risparmio
+          : grossBudget - quotaFp;
+
+        if (isNetSacrifice && quotaPacGrezza < -0.01) continue;
+
+        const quotaPac = Math.max(quotaPacGrezza, 0);
         const fpContributo = quotaFp + quotaDatore;
-        const fpMontante = this._projectFpContribution(fpContributo, rFP, anniResidui, fpGrowthOptions);
-        const fpNetto = fpMontante - (fpContributo * tassazioneFP) + risparmio;
-        const pacMontante = this._projectPacContribution(quotaPac, rPAC, anniResidui, pacGrowthOptions);
-        const pacNetto = this._calculatePacExit(pacMontante, quotaPac, pacExitOptions);
+        // A parità di budget lordo il risparmio fiscale rientra nell'exit FP;
+        // a parità di sacrificio netto è già dentro il budget PAC residuo.
+        const fpNetto = (fpContributo * fpFactor)
+          - (fpContributo * tassazioneFP)
+          + (isNetSacrifice ? 0 : risparmio);
+        const pacNetto = this._calculatePacExit(quotaPac * pacFactor, quotaPac, pacExitOptions);
         const totaleNetto = fpNetto + pacNetto;
 
         if (!best || totaleNetto > best.totaleNetto) {
@@ -604,114 +629,10 @@ export class FinancialModel {
         }
       }
 
-      const scelta = best.quotaFp <= 0
-        ? 'PAC'
-        : best.quotaPac <= 0
-          ? 'FP'
-          : 'MIX';
-
-      return { ...best, scelta };
-    }
-
-    _optimizeNetSacrificeAllocation({
-      netBudget,
-      grossReferenceBudget,
-      quotaMinAderente,
-      quotaDatorePotenziale,
-      reddito,
-      contributiInpsPerc,
-      massimaleContributivoInps,
-      sogliaIvsAggiuntivo,
-      aliquotaIvsAggiuntivaPerc,
-      addizionaliPerc,
-      ulterioriDetrazioni,
-      modalitaVersamentoFp,
-      rFP,
-      rPAC,
-      fpGrowthOptions = {},
-      pacGrowthOptions = {},
-      pacExitOptions = {},
-      anniResidui,
-      tassazioneFP
-    }) {
-      if (grossReferenceBudget <= 0) {
-        return {
-          quotaFp: 0,
-          quotaPac: 0,
-          quotaDatore: 0,
-          risparmio: 0,
-          quotaBusta: 0,
-          quotaBonifico: 0,
-          scelta: 'PAC'
-        };
-      }
-
-      const candidates = new Set([0]);
-      const maxWithoutEmployer = Math.min(grossReferenceBudget, this._getAvailableDeductionLimit(0));
-      const maxWithEmployer = Math.min(
-        grossReferenceBudget,
-        this._getAvailableDeductionLimit(quotaDatorePotenziale)
-      );
-
-      for (let amount = 0; amount <= Math.floor(maxWithoutEmployer); amount++) {
-        candidates.add(amount);
-      }
-      candidates.add(maxWithoutEmployer);
-      candidates.add(maxWithEmployer);
-      candidates.add(Math.min(quotaMinAderente, grossReferenceBudget));
-
-      let best = null;
-
-      for (const candidate of candidates) {
-        const quotaFp = Math.max(candidate, 0);
-        const quotaDatore = quotaFp >= quotaMinAderente ? quotaDatorePotenziale : 0;
-        const limiteDeduzione = this._getAvailableDeductionLimit(quotaDatore);
-
-        if (quotaFp > grossReferenceBudget || quotaFp > limiteDeduzione) continue;
-
-        const paymentSplit = this._chooseBestPaymentSplit({
-          quotaFp,
-          quotaDatore,
-          quotaMinAderente,
-          modalitaVersamentoFp,
-          reddito,
-          contributiInpsPerc,
-          massimaleContributivoInps,
-          sogliaIvsAggiuntivo,
-          aliquotaIvsAggiuntivaPerc,
-          addizionaliPerc,
-          ulterioriDetrazioni,
-          limiteDeduzioneTotale: this._getTotalDeductionLimit()
-        });
-        const risparmio = paymentSplit.risparmio;
-        const quotaPac = netBudget - quotaFp + risparmio;
-
-        if (quotaPac < -0.01) continue;
-
-        const quotaPacNormalizzata = Math.max(quotaPac, 0);
-        const fpContributo = quotaFp + quotaDatore;
-        const fpMontante = this._projectFpContribution(fpContributo, rFP, anniResidui, fpGrowthOptions);
-        const fpNetto = fpMontante - (fpContributo * tassazioneFP);
-        const pacMontante = this._projectPacContribution(quotaPacNormalizzata, rPAC, anniResidui, pacGrowthOptions);
-        const pacNetto = this._calculatePacExit(pacMontante, quotaPacNormalizzata, pacExitOptions);
-        const totaleNetto = fpNetto + pacNetto;
-
-        if (!best || totaleNetto > best.totaleNetto) {
-          best = {
-            quotaFp,
-            quotaPac: quotaPacNormalizzata,
-            quotaDatore,
-            risparmio,
-            totaleNetto,
-            ...paymentSplit
-          };
-        }
-      }
-
       if (!best) {
         best = {
           quotaFp: 0,
-          quotaPac: netBudget,
+          quotaPac: isNetSacrifice ? netBudget : grossBudget,
           quotaDatore: 0,
           risparmio: 0,
           totaleNetto: 0,
