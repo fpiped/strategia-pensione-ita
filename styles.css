@@ -50,8 +50,8 @@
     --shadow-lg: 0 18px 50px rgb(23 32 51 / 0.16);
 
     /* Typography */
-    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
 
     /* Spacing */
     --radius-sm: 6px;
@@ -77,6 +77,44 @@
    dello scroll al refresh. Gli scroll fluidi voluti sono in JS. */
 html {
     overflow-x: hidden;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    body,
+    header,
+    button,
+    input,
+    select,
+    textarea,
+    .tab,
+    .intro-section,
+    .workspace-section,
+    .results-workspace,
+    .results-section,
+    .chart-section,
+    .annual-explorer-section,
+    .docs-section,
+    .docs-collapsible,
+    .docs-index,
+    .param-card,
+    .control-subgroup,
+    .control-field,
+    .form-control,
+    .computed-output,
+    .mini-metric,
+    .metric-card,
+    .result-decision-panel,
+    .result-explanation,
+    .result-explanation-card,
+    .table-container,
+    th,
+    td {
+        transition:
+            background-color 160ms ease,
+            border-color 160ms ease,
+            color 160ms ease,
+            box-shadow 160ms ease;
+    }
 }
 
 body {
@@ -363,7 +401,7 @@ header {
     border-radius: var(--radius-md);
 }
 
-.result-explanation-card i {
+.result-explanation-card .icon {
     color: var(--color-accent-primary);
     font-size: 1rem;
     line-height: 1.4;
@@ -1161,7 +1199,7 @@ body.modal-open {
     border-radius: var(--radius-sm);
 }
 
-.input-warning i {
+.input-warning .icon {
     flex: 0 0 auto;
     margin-top: 0.125rem;
 }
@@ -2048,7 +2086,7 @@ td.best-value {
     color: var(--color-accent-warning);
 }
 
-.footer .github-link .fa-star {
+.footer .github-link .icon-star {
     color: var(--color-accent-warning);
 }
 
@@ -2730,7 +2768,7 @@ td.best-value {
     border-top: 1px solid var(--color-border-soft);
 }
 
-.results-workspace .result-explanation-card i {
+.results-workspace .result-explanation-card .icon {
     color: #0f766e;
     margin-top: 0.15rem;
 }
@@ -5157,7 +5195,7 @@ td {
     line-height: 1.4;
 }
 
-.control-shell > .input-warnings .input-warning i {
+.control-shell > .input-warnings .input-warning .icon {
     color: #b45309;
 }
 
@@ -6258,7 +6296,7 @@ html[data-theme="dark"] .go-to-top:visited {
     box-shadow: 0 14px 32px rgb(0 0 0 / 0.42);
 }
 
-html[data-theme="dark"] .go-to-top i {
+html[data-theme="dark"] .go-to-top .icon {
     color: #07110f;
 }
 
@@ -6276,8 +6314,8 @@ html[data-theme="dark"] #guided-finish {
     color: #07110f;
 }
 
-html[data-theme="dark"] .btn-primary i,
-html[data-theme="dark"] .intro-primary i {
+html[data-theme="dark"] .btn-primary .icon,
+html[data-theme="dark"] .intro-primary .icon {
     color: #07110f;
 }
 
@@ -6300,6 +6338,7 @@ html[data-theme="dark"] .intro-primary i {
     --ds-surface-muted: #edf7f3;
     --ds-surface-selected: #eef8f2;
     --ds-surface-warning: #fff7ed;
+    --ds-theme-toggle-hover: #edf7f3;
     --ds-overlay: rgb(15 23 42 / 0.46);
 
     --ds-text: #172033;
@@ -6386,6 +6425,7 @@ html[data-theme="dark"] {
     --ds-surface-muted: #1c2b26;
     --ds-surface-selected: #13251b;
     --ds-surface-warning: #2a2013;
+    --ds-theme-toggle-hover: #2a4a42;
     --ds-overlay: rgb(2 6 5 / 0.72);
 
     --ds-text: #edf5ef;
@@ -6459,8 +6499,8 @@ html[data-theme="dark"] .logo h1 {
 
 .theme-toggle:hover,
 .theme-toggle:focus-visible {
-    background: var(--ds-surface-muted);
-    border-color: var(--ds-border-strong);
+    background: var(--ds-theme-toggle-hover);
+    border-color: var(--ds-border-soft);
     color: var(--ds-accent);
 }
 
@@ -6679,9 +6719,9 @@ td,
     color: var(--ds-text-on-accent);
 }
 
-.btn-primary i,
-.intro-primary i,
-.go-to-top i {
+.btn-primary .icon,
+.intro-primary .icon,
+.go-to-top .icon {
     color: var(--ds-text-on-accent);
 }
 
@@ -6714,7 +6754,7 @@ td,
 .results-section tr.active td,
 .results-section tr.active td:first-child {
     background: var(--ds-surface-selected);
-    border-color: var(--ds-border-strong);
+    border-color: var(--ds-border-soft);
 }
 
 .metric-card.metric-fp {
@@ -6730,7 +6770,7 @@ td,
     border-top-color: var(--ds-metric-mix);
 }
 
-.result-explanation-card i,
+.result-explanation-card .icon,
 .help-trigger,
 .section-kicker,
 .decision-eyebrow,
@@ -6753,7 +6793,7 @@ td,
     color: var(--ds-warning-text);
 }
 
-.control-shell > .input-warnings .input-warning i {
+.control-shell > .input-warnings .input-warning .icon {
     color: var(--ds-warning);
 }
 
@@ -6798,7 +6838,7 @@ td,
 .results-workspace [data-strategy].strategy-active,
 [data-strategy].strategy-active {
     outline: 0;
-    border: 1px solid var(--ds-border-strong);
+    border: 1px solid var(--ds-border-soft);
     box-shadow: none;
 }
 
@@ -6814,7 +6854,21 @@ html[data-theme="dark"] .results-workspace [data-strategy]:not(.strategy-active)
 
 html[data-theme="dark"] .results-workspace [data-strategy].strategy-active {
     background: var(--ds-surface-selected);
-    border-color: var(--ds-accent);
+    border-color: var(--ds-border-soft);
+}
+
+.control-shell .mini-metric.output,
+.guided-dialog .mini-metric.output,
+.investment-mode-summary .mini-metric,
+.guided-dialog .guided-step .mini-metric.output {
+    border-color: var(--ds-border-soft);
+}
+
+html[data-theme="dark"] .control-shell .mini-metric.output,
+html[data-theme="dark"] .guided-dialog .mini-metric.output,
+html[data-theme="dark"] .investment-mode-summary .mini-metric,
+html[data-theme="dark"] .guided-dialog .guided-step .mini-metric.output {
+    border-color: var(--ds-border-soft);
 }
 
 /* Toggle headers: macro and micro section openers should not introduce a
@@ -6995,7 +7049,41 @@ html[data-theme="dark"] .results-section tbody tr.active td:first-child {
     color: var(--ds-text-muted);
 }
 
-/* Theme toggle: self-contained icon, no icon-font dependency. */
+/* Icon system: Lucide SVGs, pinned in index.html. */
+.icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 1em;
+    height: 1em;
+    color: currentColor;
+    stroke: currentColor;
+}
+
+.btn .icon,
+.intro-primary .icon {
+    margin-right: 0.15rem;
+}
+
+.input-warning .icon {
+    margin-top: 0.125rem;
+    color: var(--ds-warning);
+}
+
+.help-modal-close .icon,
+.icon-button .icon,
+.go-to-top .icon {
+    font-size: 1rem;
+}
+
+.footer .github-link [data-lucide="star"],
+.footer .github-link .icon-star {
+    color: var(--color-accent-warning);
+    vertical-align: -0.08em;
+}
+
+/* Theme toggle. */
 .theme-toggle {
     width: 2.35rem;
     height: 2.35rem;
@@ -7014,39 +7102,403 @@ html[data-theme="dark"] .results-section tbody tr.active td:first-child {
 
 .theme-toggle:hover,
 .theme-toggle:focus-visible {
-    background: var(--ds-surface-muted);
-    border-color: var(--ds-border-strong);
+    background: var(--ds-theme-toggle-hover);
+    border-color: var(--ds-border-soft);
     color: var(--ds-accent);
 }
 
 .theme-toggle-icon {
-    position: relative;
-    display: block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 1rem;
     height: 1rem;
-    border-radius: 999px;
     color: currentColor;
-    box-shadow: inset -0.34rem -0.12rem 0 0 currentColor;
     transition: var(--transition);
 }
 
-html[data-theme="dark"] .theme-toggle-icon {
-    border: 2px solid currentColor;
+.theme-toggle-icon-sun {
+    display: none;
+}
+
+html[data-theme="dark"] .theme-toggle-icon-moon {
+    display: none;
+}
+
+html[data-theme="dark"] .theme-toggle-icon-sun {
+    display: inline-flex;
+}
+
+/* Typography refinement: keep Inter crisp without the heavy synthetic feel. */
+body {
+    font-weight: 400;
+    font-kerning: normal;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+}
+
+.logo h1,
+.intro-copy h2,
+.section-heading h2,
+.section-heading h3,
+.docs-section h2,
+.docs-section h2.docs-collapsible-title,
+.param-card .card-header h3,
+.control-subgroup-title strong,
+.guided-header h2,
+.guided-dialog .guided-step-head h3,
+.result-explanation-title,
+.results-title,
+.chart-title,
+#config-title,
+#toggle-results,
+#annual-explorer-title,
+#toggle-chart {
+    font-weight: 680;
+}
+
+.tab,
+.btn,
+.intro-primary,
+.control-shell label,
+.control-shell .control-label,
+.param-card .form-group label,
+.param-card .control-section-heading,
+.param-card .local-tax-title,
+.section-kicker,
+.decision-eyebrow,
+.guided-dialog .guided-eyebrow,
+.metric-label,
+.result-explanation-label,
+.year-answer-card span,
+.annual-input span,
+.control-shell .mini-metric span,
+th,
+.results-section th,
+td:first-child {
+    font-weight: 620;
+}
+
+.metric-value,
+.result-best-value,
+.result-sequence-value,
+.result-explanation-value,
+.year-answer-card strong,
+.annual-input strong,
+.control-shell .mini-metric strong,
+.step-row strong,
+.summary-value,
+.form-control,
+.computed-output,
+input,
+select {
+    font-weight: 660;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1, "kern" 1;
+}
+
+.result-best-value {
+    font-weight: 720;
+}
+
+.intro-copy p,
+.section-heading p,
+.metric-subtitle,
+.result-explanation-detail,
+.result-decision-main p,
+.result-decision-side p,
+.year-answer-card p,
+.annual-input p,
+.control-shell .mini-metric p,
+.calc-step p,
+.docs-section p,
+.docs-section li,
+td,
+.results-section td {
+    font-weight: 400;
+}
+
+/* Help triggers must follow the surrounding text color.
+   Only the info badge is accented, otherwise section titles drift when the
+   palette changes. */
+.help-trigger,
+.help-trigger:hover,
+html[data-theme="dark"] .help-trigger,
+html[data-theme="dark"] .help-trigger:hover,
+.control-subgroup-title .help-trigger,
+.variation-header > .help-trigger,
+.control-shell .binary-toggle > .help-trigger,
+html[data-theme="dark"] .control-subgroup-title .help-trigger,
+html[data-theme="dark"] .variation-header > .help-trigger,
+html[data-theme="dark"] .control-shell .binary-toggle > .help-trigger {
+    color: inherit;
+}
+
+/* Toggle headers: subtle divider for every collapsible section opener. */
+.results-title,
+.chart-title,
+#config-title,
+#toggle-results,
+#annual-explorer-title,
+#toggle-chart,
+.param-card .card-header,
+.docs-section h2.docs-collapsible-title,
+.variation-header,
+.control-subgroup-title {
+    border-bottom: 1px solid var(--ds-border-soft);
+}
+
+.docs-collapsible.collapsed .docs-collapsible-title {
+    border-bottom: 1px solid var(--ds-border-soft);
+}
+
+/* Mobile header: keep tabs and theme toggle inside the viewport. */
+@media (max-width: 768px) {
+    .header-content {
+        width: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        column-gap: 0.75rem;
+        row-gap: 0.75rem;
+        flex-direction: initial;
+    }
+
+    .header-side {
+        display: contents;
+    }
+
+    .logo {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .theme-toggle {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+    }
+
+    .tabs {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .tab {
+        min-width: 0;
+    }
+
+    .theme-toggle {
+        width: 2.2rem;
+        height: 2.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-side {
+        gap: 0.55rem;
+    }
+
+    .theme-toggle {
+        width: 2rem;
+        height: 2rem;
+    }
+}
+
+/* Guided modal mobile: keep content away from viewport edges. */
+@media (max-width: 768px) {
+    .guided-modal {
+        align-items: center;
+        padding: 1rem;
+    }
+
+    .guided-dialog {
+        width: min(100%, 44rem);
+        max-width: calc(100vw - 2rem);
+        height: min(720px, calc(100dvh - 2rem));
+        max-height: calc(100dvh - 2rem);
+        border-radius: 10px;
+    }
+
+    .guided-dialog .guided-header,
+    .guided-dialog .guided-body.control-shell,
+    .guided-dialog .guided-footer {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+    }
+
+    .guided-dialog .guided-header {
+        gap: 0.75rem;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .guided-dialog .guided-body.control-shell {
+        padding-top: 1.25rem;
+        padding-bottom: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .guided-modal {
+        padding: 0.875rem;
+    }
+
+    .guided-dialog {
+        max-width: calc(100vw - 1.75rem);
+        height: min(720px, calc(100dvh - 1.75rem));
+        max-height: calc(100dvh - 1.75rem);
+    }
+
+    .guided-dialog .guided-header,
+    .guided-dialog .guided-body.control-shell,
+    .guided-dialog .guided-footer {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* Annual calculation rows: no nested panel background, only dividers. */
+.calc-step,
+.step-row,
+.step-content {
+    background: transparent;
     box-shadow: none;
 }
 
-html[data-theme="dark"] .theme-toggle-icon::before {
-    content: "";
-    position: absolute;
-    inset: -0.42rem;
-    border-radius: 999px;
-    box-shadow:
-        0 -0.5rem 0 -0.32rem currentColor,
-        0 0.5rem 0 -0.32rem currentColor,
-        0.5rem 0 0 -0.32rem currentColor,
-        -0.5rem 0 0 -0.32rem currentColor,
-        0.36rem 0.36rem 0 -0.34rem currentColor,
-        -0.36rem 0.36rem 0 -0.34rem currentColor,
-        0.36rem -0.36rem 0 -0.34rem currentColor,
-        -0.36rem -0.36rem 0 -0.34rem currentColor;
+.step-row {
+    border-top: 1px solid var(--ds-border-soft);
+}
+
+html[data-theme="dark"] .calc-step,
+html[data-theme="dark"] .step-row,
+html[data-theme="dark"] .step-content {
+    background: transparent;
+}
+
+/* Mobile result explanation cards: one consistent card layout, no clipped edge. */
+@media (max-width: 768px) {
+    .results-workspace .result-explanation-grid-primary,
+    .results-workspace .result-explanation-grid-secondary {
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+    }
+
+    .results-workspace .result-explanation-card,
+    .results-workspace .result-explanation-card:nth-child(even),
+    html[data-theme="dark"] .results-workspace .result-explanation-card {
+        display: grid;
+        grid-template-columns: 1.25rem minmax(0, 1fr);
+        align-items: start;
+        width: 100%;
+        min-width: 0;
+        margin: 0;
+        padding: 1rem;
+        background: var(--ds-surface-raised);
+        border: 1px solid var(--ds-border-soft);
+        border-radius: var(--ds-radius-md);
+        overflow: visible;
+    }
+
+    .results-workspace .result-explanation-card + .result-explanation-card {
+        border-top: 1px solid var(--ds-border-soft);
+    }
+
+    .results-workspace .result-explanation-card .icon {
+        width: 1.15rem;
+        height: 1.15rem;
+        margin-top: 0.15rem;
+        justify-self: start;
+    }
+}
+
+html[data-theme="dark"] .theme-toggle {
+    border-color: var(--ds-border-soft);
+}
+
+html[data-theme="dark"] .theme-toggle:hover,
+html[data-theme="dark"] .theme-toggle:focus-visible {
+    background: var(--ds-theme-toggle-hover);
+    border-color: var(--ds-border-soft);
+}
+
+.year-answer-card.main,
+html[data-theme="dark"] .year-answer-card.main {
+    background: var(--ds-surface-raised);
+    border-color: var(--ds-border-soft);
+}
+
+/* Guide page: nested content blocks share one surface in both themes.
+   Disclaimer and footer stay transparent so the page bottom has no extra band. */
+.docs-comparison-card,
+.docs-info-card,
+.docs-scenario-card,
+.docs-fund-card,
+.docs-source-item,
+.docs-definition-list > div,
+.docs-section pre,
+.docs-section .highlight,
+html[data-theme="dark"] .docs-comparison-card,
+html[data-theme="dark"] .docs-info-card,
+html[data-theme="dark"] .docs-scenario-card,
+html[data-theme="dark"] .docs-fund-card,
+html[data-theme="dark"] .docs-source-item,
+html[data-theme="dark"] .docs-definition-list > div,
+html[data-theme="dark"] .docs-section pre,
+html[data-theme="dark"] .docs-section .highlight {
+    background: var(--ds-surface-panel);
+    border-color: var(--ds-border-soft);
+}
+
+.docs-section .disclaimer,
+html[data-theme="dark"] .docs-section .disclaimer {
+    background: transparent;
+    border-top: 1px solid var(--ds-border-soft);
+    color: var(--ds-text-muted);
+}
+
+.footer,
+html[data-theme="dark"] .footer {
+    background: transparent;
+    border-top: 1px solid var(--ds-border-soft);
+    color: var(--ds-text-muted);
+}
+
+.docs-section,
+html[data-theme="dark"] .docs-section {
+    background: transparent;
+}
+
+/* Collapsible/open section headers: no separate fill, including dark-mode
+   legacy selectors with higher specificity. */
+.control-shell .card-header,
+.param-card .card-header,
+.control-subgroup-title,
+.variation-header,
+.results-title,
+.chart-title,
+#config-title,
+#toggle-results,
+#annual-explorer-title,
+#toggle-chart,
+.docs-section h2.docs-collapsible-title,
+html[data-theme="dark"] .control-shell .card-header,
+html[data-theme="dark"] .param-card .card-header,
+html[data-theme="dark"] .control-subgroup-title,
+html[data-theme="dark"] .variation-header,
+html[data-theme="dark"] .results-title,
+html[data-theme="dark"] .chart-title,
+html[data-theme="dark"] #config-title,
+html[data-theme="dark"] #toggle-results,
+html[data-theme="dark"] #annual-explorer-title,
+html[data-theme="dark"] #toggle-chart,
+html[data-theme="dark"] .docs-section h2.docs-collapsible-title {
+    background: transparent;
 }

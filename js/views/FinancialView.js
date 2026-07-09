@@ -285,25 +285,25 @@ export class FinancialView {
 
       const primaryCards = [
         {
-          icon: 'fa-scale-balanced',
+          icon: 'scale',
           label: 'Vantaggio finale',
           value: optimalVsBestPure > 0 ? formatSignedMoney(optimalVsBestPure) : 'Quasi pari',
           detail: optimizationDetailText
         },
         {
-          icon: 'fa-chart-pie',
+          icon: 'pie-chart',
           label: 'Dove vanno i versamenti',
           value: `${formatPercent(fpShare)} FP · ${formatPercent(pacShare)} PAC`,
           detail: `${firstSplitDetail}. Extra oltre deduzione nel PAC: ${this.formatMoney(Math.round(totals.extraPac))}`
         },
         {
-          icon: 'fa-hand-holding-dollar',
+          icon: 'hand-coins',
           label: 'Incentivi agganciati al FP',
           value: this.formatMoney(Math.round(totals.datore + totals.risparmio)),
           detail: `${this.formatMoney(Math.round(totals.datore))} datore + ${this.formatMoney(Math.round(totals.risparmio))} beneficio fiscale. Datore preso per ${usedEmployerYears}/${results.length} anni`
         },
         {
-          icon: 'fa-file-invoice-dollar',
+          icon: 'file-text',
           label: 'Busta vs bonifico',
           value: totals.fp > 0
             ? formatSignedMoney(totals.differenzaBustaBonifico)
@@ -320,13 +320,13 @@ export class FinancialView {
 
       const secondaryCards = [
         {
-          icon: 'fa-filter',
+          icon: 'filter',
           label: 'Limite deducibile',
           value: this.formatMoney(Math.round(totals.deducibile)),
           detail: 'Quota trattata dentro il perimetro deducibile; la parte fuori deduzione viene indirizzata al PAC.'
         },
         {
-          icon: 'fa-calendar-check',
+          icon: 'calendar-check',
           label: 'Scelte annuali',
           value: choiceSummary || 'Nessuna scelta',
           detail: timingDetail
@@ -337,8 +337,10 @@ export class FinancialView {
         const item = document.createElement('article');
         item.className = `result-explanation-card result-explanation-card-${type}`;
 
-        const icon = document.createElement('i');
-        icon.className = `fas ${card.icon}`;
+        const icon = document.createElement('span');
+        icon.className = 'icon';
+        icon.dataset.lucide = card.icon;
+        icon.setAttribute('aria-hidden', 'true');
 
         const content = document.createElement('div');
 
@@ -361,6 +363,7 @@ export class FinancialView {
 
       primaryGrid.replaceChildren(...primaryCards.map(card => renderCard(card, 'primary')));
       secondaryGrid.replaceChildren(...secondaryCards.map(card => renderCard(card, 'secondary')));
+      if (window.renderSiteIcons) window.renderSiteIcons();
     }
 
     updateAnnualExplorer(results, config, selectedYear = 1) {
@@ -567,8 +570,10 @@ export class FinancialView {
         const item = document.createElement('div');
         item.className = 'input-warning';
 
-        const icon = document.createElement('i');
-        icon.className = 'fas fa-circle-exclamation';
+        const icon = document.createElement('span');
+        icon.className = 'icon';
+        icon.dataset.lucide = 'circle-alert';
+        icon.setAttribute('aria-hidden', 'true');
 
         const text = document.createElement('span');
         text.textContent = warning;
@@ -576,6 +581,7 @@ export class FinancialView {
         item.append(icon, text);
         container.appendChild(item);
       });
+      if (window.renderSiteIcons) window.renderSiteIcons();
     }
 
     /**

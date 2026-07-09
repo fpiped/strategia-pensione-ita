@@ -4,6 +4,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
+    setupSiteIcons();
     setupThemeToggle();
 
     // Contatore visite (counterapi.dev): un incremento per caricamento;
@@ -41,6 +42,19 @@ document.addEventListener('DOMContentLoaded', function() {
     setupMobileTooltips();
 });
 
+function setupSiteIcons() {
+    window.renderSiteIcons = function renderSiteIcons() {
+        if (!window.lucide || typeof window.lucide.createIcons !== 'function') return;
+        window.lucide.createIcons({
+            attrs: {
+                'stroke-width': 2,
+                'aria-hidden': 'true'
+            }
+        });
+    };
+    window.renderSiteIcons();
+}
+
 function setupThemeToggle() {
     const STORAGE_KEY = 'strategia-pensione-theme';
     const toggle = document.getElementById('theme-toggle');
@@ -60,6 +74,7 @@ function setupThemeToggle() {
     toggle.addEventListener('click', () => {
         const nextTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
         applyTheme(nextTheme);
+
         try {
             localStorage.setItem(STORAGE_KEY, nextTheme);
         } catch (error) {
@@ -547,17 +562,18 @@ function setupMobileTooltips() {
     modal.innerHTML = `
         <div class="help-modal-backdrop"></div>
         <div class="help-modal-content">
-            <div class="help-modal-header">
-                <div class="help-modal-icon"><i class="fas fa-circle-info"></i></div>
+                <div class="help-modal-header">
+                <div class="help-modal-icon"><span data-lucide="info" class="icon" aria-hidden="true"></span></div>
                 <div class="help-modal-title"></div>
                 <button type="button" class="help-modal-close" aria-label="Chiudi">
-                    <i class="fas fa-xmark"></i>
+                    <span data-lucide="x" class="icon" aria-hidden="true"></span>
                 </button>
             </div>
             <div class="help-modal-text"></div>
         </div>
     `;
     document.body.appendChild(modal);
+    if (window.renderSiteIcons) window.renderSiteIcons();
 
     const modalTitle = modal.querySelector('.help-modal-title');
     const modalText = modal.querySelector('.help-modal-text');
