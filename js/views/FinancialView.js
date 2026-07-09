@@ -121,6 +121,7 @@ export class FinancialView {
       const headerRow = document.createElement('tr');
       for (const key in rows[0]) {
         const headerCell = document.createElement('th');
+        headerCell.scope = 'col';
         headerCell.textContent = key;
         headerRow.appendChild(headerCell);
       }
@@ -194,6 +195,68 @@ export class FinancialView {
           ? 'Stessa scelta per tutta la durata'
           : 'Quando cambia la scelta annuale';
       }
+
+      this.renderChoiceTimeline(intervals, results.length);
+    }
+
+    /**
+     * Timeline della strategia: una barra segmentata, un segmento per
+     * intervallo di scelta, larghezza proporzionale agli anni coperti.
+     * È la traduzione grafica di "1-23: Split · 24-30: FP"; il testo
+     * accanto resta come versione leggibile/accessibile.
+     */
+    renderChoiceTimeline(intervals, totalYears) {
+      const timeline = document.getElementById('decision-timeline');
+      if (!timeline) return;
+      timeline.replaceChildren();
+      if (!totalYears) return;
+
+      intervals.forEach((interval) => {
+        const years = interval.end - interval.start + 1;
+        const segment = document.createElement('span');
+        segment.className = 'decision-timeline-seg';
+        segment.dataset.choice = String(interval.choice || '').toLowerCase();
+        segment.style.flexGrow = String(years);
+        segment.title = `${this.formatChoiceLabel(interval.choice)} — anni ${interval.start}-${interval.end}`;
+        // L'etichetta compare solo se il segmento è largo abbastanza
+        // (overflow nascosto via CSS): i micro-intervalli restano leggibili
+        // dal testo accanto e dal title.
+        const label = document.createElement('span');
+        label.className = 'decision-timeline-label';
+        label.textContent = years > 1
+          ? `${this.formatChoiceLabel(interval.choice)} ${interval.start}-${interval.end}`
+          : String(interval.start);
+        segment.appendChild(label);
+        timeline.appendChild(segment);
+      });
+    }
+
+    /**
+     * Count-up rapido del numerone del verdetto al ricalcolo: comunica
+     * "sto ricalcolando" senza rallentare. Primo render, valore invariato
+     * e prefers-reduced-motion vanno diretti al valore finale.
+     */
+    animateBestValue(element, target) {
+      if (this.bestValueFrame) cancelAnimationFrame(this.bestValueFrame);
+      const previous = this.lastBestValue;
+      this.lastBestValue = target;
+
+      const reduceMotion = window.matchMedia
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (previous == null || previous === target || reduceMotion) {
+        element.textContent = this.formatMoney(target);
+        return;
+      }
+
+      const DURATION = 300;
+      const start = performance.now();
+      const step = (now) => {
+        const progress = Math.min((now - start) / DURATION, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        element.textContent = this.formatMoney(Math.round(previous + (target - previous) * eased));
+        if (progress < 1) this.bestValueFrame = requestAnimationFrame(step);
+      };
+      this.bestValueFrame = requestAnimationFrame(step);
     }
 
     updateResultExplanation(results) {
@@ -278,7 +341,7 @@ export class FinancialView {
         ? `L'allocazione ottimale chiude a ${this.formatMoney(Math.round(optimalExit))}, circa ${this.formatMoney(Math.round(optimalVsBestPure))} sopra ${bestPure.label}. ${timingDetail}`
         : `L'allocazione ottimale coincide sostanzialmente con ${bestPure.label} nello scenario impostato. ${timingDetail}`;
 
-      if (bestValue) bestValue.textContent = this.formatMoney(Math.round(optimalExit));
+      if (bestValue) this.animateBestValue(bestValue, Math.round(optimalExit));
       if (bestDelta) {
         bestDelta.textContent = optimalVsBestPure > 0
           ? `${this.formatMoney(Math.round(optimalVsBestPure))} sopra ${bestPure.label}; ${this.formatMoney(Math.round(optimalVsWorstPure))} sopra ${worstPure.label}.`
@@ -596,7 +659,8 @@ export class FinancialView {
     }
 
     /**
-     * Aggiorna il grafico con i dati dei risultati
+     * Aggiorna il grafico con i dati dei risultati: barre coi colori
+     * delle strategie e griglia solo orizzontale.
      * @param {Array} results - Risultati dei calcoli
      */
     updateChart(results) {
@@ -605,7 +669,6 @@ export class FinancialView {
       const ctx = document.getElementById('results-chart');
       if (!ctx) return;
 
-      // Estrai i dati per il grafico
       const labels = results.map(r => `Anno ${r.anno}`);
       const exitFP = results.map(r => r.exitFp || 0);
       const exitPAC = results.map(r => r.exitPac || 0);
@@ -614,12 +677,18 @@ export class FinancialView {
       const styles = getComputedStyle(document.documentElement);
       const textColor = styles.getPropertyValue('--color-text-secondary').trim() || '#4b5563';
       const gridColor = styles.getPropertyValue('--color-border-soft').trim() || '#e2e7de';
+      const fontSans = styles.getPropertyValue('--font-sans').trim() || 'Inter, sans-serif';
+      const fontMono = styles.getPropertyValue('--font-mono').trim() || 'monospace';
 
-      // Colori
       const colors = {
-        fp: styles.getPropertyValue('--color-metric-fp').trim() || '#2563eb',
+        fp: styles.getPropertyValue('--color-metric-fp').trim() || '#2E5FD0',
         pac: styles.getPropertyValue('--color-metric-pac').trim() || '#d97706',
-        mix: styles.getPropertyValue('--color-metric-mix').trim() || '#0f766e'
+        mix: styles.getPropertyValue('--color-metric-mix').trim() || '#0E7C6B'
+      };
+      const withAlpha = (hex, alpha) => {
+        const value = hex.replace('#', '');
+        const n = parseInt(value.length === 3 ? value.replace(/./g, '$&$&') : value, 16);
+        return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
       };
 
       // Distruggi il grafico esistente se presente
@@ -627,7 +696,6 @@ export class FinancialView {
         this.chart.destroy();
       }
 
-      // Crea il nuovo grafico: istogramma, tre barre per anno.
       this.chart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -662,7 +730,7 @@ export class FinancialView {
           },
           layout: {
             padding: {
-              top: 10
+              top: 6
             }
           },
           datasets: {
@@ -674,19 +742,30 @@ export class FinancialView {
           plugins: {
             legend: {
               position: 'top',
+              align: 'center',
               labels: {
                 usePointStyle: true,
-                padding: 20,
-                boxWidth: 8,
-                boxHeight: 8,
-                color: textColor
+                pointStyle: 'rectRounded',
+                padding: 18,
+                boxWidth: 10,
+                boxHeight: 10,
+                color: textColor,
+                font: { family: fontSans, size: 12, weight: 600 }
               }
             },
             tooltip: {
+              backgroundColor: '#16211B',
+              borderColor: '#3B473F',
+              borderWidth: 1,
+              padding: 10,
+              titleFont: { family: fontSans, size: 12, weight: 600 },
+              bodyFont: { family: fontMono, size: 12 },
+              boxWidth: 8,
+              boxHeight: 8,
+              usePointStyle: true,
               callbacks: {
-                label: function(context) {
-                  return context.dataset.label + ': ' +
-                    context.raw.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ' €';
+                label(context) {
+                  return ` ${context.dataset.label}: ${formatMoney(Math.round(context.raw))}`;
                 }
               }
             }
@@ -696,18 +775,37 @@ export class FinancialView {
               grid: {
                 display: false
               },
+              border: {
+                color: gridColor
+              },
               ticks: {
-                color: textColor
+                color: textColor,
+                font: { family: fontMono, size: 10 },
+                maxRotation: 0,
+                autoSkip: false,
+                // Un'etichetta ogni 5 anni (più il primo): il dettaglio
+                // anno per anno lo danno tooltip e tabella.
+                callback(value, index) {
+                  const anno = results[index]?.anno;
+                  if (anno === 1 || anno % 5 === 0) return `Anno ${anno}`;
+                  return '';
+                }
               }
             },
             y: {
               beginAtZero: true,
               grid: {
-                display: false,
-                color: gridColor
+                display: true,
+                color: withAlpha(gridColor.startsWith('#') ? gridColor : '#DDDBD1', 0.55),
+                drawTicks: false
+              },
+              border: {
+                display: false
               },
               ticks: {
                 color: textColor,
+                font: { family: fontMono, size: 10 },
+                maxTicksLimit: 6,
                 callback: function(value) {
                   return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ' €';
                 }

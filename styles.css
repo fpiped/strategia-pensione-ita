@@ -1,68 +1,8 @@
 /* ============================================
-   CSS Variables
+   CSS Variables: tutti i token (palette, font, radius) vivono nel
+   "Design system canonical layer" in fondo al file. Le custom property
+   sono risolte a computed-value time, quindi la posizione non conta.
    ============================================ */
-:root {
-    /* Colors - Light Mode */
-    --color-bg-page: #f6f7f2;
-    --color-bg-card: #ffffff;
-    --color-bg-header: #ffffff;
-    --color-bg-input: #ffffff;
-    --color-bg-page-top: #e8f3ee;
-    --color-bg-panel: #fbfcf8;
-    --color-bg-panel-strong: #f8fbf9;
-    --color-bg-subtle: #edf7f3;
-    --color-bg-soft-blue: #f8fbff;
-    --color-bg-success-soft: #f0faf5;
-    --color-bg-warning-soft: #fff7ed;
-    --color-bg-overlay: rgb(15 23 42 / 0.46);
-
-    --color-text-primary: #172033;
-    --color-text-secondary: #4b5563;
-    --color-text-inverse: #172033;
-    --color-text-muted: #6b7280;
-
-    --color-border: #cbd3c9;
-    --color-border-soft: #e2e7de;
-    --color-border-focus: #0f766e;
-    --color-blue-soft: #eef5f3;
-    --color-blue-line: #d6e2dc;
-    --color-link: #1d4ed8;
-    --color-info-text: #1e3a8a;
-    --color-warning-text: #7c3f00;
-    --color-warning-border: #fed7aa;
-
-    /* Accent Colors */
-    --color-accent-primary: #0f766e;
-    --color-accent-success: #15803d;
-    --color-accent-warning: #b45309;
-    --color-accent-danger: #dc2626;
-    --color-accent-purple: #6d5bd0;
-
-    /* Metric Card Colors (corrispondono alle linee del grafico) */
-    --color-metric-fp: #2563eb;
-    --color-metric-pac: #16a34a;
-    --color-metric-mix: #b45309;
-    --color-metric-breakeven: #7c3aed;
-
-    /* Shadows */
-    --shadow-sm: 0 1px 2px rgb(23 32 51 / 0.06);
-    --shadow-md: 0 8px 20px rgb(23 32 51 / 0.08), 0 1px 2px rgb(23 32 51 / 0.06);
-    --shadow-lg: 0 18px 50px rgb(23 32 51 / 0.16);
-
-    /* Typography */
-    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
-
-    /* Spacing */
-    --radius-sm: 6px;
-    --radius-md: 8px;
-    --radius-lg: 8px;
-    --control-width: 22rem;
-    --control-wide-width: 28rem;
-
-    /* Transitions */
-    --transition: 0.2s ease;
-}
 
 /* ============================================
    Base Styles
@@ -71,6 +11,12 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+}
+
+/* I controlli non ereditano il font per default (i button renderebbero
+   in Arial/Helvetica): qui si allineano alla voce tipografica del sito. */
+button, input, select, textarea {
+    font: inherit;
 }
 
 /* Niente scroll-behavior globale: animerebbe anche il ripristino
@@ -123,7 +69,7 @@ body {
     line-height: 1.6;
     color: var(--color-text-primary);
     background:
-        linear-gradient(180deg, #eef2e8 0, var(--color-bg-page) 240px),
+        linear-gradient(180deg, #EDF1EC 0, var(--color-bg-page) 240px),
         var(--color-bg-page);
     min-height: 100vh;
     overflow-x: hidden;
@@ -134,12 +80,12 @@ body {
    ============================================ */
 header {
     background: var(--color-bg-header);
-    color: var(--color-text-inverse);
+    color: var(--ds-text);
     padding: 0.875rem 1.5rem;
     position: sticky;
     top: 0;
     z-index: 100;
-    border-top: 3px solid var(--color-accent-primary);
+    border-top: 0 solid var(--color-border-soft);
     border-bottom: 1px solid var(--color-border-soft);
     box-shadow: 0 1px 0 rgb(23 32 51 / 0.04);
 }
@@ -206,7 +152,7 @@ header {
 .tab {
     padding: 0.25rem 0;
     font-size: 0.875rem;
-    font-weight: 650;
+    font-weight: 600;
     color: var(--color-text-secondary);
     background: transparent;
     border: none;
@@ -287,7 +233,7 @@ header {
 }
 
 .metric-card:hover {
-    border-color: #93c5fd;
+    border-color: #7C9FF2;
     box-shadow: var(--shadow-md);
 }
 
@@ -338,7 +284,7 @@ header {
     position: absolute;
     top: 0.75rem;
     right: 0.75rem;
-    background: linear-gradient(135deg, var(--color-accent-success), #10b981);
+    background: linear-gradient(135deg, var(--color-accent-success), #6FBF84);
     color: white;
     font-size: 0.625rem;
     font-weight: 600;
@@ -347,13 +293,13 @@ header {
 }
 
 .metric-card.best {
-    background: linear-gradient(180deg, #f0fdf4, var(--color-bg-card) 70%);
+    background: linear-gradient(180deg, #EDF1EC, var(--color-bg-card) 70%);
     border-color: rgba(5, 150, 105, 0.45);
     border-top-color: var(--color-accent-success);
 }
 
 .result-explanation {
-    background: linear-gradient(180deg, #f8fbff, #ffffff);
+    background: linear-gradient(180deg, #F5F7F4, #ffffff);
     border: 1px solid var(--color-blue-line);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
@@ -397,7 +343,7 @@ header {
     min-width: 0;
     padding: 0.875rem;
     background: #ffffff;
-    border: 1px solid #d8e6f7;
+    border: 1px solid #DCE2DA;
     border-radius: var(--radius-md);
 }
 
@@ -475,9 +421,9 @@ header {
 
 .guided-cta {
     align-items: center;
-    background: #0f5eea;
-    border: 1px solid #0b4fc7;
-    border-radius: 8px;
+    background: #24489C;
+    border: 1px solid #24489C;
+    border-radius: var(--radius-sm);
     box-shadow: 0 10px 22px rgba(15, 94, 234, 0.24);
     color: #ffffff;
     display: inline-flex;
@@ -489,8 +435,8 @@ header {
 }
 
 .guided-cta:hover {
-    background: #0b4fc7;
-    border-color: #093f9f;
+    background: #24489C;
+    border-color: #24489C;
     color: #ffffff;
     transform: translateY(-1px);
 }
@@ -547,7 +493,7 @@ header {
     min-height: 2.75rem;
     padding: 0 0.875rem;
     color: var(--color-text-primary);
-    background: #f8fbff;
+    background: #F5F7F4;
     border: 1px solid var(--color-blue-line);
     border-radius: var(--radius-sm);
     font-weight: 800;
@@ -556,7 +502,7 @@ header {
 .card-more-options {
     margin-top: 0.875rem;
     padding: 0.75rem 0.875rem;
-    background: #f8fbff;
+    background: #F5F7F4;
     border: 1px solid var(--color-blue-line);
     border-radius: var(--radius-sm);
 }
@@ -569,7 +515,7 @@ header {
 }
 
 .card-more-options summary:hover {
-    color: #1d4ed8;
+    color: #0E7C6B;
 }
 
 .card-more-options[open] summary {
@@ -617,7 +563,7 @@ header {
 }
 
 .param-card .card-header {
-    background: linear-gradient(180deg, #f8fbff, var(--color-bg-card));
+    background: linear-gradient(180deg, #F5F7F4, var(--color-bg-card));
     color: var(--color-text-primary);
     padding: 0.875rem 1rem;
     font-size: 0.875rem;
@@ -666,7 +612,7 @@ header {
     font-family: var(--font-sans);
     color: var(--color-text-primary);
     background: var(--color-bg-input);
-    border: 1px solid #cbd8e8;
+    border: 1px solid #DCE2DA;
     border-radius: var(--radius-sm);
     transition: var(--transition);
 }
@@ -736,8 +682,8 @@ select.form-control::-ms-expand {
 .local-tax-panel {
     padding: 0.75rem;
     margin-bottom: 1rem;
-    background: #f8fbff;
-    border: 1px solid #d8e6f7;
+    background: #F5F7F4;
+    border: 1px solid #DCE2DA;
     border-radius: var(--radius-md);
 }
 
@@ -822,7 +768,7 @@ select.form-control::-ms-expand {
     overflow-y: auto;
     padding: 0.25rem;
     background: var(--color-bg-card);
-    border: 1px solid #cbd8e8;
+    border: 1px solid #DCE2DA;
     border-radius: var(--radius-sm);
     box-shadow: var(--shadow-lg);
 }
@@ -857,8 +803,8 @@ select.form-control::-ms-expand {
 }
 
 .variation-grid {
-    background: #f8fbff;
-    border: 1px solid #d8e6f7;
+    background: #F5F7F4;
+    border: 1px solid #DCE2DA;
     border-radius: var(--radius-md);
     margin-top: 0.75rem;
     padding: 0.75rem;
@@ -937,7 +883,7 @@ select.form-control::-ms-expand {
 }
 
 .investment-mode-note {
-    border-color: #9fc7ff;
+    border-color: #7C9FF2;
 }
 
 /* Info Box */
@@ -977,7 +923,7 @@ select.form-control::-ms-expand {
     margin-top: 0.75rem;
     padding: 0.75rem 0.875rem;
     color: var(--color-text-secondary);
-    background: #f8fafc;
+    background: #EDF1EC;
     border: 1px solid var(--color-border-soft);
     border-radius: var(--radius-sm);
     font-size: 0.8125rem;
@@ -1045,7 +991,7 @@ body.modal-open {
     gap: 1rem;
     padding: 1.125rem 1.25rem;
     border-bottom: 1px solid var(--color-blue-line);
-    background: linear-gradient(180deg, #f8fbff, var(--color-bg-card));
+    background: linear-gradient(180deg, #F5F7F4, var(--color-bg-card));
 }
 
 .guided-header h2 {
@@ -1062,14 +1008,14 @@ body.modal-open {
 
 .guided-progress {
     height: 0.25rem;
-    background: #e0efff;
+    background: #EDF1EC;
 }
 
 .guided-progress span {
     display: block;
     width: 16.66%;
     height: 100%;
-    background: linear-gradient(90deg, var(--color-accent-primary), #22c55e);
+    background: linear-gradient(90deg, var(--color-accent-primary), #6FBF84);
     transition: width 0.2s ease;
 }
 
@@ -1141,7 +1087,7 @@ body.modal-open {
 .guided-live-summary div {
     min-width: 0;
     padding: 0.875rem;
-    background: #f8fbff;
+    background: #F5F7F4;
     border: 1px solid var(--color-blue-line);
     border-radius: var(--radius-sm);
 }
@@ -1167,7 +1113,7 @@ body.modal-open {
     gap: 0.75rem;
     padding: 1rem 1.25rem;
     border-top: 1px solid var(--color-blue-line);
-    background: #f8fbff;
+    background: #F5F7F4;
 }
 
 #guided-finish {
@@ -1193,9 +1139,9 @@ body.modal-open {
     gap: 0.5rem;
     padding: 0.625rem 0.875rem;
     font-size: 0.8125rem;
-    color: #92400e;
-    background: #fffbeb;
-    border: 1px solid #fde68a;
+    color: #7C3F00;
+    background: #FFF7ED;
+    border: 1px solid #FED7AA;
     border-radius: var(--radius-sm);
 }
 
@@ -1253,8 +1199,8 @@ body.modal-open {
     position: relative;
     width: 44px;
     height: 24px;
-    background: #cbd5e1;
-    border-radius: 12px;
+    background: #DCE2DA;
+    border-radius: 999px;
     transition: var(--transition);
     flex-shrink: 0;
 }
@@ -1267,13 +1213,13 @@ body.modal-open {
     width: 20px;
     height: 20px;
     background: white;
-    border-radius: 50%;
+    border-radius: 999px;
     transition: var(--transition);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .toggle-label input[type="checkbox"]:checked + .toggle-switch {
-    background: linear-gradient(135deg, var(--color-accent-primary), #60a5fa);
+    background: linear-gradient(135deg, var(--color-accent-primary), #7C9FF2);
 }
 
 .toggle-label input[type="checkbox"]:checked + .toggle-switch::after {
@@ -1373,7 +1319,7 @@ body.modal-open {
     align-items: center;
     gap: 0.75rem;
     padding: 1rem 1rem 0.875rem;
-    background: linear-gradient(180deg, #f8fbff, #ffffff);
+    background: linear-gradient(180deg, #F5F7F4, #ffffff);
     border-bottom: 1px solid var(--color-blue-line);
 }
 
@@ -1502,7 +1448,7 @@ body.modal-open {
     max-width: 100%;
     border: 1px solid var(--color-blue-line);
     border-radius: var(--radius-md);
-    background: #f8fbff;
+    background: #F5F7F4;
     overflow-x: auto;
 }
 
@@ -1530,7 +1476,7 @@ body.modal-open {
 
 .table-view-tab.active {
     color: white;
-    background: linear-gradient(135deg, var(--color-accent-primary), #3b82f6);
+    background: linear-gradient(135deg, var(--color-accent-primary), #2E5FD0);
 }
 
 /* ============================================
@@ -1578,7 +1524,7 @@ body.modal-open {
 }
 
 .chart-container {
-    background: linear-gradient(180deg, #f8fbff, var(--color-bg-page));
+    background: linear-gradient(180deg, #F5F7F4, var(--color-bg-page));
     border: 1px solid var(--color-blue-line);
     border-radius: var(--radius-md);
     padding: 1rem;
@@ -1634,7 +1580,7 @@ table {
 }
 
 th {
-    background: #eaf3ff;
+    background: #EDF1EC;
     color: #1e3a8a;
     padding: 0.75rem 1rem;
     text-align: right;
@@ -1657,7 +1603,7 @@ th:first-child {
 td {
     padding: 0.625rem 1rem;
     text-align: right;
-    border-bottom: 1px solid #e3edf9;
+    border-bottom: 1px solid #EDF1EC;
     font-variant-numeric: tabular-nums;
 }
 
@@ -1702,26 +1648,26 @@ td.best-value {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--color-accent-primary), #3b82f6);
+    background: linear-gradient(135deg, var(--color-accent-primary), #2E5FD0);
     color: white;
     border-color: var(--color-accent-primary);
 }
 
 .btn-primary:hover {
-    background: #1d4ed8;
+    background: #0E7C6B;
     box-shadow: 0 8px 18px rgb(37 99 235 / 0.20);
 }
 
 .btn-secondary {
     color: var(--color-accent-primary);
-    background: #f8fbff;
+    background: #F5F7F4;
     border-color: var(--color-blue-line);
 }
 
 .btn-secondary:hover {
-    color: #1d4ed8;
+    color: #0E7C6B;
     background: var(--color-blue-soft);
-    border-color: #93c5fd;
+    border-color: #7C9FF2;
 }
 
 .btn:disabled {
@@ -1736,7 +1682,8 @@ td.best-value {
     width: 2.25rem;
     height: 2.25rem;
     color: var(--color-text-secondary);
-    background: #f8fbff;
+    /* Token, non hex: così segue anche il tema scuro. */
+    background: var(--color-bg-panel);
     border: 1px solid var(--color-blue-line);
     border-radius: var(--radius-sm);
     cursor: pointer;
@@ -1773,7 +1720,7 @@ td.best-value {
     width: 6px;
     height: 6px;
     background: var(--color-accent-primary);
-    border-radius: 50%;
+    border-radius: 999px;
     animation: pulse 1.4s infinite ease-in-out both;
 }
 
@@ -1891,7 +1838,7 @@ td.best-value {
 
 /* Code blocks - stesso neutro verde-grigio del resto del sito */
 .docs-section pre {
-    background: #f8fbf9;
+    background: #F5F7F4;
     border: 1px solid var(--color-blue-line);
     border-radius: var(--radius-sm);
     padding: 1rem;
@@ -1994,7 +1941,7 @@ td.best-value {
 .docs-scenario-head span {
     flex: 0 0 auto;
     border-radius: 999px;
-    background: #f8fbf9;
+    background: #F5F7F4;
     border: 1px solid var(--color-blue-line);
     color: var(--color-text-primary);
     font-size: 0.75rem;
@@ -2059,7 +2006,7 @@ td.best-value {
    Footer
    ============================================ */
 .footer {
-    background: #eef6ff;
+    background: #EDF1EC;
     color: var(--color-text-muted);
     text-align: center;
     padding: 1.5rem;
@@ -2101,7 +2048,7 @@ td.best-value {
     height: 44px;
     background: var(--color-accent-primary);
     color: white;
-    border-radius: 50%;
+    border-radius: 999px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2119,7 +2066,7 @@ td.best-value {
 }
 
 .go-to-top:hover {
-    background: #2563eb;
+    background: #2E5FD0;
     transform: translateY(-3px);
 }
 
@@ -2163,7 +2110,7 @@ td.best-value {
     margin: 0;
     color: var(--color-text-primary);
     font-size: clamp(1.55rem, 2.7vw, 2.35rem);
-    font-weight: 780;
+    font-weight: 700;
     line-height: 1.08;
 }
 
@@ -2191,7 +2138,7 @@ td.best-value {
 
 .intro-link {
     color: var(--color-accent-primary);
-    font-weight: 750;
+    font-weight: 700;
     text-decoration: none;
     white-space: normal;
 }
@@ -2216,7 +2163,7 @@ td.best-value {
     gap: 1.5rem;
     padding: 0.95rem 1rem 0.8rem;
     border-bottom: 1px solid var(--color-border-soft);
-    background: #fbfcf8;
+    background: #F5F7F4;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     min-width: 0;
 }
@@ -2240,7 +2187,7 @@ td.best-value {
     cursor: pointer;
     font: inherit;
     font-size: 0.78rem;
-    font-weight: 750;
+    font-weight: 700;
     line-height: 1;
     white-space: nowrap;
 }
@@ -2271,7 +2218,7 @@ td.best-value {
     margin: 0;
     color: var(--color-text-primary);
     font-size: 1.02rem;
-    font-weight: 750;
+    font-weight: 700;
     line-height: 1.2;
 }
 
@@ -2300,13 +2247,13 @@ td.best-value {
 
 .btn-primary {
     background: var(--color-accent-primary);
-    border-color: #0b5f59;
+    border-color: #0B6357;
     box-shadow: none;
 }
 
 .btn-primary:hover {
-    background: #0b5f59;
-    border-color: #084c48;
+    background: #0B6357;
+    border-color: #16473C;
     box-shadow: 0 8px 18px rgb(15 118 110 / 0.18);
 }
 
@@ -2327,11 +2274,11 @@ td.best-value {
 }
 
 .param-card .card-header {
-    background: #fbfcf8;
+    background: #F5F7F4;
     border-bottom-color: var(--color-border-soft);
     color: var(--color-text-primary);
     font-size: 0.86rem;
-    font-weight: 780;
+    font-weight: 700;
     padding: 0.85rem 1rem;
 }
 
@@ -2433,13 +2380,13 @@ td.best-value {
 .local-tax-panel,
 .card-more-options,
 .assumptions-details {
-    background: #f8faf5;
+    background: #F5F7F4;
     border-color: var(--color-border-soft);
 }
 
 .local-tax-mode-toggle,
 .table-view-tabs {
-    background: #f8faf5;
+    background: #F5F7F4;
     border-color: var(--color-border-soft);
 }
 
@@ -2453,7 +2400,7 @@ td.best-value {
     margin-top: 0.2rem;
     margin-bottom: 0;
     padding: 0;
-    background: #fbfcf8;
+    background: #F5F7F4;
     border: 1px solid var(--color-border-soft);
     border-radius: var(--radius-md);
 }
@@ -2482,7 +2429,7 @@ td.best-value {
 .variation-header > .help-trigger {
     color: var(--color-text-secondary);
     font-size: 0.76rem;
-    font-weight: 750;
+    font-weight: 700;
 }
 
 .variation-chevron {
@@ -2514,7 +2461,7 @@ td.best-value {
     justify-content: center;
     gap: 0.3rem;
     padding: 0.25rem 0.45rem;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     color: var(--color-text-secondary);
     cursor: pointer;
 }
@@ -2530,9 +2477,9 @@ td.best-value {
 
 .info-box,
 .guided-note {
-    color: #25514d;
-    background: #eef5f3;
-    border-color: #cfe0da;
+    color: #1D5C4D;
+    background: #EDF1EC;
+    border-color: #DCE2DA;
 }
 
 .input-warning {
@@ -2562,12 +2509,12 @@ td.best-value {
 .result-decision-main,
 .result-decision-side {
     min-width: 0;
-    background: #fbfcf8;
+    background: #F5F7F4;
     padding: 1.2rem;
 }
 
 .result-decision-main {
-    background: #f2fbf5;
+    background: #EDF1EC;
 }
 
 .result-decision-main h3 {
@@ -2625,7 +2572,7 @@ td.best-value {
 .results-workspace .metric-card {
     background: transparent;
     border: 0;
-    border-radius: 0;
+    border-radius: var(--radius-lg);
     box-shadow: none;
     min-height: 0;
     padding: 0.95rem 1.2rem 0.2rem;
@@ -2679,7 +2626,7 @@ td.best-value {
 }
 
 .results-workspace .metric-card.best {
-    background: #f2fbf5;
+    background: #EDF1EC;
 }
 
 .results-workspace .metric-card.best::before {
@@ -2769,7 +2716,7 @@ td.best-value {
 }
 
 .results-workspace .result-explanation-card .icon {
-    color: #0f766e;
+    color: #0E7C6B;
     margin-top: 0.15rem;
 }
 
@@ -2796,7 +2743,7 @@ td.best-value {
     margin: 0;
     padding: 0.95rem 1rem 0.8rem;
     border-bottom: 1px solid var(--color-border-soft);
-    background: #fbfcf8;
+    background: #F5F7F4;
 }
 
 .results-content,
@@ -2805,7 +2752,7 @@ td.best-value {
 }
 
 .chart-container {
-    background: #fbfcf8;
+    background: #F5F7F4;
     border-color: var(--color-border-soft);
 }
 
@@ -2814,8 +2761,8 @@ td.best-value {
 }
 
 th {
-    background: #eef5f3;
-    color: #25514d;
+    background: #EDF1EC;
+    color: #1D5C4D;
 }
 
 td {
@@ -2835,12 +2782,12 @@ tr:hover td {
 .guided-header,
 .guided-footer,
 .help-modal-header {
-    background: #fbfcf8;
+    background: #F5F7F4;
     border-color: var(--color-border-soft);
 }
 
 .guided-progress {
-    background: #e4ece7;
+    background: #E2E8E0;
 }
 
 .guided-progress span {
@@ -2848,12 +2795,12 @@ tr:hover td {
 }
 
 .guided-live-summary div {
-    background: #fbfcf8;
+    background: #F5F7F4;
     border-color: var(--color-border-soft);
 }
 
 .footer {
-    background: #eef2e8;
+    background: #EDF1EC;
     border-top-color: var(--color-border-soft);
 }
 
@@ -3649,27 +3596,7 @@ tr:hover td {
 /* ============================================
    UX/UI redesign 2026
    ============================================ */
-:root {
-    --color-bg-page: #f4f8f6;
-    --color-bg-card: #ffffff;
-    --color-bg-header: #ffffff;
-    --color-bg-input: #ffffff;
-    --color-text-primary: #172033;
-    --color-text-secondary: #52645f;
-    --color-text-muted: #6f7f7a;
-    --color-border: #bfd2ca;
-    --color-border-soft: #d7e3de;
-    --color-border-focus: #0f766e;
-    --color-blue-soft: #edf7f3;
-    --color-blue-line: #d7e3de;
-    --color-accent-primary: #0f766e;
-    --color-metric-fp: #2563eb;
-    --color-metric-pac: #d97706;
-    --color-metric-mix: #0f766e;
-    --control-width: 15.5rem;
-    --shadow-sm: 0 1px 2px rgb(23 32 51 / 0.04);
-    --shadow-md: 0 8px 20px rgb(23 32 51 / 0.08), 0 1px 2px rgb(23 32 51 / 0.05);
-}
+/* (I token del redesign 2026 sono confluiti nel canonical layer.) */
 
 body {
     background:
@@ -3680,7 +3607,7 @@ body {
 header {
     position: static;
     padding: 1rem 1.5rem;
-    border-top: 0;
+    border-top: 0 solid var(--color-border-soft);
     border-bottom: 1px solid var(--color-border-soft);
     box-shadow: none;
 }
@@ -3697,7 +3624,7 @@ header {
 
 .logo h1 {
     font-size: 1rem;
-    font-weight: 850;
+    font-weight: 800;
 }
 
 .subheader {
@@ -3711,7 +3638,7 @@ header {
 
 .tab {
     font-size: 0.82rem;
-    font-weight: 850;
+    font-weight: 800;
 }
 
 #calculator-content.active {
@@ -3727,10 +3654,10 @@ header {
     align-items: center;
     padding: 1.25rem 1.5rem;
     background:
-        linear-gradient(120deg, #ffffff 0%, #f8fbf8 46%, #e5f2ec 100%),
+        linear-gradient(120deg, #ffffff 0%, #F5F7F4 46%, #EDF1EC 100%),
         #ffffff;
     border-color: var(--color-border-soft);
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
 }
 
 .intro-copy,
@@ -3748,7 +3675,7 @@ header {
 .section-kicker {
     color: var(--color-accent-primary);
     font-size: 0.72rem;
-    font-weight: 900;
+    font-weight: 800;
     letter-spacing: 0.08em;
 }
 
@@ -3756,7 +3683,9 @@ header {
 .intro-actions {
     display: grid;
     justify-items: stretch;
-    width: min(100%, 17rem);
+    /* Larghezza fissa: il feedback "Copiato!" non deve allargare nulla. */
+    width: 17rem;
+    max-width: 100%;
     padding: 0;
     background: transparent;
     border: 0;
@@ -3766,7 +3695,7 @@ header {
     min-height: 3.4rem;
     padding-inline: 1.6rem;
     font-size: 1.02rem;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     box-shadow: none;
 }
 
@@ -3783,7 +3712,7 @@ header {
 
 .workspace-section {
     border-color: var(--color-border-soft);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
 }
 
@@ -3809,7 +3738,7 @@ header {
 
 .section-heading h2 {
     font-size: 1.2rem;
-    font-weight: 850;
+    font-weight: 800;
 }
 
 .section-heading p:not(.section-kicker) {
@@ -3828,9 +3757,9 @@ header {
 
 .config-workspace #input-form {
     padding: 1.1rem;
-    background: #f8fbf9;
+    background: #F5F7F4;
     border: 1px solid var(--color-border-soft);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
 }
 
 .params-grid {
@@ -3845,7 +3774,7 @@ header {
     flex-direction: column;
     background: #ffffff;
     border: 1px solid var(--color-border-soft);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     overflow: hidden;
 }
 
@@ -3855,7 +3784,7 @@ header {
     background: transparent;
     border: 0;
     font-size: 0.98rem;
-    font-weight: 850;
+    font-weight: 800;
 }
 
 .param-card .card-header i {
@@ -3889,7 +3818,7 @@ header {
     min-height: 1.1rem;
     color: var(--color-text-secondary);
     font-size: 0.72rem;
-    font-weight: 900;
+    font-weight: 800;
     letter-spacing: 0.03em;
 }
 
@@ -3897,7 +3826,7 @@ header {
 .computed-output {
     min-height: 2.75rem;
     border-color: var(--color-border);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     font-size: 0.95rem;
     font-weight: 700;
 }
@@ -3909,9 +3838,9 @@ header {
 
 .variation-grid {
     margin-top: 0;
-    background: #f8fbf9;
+    background: #F5F7F4;
     border-color: var(--color-border-soft);
-    border-radius: 7px;
+    border-radius: var(--radius-sm);
 }
 
 .variation-header {
@@ -3933,7 +3862,7 @@ header {
 
 .variation-toggle,
 .local-tax-mode-toggle {
-    background: #edf7f3;
+    background: #EDF1EC;
     border-color: var(--color-border);
 }
 
@@ -3989,7 +3918,7 @@ header {
 }
 
 .guided-live-summary div {
-    background: #f8fbf9;
+    background: #F5F7F4;
     border-color: var(--color-border-soft);
 }
 
@@ -4010,7 +3939,7 @@ header {
     padding: 1.1rem;
     background: #ffffff;
     border: 1px solid var(--color-border-soft);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
 }
 
 .result-decision-panel {
@@ -4019,7 +3948,7 @@ header {
     padding: 1.35rem;
     background: #ffffff;
     border: 1px solid var(--color-border-soft);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
 }
 
 .result-decision-main,
@@ -4036,7 +3965,7 @@ header {
     margin-top: 0.25rem;
     font-family: var(--font-sans);
     font-size: clamp(2rem, 4vw, 3.2rem);
-    font-weight: 900;
+    font-weight: 800;
 }
 
 .result-sequence-value {
@@ -4082,7 +4011,7 @@ header {
     padding: 1rem;
     background: #ffffff;
     border: 1px solid var(--color-border-soft);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
 }
 
 .results-workspace .metric-card + .metric-card {
@@ -4117,7 +4046,7 @@ header {
     padding: 1rem;
     background: #ffffff;
     border: 1px solid var(--color-border-soft);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
 }
 
 .results-workspace .result-explanation-card + .result-explanation-card {
@@ -4131,7 +4060,7 @@ header {
     padding: 1.1rem;
     background: #ffffff;
     border: 1px solid var(--color-border-soft);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
 }
 
@@ -4145,7 +4074,7 @@ header {
     margin: 0 0 0.85rem;
     cursor: pointer;
     font-size: 1.05rem;
-    font-weight: 850;
+    font-weight: 800;
 }
 
 .table-view-tabs {
@@ -4153,13 +4082,16 @@ header {
 }
 
 .table-container {
+    /* overflow-x auto: su viewport stretti la tabella (min-width 900px)
+       deve scorrere, non essere tagliata. */
     overflow: hidden;
+    overflow-x: auto;
     border-color: var(--color-border-soft);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
 }
 
 th {
-    background: #f8fbf9;
+    background: #F5F7F4;
     color: var(--color-text-primary);
 }
 
@@ -4181,7 +4113,7 @@ td {
 
 .results-section th {
     font-size: 0.72rem;
-    font-weight: 900;
+    font-weight: 800;
     letter-spacing: 0.02em;
     white-space: normal;
 }
@@ -4201,15 +4133,15 @@ td {
 
 .results-section tr:hover td,
 .results-section tr:hover td:first-child {
-    background: #f0faf5;
+    background: var(--ds-surface-selected);
 }
 
 /* Riga dell'anno selezionato nell'esploratore annuale. */
 .results-section tr.active td,
 .results-section tr.active td:first-child {
-    background: #f0faf5;
+    background: var(--ds-surface-selected);
     color: var(--color-text-primary);
-    font-weight: 750;
+    font-weight: 700;
 }
 
 .annual-explorer-section {
@@ -4242,12 +4174,12 @@ td {
     padding: 0.9rem;
     background: #ffffff;
     border: 1px solid var(--color-border-soft);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
 }
 
 .year-answer-card.main {
-    background: #f0faf5;
-    border-color: #abd7c1;
+    background: #EDF1EC;
+    border-color: #A5C3B4;
 }
 
 .year-answer-card span,
@@ -4257,7 +4189,7 @@ td {
     display: block;
     color: var(--color-text-secondary);
     font-size: 0.67rem;
-    font-weight: 900;
+    font-weight: 800;
     letter-spacing: 0.04em;
 }
 
@@ -4267,7 +4199,7 @@ td {
     margin-top: 0.3rem;
     color: var(--color-text-primary);
     font-size: 1.2rem;
-    font-weight: 900;
+    font-weight: 800;
     line-height: 1.15;
 }
 
@@ -4281,7 +4213,7 @@ td {
 }
 
 .annual-input {
-    background: #f8fbf9;
+    background: #F5F7F4;
 }
 
 .calc-flow {
@@ -4315,10 +4247,10 @@ td {
 .step-formula {
     margin-top: 0.65rem;
     padding: 0.55rem 0.7rem;
-    color: #245c51;
-    background: #edf7f3;
+    color: #1D5C4D;
+    background: #EDF1EC;
     border: 1px solid var(--color-border-soft);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     font-family: var(--font-mono);
     font-size: 0.75rem;
     line-height: 1.35;
@@ -4449,7 +4381,7 @@ td {
     padding: 0.85rem;
     background: #ffffff;
     border: 1px solid var(--color-border-soft);
-    border-radius: 7px;
+    border-radius: var(--radius-sm);
 }
 
 .control-subgroup-title {
@@ -4463,14 +4395,14 @@ td {
 .control-subgroup-title strong {
     color: var(--color-text-primary);
     font-size: 0.86rem;
-    font-weight: 850;
+    font-weight: 800;
     line-height: 1.2;
 }
 
 .control-subgroup-title span {
     color: var(--color-text-secondary);
     font-size: 0.68rem;
-    font-weight: 850;
+    font-weight: 800;
     letter-spacing: 0.04em;
     white-space: nowrap;
 }
@@ -4582,7 +4514,7 @@ td {
     margin: 0 0 0.4rem;
     color: var(--color-text-primary);
     font-size: 0.78rem;
-    font-weight: 850;
+    font-weight: 800;
     line-height: 1.15;
     letter-spacing: 0.01em;
 }
@@ -4594,7 +4526,7 @@ td {
     border-color: var(--color-border);
     border-radius: var(--radius-sm);
     font-size: 1rem;
-    font-weight: 750;
+    font-weight: 700;
     line-height: 1.2;
 }
 
@@ -4604,8 +4536,8 @@ td {
 
 .param-card .form-control:disabled,
 .param-card .computed-output[aria-disabled="true"] {
-    background: #f7faf8;
-    color: #7b8985;
+    background: #F5F7F4;
+    color: #5F6E65;
     opacity: 1;
 }
 
@@ -4637,11 +4569,11 @@ td {
     margin: 0;
     padding: 0.45rem 0.75rem;
     color: var(--color-text-primary);
-    background: #f8fbf9;
+    background: #F5F7F4;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     font-size: 0.82rem;
-    font-weight: 850;
+    font-weight: 800;
     line-height: 1.15;
 }
 
@@ -4688,7 +4620,7 @@ td {
     width: 100%;
     min-height: var(--control-height);
     padding: 0.25rem;
-    background: #eef5f3;
+    background: #EDF1EC;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
 }
@@ -4699,7 +4631,7 @@ td {
     padding: 0.35rem 0.55rem;
     border-radius: calc(var(--radius-sm) - 2px);
     font-size: 0.9rem;
-    font-weight: 850;
+    font-weight: 800;
     line-height: 1.1;
 }
 
@@ -4767,7 +4699,7 @@ td {
     overflow: hidden;
     background: #ffffff;
     border: 1px solid var(--color-border-soft);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     box-shadow: 0 1px 2px rgb(23 32 51 / 0.03);
 }
 
@@ -4779,7 +4711,7 @@ td {
     align-items: center;
     margin: 0 0 0.85rem;
     padding: 0.95rem 1rem 0.8rem;
-    background: #fbfcf8;
+    background: #F5F7F4;
     border: 0;
     border-bottom: 1px solid var(--color-border-soft);
     cursor: pointer;
@@ -4806,7 +4738,7 @@ td {
     margin: 0;
     color: var(--color-text-primary);
     font-size: 0.98rem;
-    font-weight: 900;
+    font-weight: 800;
     line-height: 1.2;
 }
 
@@ -4820,7 +4752,7 @@ td {
 .control-shell .card-header > span {
     color: var(--color-text-secondary);
     font-size: 0.68rem;
-    font-weight: 900;
+    font-weight: 800;
     letter-spacing: 0.07em;
     white-space: nowrap;
 }
@@ -4836,7 +4768,7 @@ td {
     padding: 0.85rem;
     background: #ffffff;
     border: 1px solid var(--color-border-soft);
-    border-radius: 7px;
+    border-radius: var(--radius-sm);
 }
 
 .control-shell .control-subgroup-title {
@@ -4850,14 +4782,14 @@ td {
 .control-shell .control-subgroup-title strong {
     color: var(--color-text-primary);
     font-size: 0.85rem;
-    font-weight: 900;
+    font-weight: 800;
     line-height: 1.2;
 }
 
 .control-shell .control-subgroup-title span {
     color: var(--color-text-secondary);
     font-size: 0.68rem;
-    font-weight: 900;
+    font-weight: 800;
     letter-spacing: 0.05em;
     white-space: nowrap;
 }
@@ -4910,7 +4842,7 @@ td {
     margin: 0 0 0.38rem;
     color: var(--color-text-primary);
     font-size: 0.7rem;
-    font-weight: 900;
+    font-weight: 800;
     letter-spacing: 0.04em;
     line-height: 1.15;
 }
@@ -4922,7 +4854,7 @@ td {
     overflow: hidden;
     background: #ffffff;
     border: 1px solid var(--color-border);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
 }
 
 .control-shell .form-control,
@@ -4933,7 +4865,7 @@ td {
     color: var(--color-text-primary);
     background: #ffffff;
     border: 1px solid var(--color-border);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     font-size: 0.95rem;
     font-weight: 800;
     line-height: 1.2;
@@ -4953,10 +4885,10 @@ td {
     min-width: 3rem;
     padding: 0 0.55rem;
     color: var(--color-text-secondary);
-    background: #f8fbf9;
+    background: #F5F7F4;
     border-left: 1px solid var(--color-border-soft);
     font-size: 0.68rem;
-    font-weight: 900;
+    font-weight: 800;
 }
 
 .control-shell select.form-control {
@@ -4977,8 +4909,8 @@ td {
 
 .control-shell .form-control:disabled,
 .control-shell .metric-input:disabled {
-    color: #7b8985;
-    background: #f8fbf9;
+    color: #5F6E65;
+    background: #F5F7F4;
     opacity: 1;
 }
 
@@ -4992,9 +4924,9 @@ td {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     min-height: 2.75rem;
     padding: 0.18rem;
-    background: #eef5f3;
+    background: #EDF1EC;
     border: 1px solid var(--color-border);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
 }
 
 .control-shell .variation-toggle label,
@@ -5010,9 +4942,9 @@ td {
     color: var(--color-text-secondary);
     background: transparent;
     border: 0;
-    border-radius: 4px;
+    border-radius: calc(var(--radius-sm) - 2px);
     font-size: 0.78rem;
-    font-weight: 900;
+    font-weight: 800;
     line-height: 1;
     text-align: center;
     white-space: nowrap;
@@ -5058,21 +4990,21 @@ td {
 .control-shell .mini-metric {
     min-width: 0;
     padding: 0.7rem;
-    background: #f8fbf9;
+    background: #F5F7F4;
     border: 1px solid var(--color-border-soft);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
 }
 
 .control-shell .mini-metric.output {
-    background: #f2faf6;
-    border-color: #cfe0d9;
+    background: #EDF1EC;
+    border-color: #DCE2DA;
 }
 
 .control-shell .mini-metric span {
     display: block;
     color: var(--color-text-secondary);
     font-size: 0.64rem;
-    font-weight: 900;
+    font-weight: 800;
     letter-spacing: 0.04em;
     line-height: 1.2;
 }
@@ -5082,7 +5014,7 @@ td {
     margin-top: 0.28rem;
     color: var(--color-text-primary);
     font-size: 1rem;
-    font-weight: 900;
+    font-weight: 800;
     line-height: 1.15;
 }
 
@@ -5115,7 +5047,7 @@ td {
     padding: 0;
     color: var(--color-text-primary);
     font-size: 0.78rem;
-    font-weight: 900;
+    font-weight: 800;
     letter-spacing: 0;
 }
 
@@ -5134,7 +5066,7 @@ td {
     min-height: 1.05rem;
     color: var(--color-text-primary);
     font-size: 0.78rem;
-    font-weight: 850;
+    font-weight: 800;
     letter-spacing: 0.01em;
     line-height: 1.15;
 }
@@ -5190,7 +5122,7 @@ td {
     color: #7c3f00;
     background: #fff7ed;
     border: 1px solid #fed7aa;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 0.8rem;
     line-height: 1.4;
 }
@@ -5224,19 +5156,19 @@ td {
 }
 
 .guided-dialog .guided-header {
-    background: #fbfcf8;
+    background: #F5F7F4;
     border-bottom: 1px solid var(--color-border-soft);
 }
 
 .guided-dialog .guided-eyebrow {
     color: var(--color-accent-primary);
     font-size: 0.68rem;
-    font-weight: 900;
+    font-weight: 800;
     letter-spacing: 0.07em;
 }
 
 .guided-dialog .guided-progress {
-    background: #e2ede8;
+    background: #E2E8E0;
 }
 
 .guided-dialog .guided-progress span {
@@ -5244,7 +5176,7 @@ td {
 }
 
 .guided-dialog .guided-footer {
-    background: #f8fbf9;
+    background: #F5F7F4;
     border-top: 1px solid var(--color-border-soft);
 }
 
@@ -5252,7 +5184,7 @@ td {
 .guided-dialog .guided-body.control-shell {
     display: block;
     padding: 1.15rem 1.25rem 1.25rem;
-    background: #f8fbf9;
+    background: #F5F7F4;
     border: 0;
     border-radius: 0;
 }
@@ -5276,7 +5208,7 @@ td {
     margin: 0;
     color: var(--color-text-primary);
     font-size: 0.98rem;
-    font-weight: 900;
+    font-weight: 800;
     line-height: 1.2;
 }
 
@@ -5303,9 +5235,9 @@ td {
     display: grid;
     gap: 0.85rem;
     padding: 0.85rem;
-    background: #fbfdfb;
+    background: #FFFFFF;
     border: 1px solid var(--color-border-soft);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
 }
 
 /* Note informative: stessa palette dei mini-metric output della plancia. */
@@ -5324,9 +5256,9 @@ td {
 /* Ogni controllo spiegato ha il suo box. */
 .guided-dialog .guided-note .help-entry {
     padding: 0.7rem 0.85rem;
-    background: #f2faf6;
-    border: 1px solid #cfe0d9;
-    border-radius: 6px;
+    background: #EDF1EC;
+    border: 1px solid #DCE2DA;
+    border-radius: var(--radius-sm);
 }
 
 .guided-dialog .guided-note strong {
@@ -5338,9 +5270,9 @@ td {
     width: 100%;
     margin: 0;
     padding: 0;
-    background: #f8fbf9;
+    background: #F5F7F4;
     border: 1px solid var(--color-border);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
 }
 
 .guided-dialog .variation-header {
@@ -5362,7 +5294,7 @@ td {
 .guided-dialog .variation-header > span {
     color: var(--color-text-secondary);
     font-size: 0.7rem;
-    font-weight: 900;
+    font-weight: 800;
     letter-spacing: 0.04em;
 }
 
@@ -5399,7 +5331,7 @@ td {
     min-height: 1.05rem;
     color: var(--color-text-primary);
     font-size: 0.78rem;
-    font-weight: 850;
+    font-weight: 800;
     letter-spacing: 0.01em;
     line-height: 1.15;
 }
@@ -5419,25 +5351,25 @@ td {
    otticamente rispetto al testo della label. */
 /* Icona informativa in puro CSS: esiste dal primo paint (niente flash). */
 .help-trigger::after {
-    content: 'i';
+    /* La "i" è disegnata come SVG geometrico (punto + asta centrati nel
+       viewBox), non come glifo di testo: il glifo ereditava il
+       letter-spacing della label e le metriche del font, e a ~10px
+       risultava visibilmente scentrato nel cerchio. */
+    content: '';
     display: inline-grid;
-    place-items: center;
     flex: 0 0 auto;
     width: 1.15em;
     height: 1.15em;
     margin-top: -0.12em;
-    background: rgb(15 118 110 / 0.55);
+    background-color: rgb(15 118 110 / 0.55);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3e%3ccircle cx='12' cy='6.6' r='2.1' fill='%23ffffff'/%3e%3crect x='9.9' y='10.3' width='4.2' height='9.2' rx='2.1' fill='%23ffffff'/%3e%3c/svg%3e");
+    background-size: 100% 100%;
     border-radius: 999px;
-    color: #ffffff;
-    font-size: 0.78em;
-    font-style: normal;
-    font-weight: 900;
-    line-height: 1;
     transition: var(--transition);
 }
 
 .help-trigger:hover::after {
-    background: var(--color-accent-primary);
+    background-color: var(--color-accent-primary);
 }
 
 /* Sezioni etichettate: Dove si trova / Come viene usato / Cosa comporta */
@@ -5454,7 +5386,7 @@ td {
     font-size: 0.68rem;
     font-weight: 800;
     letter-spacing: 0.06em;
-    color: var(--color-accent-primary, #0f766e);
+    color: var(--color-accent-primary, #0E7C6B);
     opacity: 0.85;
 }
 
@@ -5478,7 +5410,7 @@ td {
 }
 
 .help-modal-header {
-    background: #f8fbf9;
+    background: #F5F7F4;
 }
 
 /* Contenuto diretto nella modale: nessun box interno. */
@@ -5517,7 +5449,7 @@ td {
     padding: 1.1rem;
     background: #ffffff;
     border: 1px solid var(--color-border-soft);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
 }
 
@@ -5541,7 +5473,7 @@ td {
     padding: 1.1rem;
     background: var(--color-bg-card);
     border: 1px solid var(--color-border-soft);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     margin: 0 0 1rem;
     overflow: hidden;
@@ -5550,11 +5482,11 @@ td {
 .docs-section h2.docs-collapsible-title {
     margin: 0 0 0.85rem;
     padding: 0.95rem 1rem 0.8rem;
-    background: #fbfcf8;
+    background: #F5F7F4;
     border-bottom: 1px solid var(--color-border-soft);
     color: var(--color-text-primary);
     font-size: 0.95rem;
-    font-weight: 750;
+    font-weight: 700;
     line-height: 1.2;
     cursor: pointer;
     user-select: none;
@@ -5578,7 +5510,7 @@ td {
 }
 
 .docs-collapsible-content > h3:first-child {
-    margin-top: 1rem;
+    margin-top: 0;
 }
 
 /* Indice della guida: card con voci navigabili */
@@ -5592,10 +5524,10 @@ td {
     padding: 1.25rem 1.5rem;
     min-height: 8rem;
     background:
-        linear-gradient(120deg, #ffffff 0%, #f8fbf8 46%, #e5f2ec 100%),
+        linear-gradient(120deg, #ffffff 0%, #F5F7F4 46%, #EDF1EC 100%),
         #ffffff;
     border: 1px solid var(--color-border-soft);
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
 }
 
@@ -5616,7 +5548,7 @@ td {
     padding: 0.55rem 0.75rem;
     background: var(--color-accent-primary);
     border: 1px solid var(--color-accent-primary);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     color: #ffffff;
     font-size: 0.82rem;
     font-weight: 700;
@@ -5626,8 +5558,8 @@ td {
 
 .docs-index a:hover {
     color: #ffffff;
-    border-color: #0b5d57;
-    background: #0b5d57;
+    border-color: #0B6357;
+    background: #0B6357;
 }
 
 /* Anti-flash tab: prima che il JS ripristini il tab salvato, un attributo
@@ -5659,17 +5591,15 @@ html[data-active-tab="documentation"] .tab[data-tab="documentation"] {
 [data-strategy]:hover {
     outline: 1px solid rgb(15 118 110 / 0.45);
     outline-offset: -1px;
-    border-radius: 8px;
     box-shadow: 0 2px 10px rgb(15 118 110 / 0.12);
 }
 
 .results-workspace [data-strategy].strategy-active,
 [data-strategy].strategy-active {
-    outline: 2px solid var(--color-accent-primary);
+    outline: 2px solid var(--ds-primary);
     outline-offset: -2px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #e7f6f1 0%, #f9fcfa 70%);
-    box-shadow: 0 4px 16px rgb(15 118 110 / 0.18);
+    background: var(--ds-surface-selected);
+    box-shadow: 0 4px 16px rgb(29 92 77 / 0.14);
 }
 
 /* Guidata: i blocchi condizionali (es. rendimento lordo) spaziano le righe
@@ -5694,51 +5624,7 @@ html[data-active-tab="documentation"] .tab[data-tab="documentation"] {
 /* ============================================
    Dark theme
    ============================================ */
-html[data-theme="dark"] {
-    color-scheme: dark;
-    --color-bg-page: #0f1513;
-    --color-bg-card: #171f1c;
-    --color-bg-header: #111815;
-    --color-bg-input: #101815;
-    --color-bg-page-top: #14211c;
-    --color-bg-panel: #131b18;
-    --color-bg-panel-strong: #18231f;
-    --color-bg-subtle: #1c2b26;
-    --color-bg-soft-blue: #16231f;
-    --color-bg-success-soft: #13251b;
-    --color-bg-warning-soft: #2a2013;
-    --color-bg-overlay: rgb(2 6 5 / 0.72);
-
-    --color-text-primary: #edf5ef;
-    --color-text-secondary: #b8c7bf;
-    --color-text-inverse: #edf5ef;
-    --color-text-muted: #8fa099;
-
-    --color-border: #33413b;
-    --color-border-soft: #26332e;
-    --color-border-focus: #2dd4bf;
-    --color-blue-soft: #172720;
-    --color-blue-line: #2a3b34;
-    --color-link: #8bbcff;
-    --color-info-text: #b7d5ff;
-    --color-warning-text: #f2c57c;
-    --color-warning-border: #7c4b1d;
-
-    --color-accent-primary: #2dd4bf;
-    --color-accent-success: #4ade80;
-    --color-accent-warning: #f59e0b;
-    --color-accent-danger: #f87171;
-    --color-accent-purple: #a78bfa;
-
-    --color-metric-fp: #60a5fa;
-    --color-metric-pac: #f59e0b;
-    --color-metric-mix: #2dd4bf;
-    --color-metric-breakeven: #a78bfa;
-
-    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.32);
-    --shadow-md: 0 10px 28px rgb(0 0 0 / 0.34);
-    --shadow-lg: 0 24px 70px rgb(0 0 0 / 0.48);
-}
+/* (I token del tema scuro sono nel canonical layer in fondo al file.) */
 
 html[data-theme="dark"] body {
     background:
@@ -5756,7 +5642,7 @@ html[data-theme="dark"] a {
 
 html[data-theme="dark"] .intro-section {
     background:
-        linear-gradient(120deg, #17231f 0%, #13201b 46%, #10251d 100%),
+        linear-gradient(120deg, #1A211D 0%, #171D1A 46%, #141A17 100%),
         var(--color-bg-card);
 }
 
@@ -5845,9 +5731,9 @@ html[data-theme="dark"] .segmented-control button.active,
 html[data-theme="dark"] .table-view-tab.active,
 html[data-theme="dark"] [data-strategy-select].active,
 html[data-theme="dark"] .docs-nav a:hover {
-    background: var(--color-bg-subtle);
+    background: var(--ds-primary);
     color: var(--color-accent-primary);
-    border-color: var(--color-border-focus);
+    border-color: var(--ds-primary);
 }
 
 html[data-theme="dark"] #output-table th {
@@ -5855,16 +5741,8 @@ html[data-theme="dark"] #output-table th {
     color: var(--color-text-primary);
 }
 
-html[data-theme="dark"] #output-table td {
-    background: var(--color-bg-card);
-    color: var(--color-text-secondary);
-    border-color: var(--color-border-soft);
-}
-
-html[data-theme="dark"] #output-table tbody tr.active td {
-    background: var(--color-bg-subtle);
-    color: var(--color-text-primary);
-}
+/* (Nessuna regola dark-specifica per la tabella: il binding è unico
+   e il tema lo decidono solo le palette dei token.) */
 
 html[data-theme="dark"] .highlight,
 html[data-theme="dark"] .docs-section .highlight,
@@ -5930,9 +5808,9 @@ body {
     min-height: 2.75rem;
     padding: 0 1.1rem;
     color: var(--color-text-primary);
-    background: #f8fbf9;
+    background: #F5F7F4;
     border: 1px solid var(--color-border-soft);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     font-size: 0.82rem;
     font-weight: 700;
     line-height: 1;
@@ -5961,8 +5839,8 @@ body {
 }
 
 .year-answer-card.main {
-    background: #f0faf5;
-    border-color: #abd7c1;
+    background: #EDF1EC;
+    border-color: #A5C3B4;
 }
 
 /* Logo cliccabile: simbolo (favicon) + nome, rimanda alla home. */
@@ -5976,7 +5854,7 @@ a.logo {
     display: block;
     width: 36px;
     height: 36px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     flex: 0 0 auto;
 }
 
@@ -5998,7 +5876,7 @@ a.logo:hover h1 {
     align-self: start;
     color: var(--color-text-primary);
     font-size: 1.05rem;
-    font-weight: 750;
+    font-weight: 700;
     letter-spacing: 0;
 }
 
@@ -6066,8 +5944,6 @@ html[data-theme="dark"] .config-workspace,
 html[data-theme="dark"] .control-shell .param-card,
 html[data-theme="dark"] .control-shell .control-subgroup,
 html[data-theme="dark"] .docs-collapsible,
-html[data-theme="dark"] .guided-dialog .guided-step.active,
-html[data-theme="dark"] .guided-dialog #guided-minimum-wage-fields,
 html[data-theme="dark"] .help-modal-content {
     background: var(--color-bg-card);
     border-color: var(--color-border-soft);
@@ -6075,9 +5951,6 @@ html[data-theme="dark"] .help-modal-content {
 
 html[data-theme="dark"] .control-shell .card-header,
 html[data-theme="dark"] .docs-section h2.docs-collapsible-title,
-html[data-theme="dark"] .guided-dialog .guided-header,
-html[data-theme="dark"] .guided-dialog .guided-footer,
-html[data-theme="dark"] .guided-dialog .guided-body.control-shell,
 html[data-theme="dark"] .help-modal-header,
 html[data-theme="dark"] .docs-section pre,
 html[data-theme="dark"] .docs-index,
@@ -6088,8 +5961,7 @@ html[data-theme="dark"] .control-shell .variation-toggle,
 html[data-theme="dark"] .control-shell .local-tax-mode-toggle,
 html[data-theme="dark"] .control-shell .segmented-control,
 html[data-theme="dark"] .control-shell .binary-toggle-state,
-html[data-theme="dark"] .guided-dialog .variation-grid,
-html[data-theme="dark"] .guided-dialog .guided-note .help-entry {
+html[data-theme="dark"] .guided-dialog .variation-grid {
     background: var(--color-bg-panel-strong);
     border-color: var(--color-border-soft);
 }
@@ -6155,14 +6027,14 @@ html[data-theme="dark"] .control-shell .binary-toggle input[type="checkbox"]:not
 html[data-theme="dark"] .control-shell .binary-toggle input[type="checkbox"]:checked ~ .binary-toggle-state span:last-child,
 html[data-theme="dark"] .param-card .local-tax-mode-button.active,
 html[data-theme="dark"] .docs-index a {
-    background: var(--color-accent-primary);
-    border-color: var(--color-accent-primary);
+    background: var(--ds-primary);
+    border-color: var(--ds-primary);
     color: #07110f;
 }
 
 html[data-theme="dark"] .docs-index a:hover {
-    background: #5eead4;
-    border-color: #5eead4;
+    background: #66CDB4;
+    border-color: #66CDB4;
     color: #07110f;
 }
 
@@ -6259,27 +6131,8 @@ html[data-theme="dark"] .annual-input strong {
     color: var(--color-text-primary);
 }
 
-html[data-theme="dark"] th,
-html[data-theme="dark"] .results-section th {
-    background: var(--color-bg-panel-strong);
-    color: var(--color-text-primary);
-    border-color: var(--color-border-soft);
-}
-
-html[data-theme="dark"] td,
-html[data-theme="dark"] .results-section td {
-    background: var(--color-bg-card);
-    color: var(--color-text-secondary);
-    border-color: var(--color-border-soft);
-}
-
-html[data-theme="dark"] .results-section tr:hover td,
-html[data-theme="dark"] .results-section tr:hover td:first-child,
-html[data-theme="dark"] .results-section tr.active td,
-html[data-theme="dark"] .results-section tr.active td:first-child {
-    background: var(--color-bg-success-soft);
-    color: var(--color-text-primary);
-}
+/* (Niente regole dark-specifiche per la tabella: il binding è unico,
+   il tema lo decidono solo le palette dei token.) */
 
 html[data-theme="dark"] .go-to-top,
 html[data-theme="dark"] .go-to-top:visited {
@@ -6295,9 +6148,9 @@ html[data-theme="dark"] .go-to-top .icon {
 
 html[data-theme="dark"] .go-to-top:hover,
 html[data-theme="dark"] .go-to-top:focus-visible {
-    background: #5eead4;
+    background: #66CDB4;
     color: #07110f;
-    border-color: #5eead4;
+    border-color: #66CDB4;
 }
 
 html[data-theme="dark"] .btn-primary,
@@ -6322,49 +6175,77 @@ html[data-theme="dark"] .intro-primary .icon {
 :root {
     color-scheme: light;
 
-    --ds-page: #f4f8f6;
-    --ds-page-top: #e8f3ee;
-    --ds-header: #ffffff;
-    --ds-surface: #ffffff;
-    --ds-surface-raised: #ffffff;
-    --ds-surface-panel: #f8fbf9;
-    --ds-surface-muted: #edf7f3;
-    --ds-surface-selected: #eef8f2;
-    --ds-surface-warning: #fff7ed;
-    --ds-theme-toggle-hover: #edf7f3;
-    --ds-overlay: rgb(15 23 42 / 0.46);
+    /* Palette "Registro": carta calda + verde-inchiostro.
+       Contrasti misurati (vedi proposta di restyling). */
+    --ds-page: #F5F7F4;
+    --ds-page-top: #EEF2ED;
+    --ds-header: #FFFFFF;
+    --ds-surface: #FFFFFF;
+    --ds-surface-raised: #FFFFFF;
+    --ds-surface-panel: #EDF1EC;
+    --ds-surface-muted: #EDF1EC;
+    --ds-surface-selected: #E2EAE3;
+    --ds-surface-warning: #FFF7ED;
+    --ds-theme-toggle-hover: #EDF1EC;
+    --ds-overlay: rgb(22 33 27 / 0.46);
 
-    --ds-text: #172033;
-    --ds-text-soft: #52645f;
-    --ds-text-muted: #6f7f7a;
-    --ds-text-on-accent: #ffffff;
+    --ds-text: #16211B;
+    --ds-text-soft: #47564E;
+    --ds-text-muted: #5F6E65;
+    --ds-text-on-accent: #FFFFFF;
 
-    --ds-border: #bfd2ca;
-    --ds-border-soft: #d7e3de;
-    --ds-border-strong: #0f766e;
+    --ds-border: #C7CFC6;
+    --ds-border-soft: #DCE2DA;
+    --ds-border-strong: #0E7C6B;
 
-    --ds-accent: #0f766e;
-    --ds-accent-hover: #0b5f59;
-    --ds-success: #15803d;
-    --ds-warning: #b45309;
-    --ds-warning-text: #7c3f00;
-    --ds-warning-border: #fed7aa;
-    --ds-link: #1d4ed8;
+    /* Identità (bottoni pieni, stati selezionati, titoli forti) e
+       interazione (link, focus, toggle attivi) sono due token distinti. */
+    --ds-primary: #1D5C4D;
+    --ds-primary-hover: #16473C;
+    --ds-accent: #0E7C6B;
+    --ds-accent-hover: #0B6357;
+    --ds-success: #2E7D43;
+    --ds-warning: #B45309;
+    --ds-warning-text: #7C3F00;
+    --ds-warning-border: #FED7AA;
+    --ds-link: #0E7C6B;
+    --ds-danger: #C03A2E;
 
-    --ds-metric-fp: #2563eb;
-    --ds-metric-pac: #d97706;
-    --ds-metric-mix: #0f766e;
-    --ds-metric-extra: #7c3aed;
+    /* Colori-dato: solo per dati. Le varianti -text reggono il testo
+       piccolo (l'ambra piena è 3,5:1: mai come testo). */
+    --ds-metric-fp: #2E5FD0;
+    --ds-metric-fp-text: #24489C;
+    --ds-metric-pac: #C77414;
+    --ds-metric-pac-text: #8F5407;
+    --ds-metric-mix: #1D5C4D;
+    --ds-metric-mix-text: #1D5C4D;
+    --ds-metric-extra: #5F6E65;
 
-    --ds-hero: linear-gradient(120deg, #ffffff 0%, #f8fbf8 46%, #e5f2ec 100%);
-    --ds-focus-ring: 0 0 0 3px rgb(15 118 110 / 0.16);
-    --ds-shadow-sm: 0 1px 2px rgb(23 32 51 / 0.04);
-    --ds-shadow-md: 0 8px 20px rgb(23 32 51 / 0.08), 0 1px 2px rgb(23 32 51 / 0.05);
-    --ds-shadow-lg: 0 18px 50px rgb(23 32 51 / 0.16);
+    --ds-hero: var(--ds-surface);
+    --ds-focus-ring: 0 0 0 3px rgb(14 124 107 / 0.16);
+    --ds-shadow-sm: 0 1px 2px rgb(22 33 27 / 0.05);
+    --ds-shadow-md: 0 8px 20px rgb(22 33 27 / 0.08), 0 1px 2px rgb(22 33 27 / 0.05);
+    --ds-shadow-lg: 0 18px 50px rgb(22 33 27 / 0.16);
 
-    --ds-radius-sm: 6px;
-    --ds-radius-md: 8px;
-    --ds-radius-lg: 10px;
+    /* Geometria squadrata-tecnica: 8 / 4 / 2 (+ pill per i badge). */
+    --ds-radius-sm: 4px;
+    --ds-radius-md: 4px;
+    --ds-radius-lg: 8px;
+
+    /* Token non-colore condivisi dai due temi. */
+    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --radius-sm: 4px;
+    --radius-md: 4px;
+    --radius-lg: 8px;
+    --control-width: 15.5rem;
+    --control-wide-width: 28rem;
+    --transition: 0.2s ease;
+
+    /* Alias legacy senza equivalente --ds-*. */
+    --color-info-text: #1E3A8A;
+    --color-accent-danger: var(--ds-danger);
+    --color-accent-purple: #6D5BD0;
 
     --color-bg-page: var(--ds-page);
     --color-bg-page-top: var(--ds-page-top);
@@ -6409,45 +6290,61 @@ html[data-theme="dark"] .intro-primary .icon {
 html[data-theme="dark"] {
     color-scheme: dark;
 
-    --ds-page: #0f1513;
-    --ds-page-top: #14211c;
-    --ds-header: #111815;
-    --ds-surface: #171f1c;
-    --ds-surface-raised: #101815;
-    --ds-surface-panel: #131b18;
-    --ds-surface-muted: #1c2b26;
-    --ds-surface-selected: #13251b;
-    --ds-surface-warning: #2a2013;
-    --ds-theme-toggle-hover: #2a4a42;
+    --ds-page: #0F1412;
+    --ds-page-top: #151B17;
+    --ds-header: #131916;
+    --ds-surface: #171D1A;
+    --ds-surface-raised: #171D1A;
+    --ds-surface-panel: #1D2622;
+    --ds-surface-muted: #1D2622;
+    --ds-surface-selected: #263129;
+    --ds-surface-warning: #2A2013;
+    --ds-theme-toggle-hover: #243029;
     --ds-overlay: rgb(2 6 5 / 0.72);
 
-    --ds-text: #edf5ef;
-    --ds-text-soft: #b8c7bf;
-    --ds-text-muted: #8fa099;
-    --ds-text-on-accent: #07110f;
+    --ds-text: #E9EFEA;
+    --ds-text-soft: #B6C2B9;
+    --ds-text-muted: #8FA095;
+    --ds-text-on-accent: #07110F;
 
-    --ds-border: #33413b;
-    --ds-border-soft: #26332e;
-    --ds-border-strong: #2dd4bf;
+    --ds-border: #3B473F;
+    --ds-border-soft: #2C362F;
+    --ds-border-strong: #3FBFA8;
 
-    --ds-accent: #2dd4bf;
-    --ds-accent-hover: #5eead4;
-    --ds-success: #4ade80;
-    --ds-warning: #f59e0b;
-    --ds-warning-text: #f2c57c;
-    --ds-warning-border: #7c4b1d;
-    --ds-link: #8bbcff;
+    --ds-primary: #4FB99F;
+    --ds-primary-hover: #6FCDB6;
+    --ds-accent: #3FBFA8;
+    --ds-accent-hover: #66CDB4;
+    --ds-success: #6FBF84;
+    --ds-warning: #E5A44C;
+    --ds-warning-text: #F2C57C;
+    --ds-warning-border: #7C4B1D;
+    --ds-link: #3FBFA8;
+    --ds-danger: #E77B6E;
 
-    --ds-metric-fp: #60a5fa;
-    --ds-metric-pac: #f59e0b;
-    --ds-metric-mix: #2dd4bf;
-    --ds-metric-extra: #a78bfa;
+    --ds-metric-fp: #7C9FF2;
+    --ds-metric-fp-text: #7C9FF2;
+    --ds-metric-pac: #E5A44C;
+    --ds-metric-pac-text: #E5A44C;
+    --ds-metric-mix: #4FB99F;
+    --ds-metric-mix-text: #4FB99F;
+    --ds-metric-extra: #8FA095;
 
-    --ds-hero: linear-gradient(120deg, #17231f 0%, #13201b 46%, #10251d 100%);
-    --ds-focus-ring: 0 0 0 3px rgb(45 212 191 / 0.18);
+    --ds-hero: var(--ds-surface);
+    --ds-focus-ring: 0 0 0 3px rgb(63 191 168 / 0.2);
     --ds-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.32);
     --ds-shadow-md: 0 10px 28px rgb(0 0 0 / 0.34);
     --ds-shadow-lg: 0 24px 70px rgb(0 0 0 / 0.48);
+
+    /* Alias legacy che nel tema scuro divergono dal remap --ds-*. */
+    --color-bg-panel-strong: #1D2622;
+    --color-bg-soft-blue: #1A211D;
+    --color-text-inverse: #E9EFEA;
+    --color-blue-soft: #1A211D;
+    --color-blue-line: #2C362F;
+    --color-info-text: #B7D5FF;
+    --color-accent-danger: var(--ds-danger);
+    --color-accent-purple: #A78BFA;
 }
 
 body {
@@ -6515,7 +6412,7 @@ html[data-theme="dark"] .logo h1 {
 .help-modal-content {
     background: var(--ds-surface);
     border: 1px solid var(--ds-border-soft);
-    border-radius: var(--ds-radius-md);
+    border-radius: var(--ds-radius-lg);
     box-shadow: var(--ds-shadow-sm);
 }
 
@@ -6523,7 +6420,7 @@ html[data-theme="dark"] .logo h1 {
     padding: 1.1rem;
     background: var(--ds-surface);
     border: 1px solid var(--ds-border-soft);
-    border-radius: var(--ds-radius-md);
+    border-radius: var(--ds-radius-lg);
     box-shadow: var(--ds-shadow-sm);
 }
 
@@ -6556,6 +6453,7 @@ html[data-theme="dark"] .logo h1 {
     border-color: var(--ds-border-soft);
 }
 
+/* Card e contenitori: raggio esterno della scala (8). */
 .param-card,
 .control-subgroup,
 .result-decision-panel,
@@ -6566,14 +6464,21 @@ html[data-theme="dark"] .logo h1 {
 .year-answer-card,
 .annual-input,
 .calc-step,
-.mini-metric,
-.guided-dialog .guided-note .help-entry,
 .docs-comparison-card,
 .docs-info-card,
 .docs-scenario-card,
 .docs-fund-card,
 .docs-source-item,
-.docs-definition-list > div,
+.docs-definition-list > div {
+    background: var(--ds-surface-raised);
+    border: 1px solid var(--ds-border-soft);
+    border-radius: var(--ds-radius-lg);
+    box-shadow: none;
+}
+
+/* Chip e pannellini di servizio: raggio dei controlli (4). */
+.mini-metric,
+.guided-dialog .guided-note .help-entry,
 .warning-item,
 .autocomplete-results {
     background: var(--ds-surface-raised);
@@ -6707,8 +6612,8 @@ td,
 .control-shell .binary-toggle input[type="checkbox"]:checked ~ .binary-toggle-state span:last-child,
 .param-card .local-tax-mode-button.active,
 .explorer-strategy-select button.active {
-    background: var(--ds-accent);
-    border-color: var(--ds-accent);
+    background: var(--ds-primary);
+    border-color: var(--ds-primary);
     color: var(--ds-text-on-accent);
 }
 
@@ -6725,8 +6630,8 @@ td,
 .docs-index a:hover,
 .go-to-top:hover,
 .go-to-top:focus-visible {
-    background: var(--ds-accent-hover);
-    border-color: var(--ds-accent-hover);
+    background: var(--ds-primary-hover);
+    border-color: var(--ds-primary-hover);
     color: var(--ds-text-on-accent);
 }
 
@@ -6772,12 +6677,18 @@ td,
 }
 
 .help-trigger::after {
-    background: color-mix(in srgb, var(--ds-accent) 72%, transparent);
-    color: var(--ds-text-on-accent);
+    background-color: color-mix(in srgb, var(--ds-accent) 72%, transparent);
 }
 
 .help-trigger:hover::after {
-    background: var(--ds-accent);
+    background-color: var(--ds-accent);
+}
+
+/* Nel tema scuro l'inchiostro della "i" segue --ds-text-on-accent
+   (#07110f): il colore è nel data URI perché fill non legge le custom
+   property. */
+html[data-theme="dark"] .help-trigger::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3e%3ccircle cx='12' cy='6.6' r='2.1' fill='%2307110f'/%3e%3crect x='9.9' y='10.3' width='4.2' height='9.2' rx='2.1' fill='%2307110f'/%3e%3c/svg%3e");
 }
 
 .control-shell > .input-warnings .input-warning {
@@ -6841,8 +6752,8 @@ td,
 }
 
 html[data-theme="dark"] .results-workspace [data-strategy]:not(.strategy-active) {
-    background: var(--ds-surface-raised);
-    border-color: color-mix(in srgb, var(--ds-border-soft) 78%, transparent);
+    background: var(--ds-surface);
+    border-color: var(--ds-border-soft);
 }
 
 html[data-theme="dark"] .results-workspace [data-strategy].strategy-active {
@@ -6883,10 +6794,10 @@ html[data-theme="dark"] .guided-dialog .guided-step .mini-metric.output {
     box-shadow: none;
 }
 
+/* Il padding orizzontale va azzerato solo per i titoli dentro contenitori
+   già paddati: gli header di dialog/modale tengono il proprio. */
 .param-card .card-header,
-.docs-section h2.docs-collapsible-title,
-.guided-dialog .guided-header,
-.help-modal-header {
+.docs-section h2.docs-collapsible-title {
     padding-left: 0;
     padding-right: 0;
 }
@@ -7149,7 +7060,7 @@ body {
 #toggle-results,
 #annual-explorer-title,
 #toggle-chart {
-    font-weight: 680;
+    font-weight: 600;
 }
 
 .tab,
@@ -7171,7 +7082,7 @@ body {
 th,
 .results-section th,
 td:first-child {
-    font-weight: 620;
+    font-weight: 600;
 }
 
 .metric-value,
@@ -7187,13 +7098,13 @@ td:first-child {
 .computed-output,
 input,
 select {
-    font-weight: 660;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1, "kern" 1;
 }
 
 .result-best-value {
-    font-weight: 720;
+    font-weight: 700;
 }
 
 .intro-copy p,
@@ -7317,7 +7228,7 @@ html[data-theme="dark"] .control-shell .binary-toggle > .help-trigger {
         max-width: calc(100vw - 2rem);
         height: min(720px, calc(100dvh - 2rem));
         max-height: calc(100dvh - 2rem);
-        border-radius: 10px;
+        border-radius: var(--radius-lg);
     }
 
     .guided-dialog .guided-header,
@@ -7501,16 +7412,13 @@ html[data-theme="dark"] .docs-section h2.docs-collapsible-title {
    ========================================================= */
 
 .workspace-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+    display: block;
     margin-bottom: 0.85rem;
 }
 
 .workspace-header .results-title {
     margin: 0;
+    width: 100%;
 }
 
 .btn-compact {
@@ -7521,7 +7429,7 @@ html[data-theme="dark"] .docs-section h2.docs-collapsible-title {
 /* Secondo bottone dell'intro: stessa larghezza del primario, più leggero. */
 .intro-actions .intro-secondary {
     min-height: 2.6rem;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
 }
 
 .intro-actions .intro-primary,
@@ -7552,4 +7460,569 @@ html[data-theme="dark"] .btn-secondary:hover {
     color: var(--color-text-primary);
     background: var(--color-blue-soft);
     border-color: var(--color-border);
+}
+
+/* ============================================
+   Accessibilità: toggle da tastiera e focus
+   ============================================ */
+
+/* Le tab dell'header sono <button>: neutralizza lo stile UA mantenendo
+   l'aspetto testuale definito da .tab. */
+.tabs .tab {
+    font-family: inherit;
+    text-align: center;
+}
+
+.tabs .tab:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 4px;
+    border-radius: 2px;
+}
+
+/* Button reale dentro i titoli-barra apri/chiudi (creato da
+   makeHeadingToggle): eredita tutto dal titolo, il click resta
+   sull'intera barra. */
+.heading-toggle {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: inherit;
+    cursor: pointer;
+}
+
+.heading-toggle:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 3px;
+    border-radius: 2px;
+}
+
+/* L'anello di focus degli input dentro .control-field viene clippato
+   dall'overflow:hidden del wrapper: va disegnato sul wrapper stesso. */
+.control-shell .control-field:focus-within {
+    border-color: var(--ds-border-strong);
+    box-shadow: var(--ds-focus-ring);
+}
+
+/* Niente animazione dei puntini di caricamento per chi chiede
+   movimento ridotto. */
+@media (prefers-reduced-motion: reduce) {
+    .loading-dot {
+        animation: none;
+    }
+}
+
+/* ============================================
+   Cambio tema: crossfade via View Transitions
+   ============================================ */
+
+/* Durante lo switch le transizioni per-elemento vanno sospese: lo
+   snapshot "nuovo" verrebbe altrimenti catturato a ricolorazione
+   ancora in corso, sporcando il crossfade. */
+html[data-theme-switching],
+html[data-theme-switching] *,
+html[data-theme-switching] *::before,
+html[data-theme-switching] *::after {
+    transition: none !important;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 240ms;
+    animation-timing-function: ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation: none;
+    }
+}
+
+/* =========================================================
+   Restyle 2026 — "strumento di precisione"
+   Voce numerica unica (IBM Plex Mono), pannello verdetto
+   scuro con timeline, gerarchia radius outer>mid>control.
+   ========================================================= */
+
+/* --- Voce numerica: tutti i numeri parlano mono. --- */
+.result-best-value,
+.result-sequence-value,
+.metric-value,
+.metric-value-compact,
+.mini-metric strong,
+.computed-output,
+.control-shell .unit,
+.calc-step strong,
+.step-row strong,
+.step-value,
+#output-table td,
+#output-table th {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+.result-best-value {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.result-sequence-value,
+.metric-value,
+.metric-value-compact,
+.mini-metric strong,
+.calc-step strong,
+.step-row strong {
+    font-weight: 600;
+}
+
+.computed-output,
+#output-table td {
+    font-weight: 500;
+}
+
+#output-table th {
+    font-weight: 600;
+}
+
+.control-shell .unit {
+    font-weight: 600;
+}
+
+/* --- Radius: contenitori esterni a 12, dialog compreso. --- */
+.workspace-section,
+.intro-section,
+.docs-index,
+.docs-collapsible,
+.docs-section {
+    border-radius: var(--radius-lg);
+}
+
+.guided-dialog {
+    border-radius: var(--radius-lg);
+}
+
+/* --- Pannello del verdetto: resta chiaro come il resto della pagina;
+   il numerone stretto e la timeline fanno il lavoro di gerarchia. --- */
+.result-decision-panel {
+    /* Il filo superiore primario è l'unico gesto forte concesso al
+       verdetto (proposta "Registro"). */
+    border-radius: var(--radius-lg);
+    border-top: 3px solid var(--ds-primary);
+    overflow: hidden;
+}
+
+/* Le etichette delle strategie usano le varianti-testo dei colori-dato:
+   leggibili anche piccole, coerenti con grafico e timeline. */
+.metric-card.metric-fp .metric-label {
+    color: var(--ds-metric-fp-text);
+}
+
+.metric-card.metric-pac .metric-label {
+    color: var(--ds-metric-pac-text);
+}
+
+.metric-card.metric-mix .metric-label {
+    color: var(--ds-metric-mix-text);
+}
+
+/* Il numerone a taglia display in sans, stretto e tabulare: il mono
+   resta la voce dei numeri "da dato", non da titolo. */
+.result-decision-panel .result-best-value {
+    font-family: var(--font-sans);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+}
+
+/* --- Timeline della strategia: striscia sottile da strumento, un
+   segmento per intervallo di scelta, larghezza proporzionale agli anni.
+   Colori agganciati ai token metrici (si adattano da soli al tema). --- */
+.decision-timeline {
+    display: flex;
+    gap: 2px;
+    height: 0.625rem;
+    margin-top: 0.8rem;
+}
+
+.decision-timeline-seg {
+    min-width: 0.3rem;
+    overflow: hidden;
+    border-radius: 2px;
+}
+
+.decision-timeline-label {
+    display: none;
+}
+
+.decision-timeline-seg[data-choice="mix"],
+.decision-timeline-seg[data-choice="split"] {
+    background: var(--color-metric-mix);
+}
+
+.decision-timeline-seg[data-choice="fp"] {
+    background: var(--color-metric-fp);
+}
+
+.decision-timeline-seg[data-choice="pac"] {
+    background: var(--color-metric-pac);
+}
+
+/* Un'unica didascalia sotto la barra: il sottotitolo ripeteva l'ovvio. */
+.result-decision-panel .result-sequence-value {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--ds-text-muted);
+    margin-top: 0.5rem;
+}
+
+.result-decision-panel #metric-sequence-subtitle {
+    display: none;
+}
+
+/* --- Meno scatole: i sottogruppi del pannello perdono il box.
+   La separazione la fanno spazio e hairline, non bordo-nel-bordo. --- */
+.control-shell .control-subgroup,
+html[data-theme="dark"] .control-shell .control-subgroup {
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+}
+
+.control-shell .card-body .control-subgroup + .control-subgroup {
+    margin-top: 0.15rem;
+    padding-top: 0.95rem;
+    border-top: 1px solid var(--ds-border-soft);
+}
+
+html[data-theme="dark"] .control-shell .card-body .control-subgroup + .control-subgroup {
+    border-top-color: var(--ds-border-soft);
+}
+
+/* Titoletti di gruppo come eyebrow: maiuscoletto piccolo, voce mono. */
+.control-shell .control-subgroup-title strong {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ds-text-soft);
+}
+
+/* Il toggle del tema parla la stessa lingua dei controlli: angoli della
+   famiglia, non un cerchio orfano. */
+.theme-toggle {
+    border-radius: var(--radius-sm);
+}
+
+/* =========================================================
+   Allineamento al linguaggio della proposta "Registro":
+   eyebrow mono maiuscole, valori mono su superfici pulite
+   separate da hairline, intestazioni tabella da registro.
+   ========================================================= */
+
+/* --- Etichette piccole: una sola voce, mono maiuscola spaziata. --- */
+.control-shell .mini-metric span,
+.metric-label,
+.result-block-label,
+.decision-eyebrow,
+.section-kicker,
+.guided-dialog .guided-eyebrow,
+.step-label,
+.calc-step .step-label,
+.year-answer-label {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* --- Chip di output: celle pulite su superficie, valore mono grande.
+   Via le tinte verdine: la gerarchia la fanno hairline e tipografia. --- */
+.control-shell .mini-metric,
+.control-shell .mini-metric.output,
+.guided-dialog .mini-metric.output,
+.investment-mode-summary .mini-metric,
+html[data-theme="dark"] .control-shell .mini-metric,
+html[data-theme="dark"] .control-shell .mini-metric.output {
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-border-soft);
+    border-radius: var(--radius-sm);
+}
+
+.control-shell .mini-metric span {
+    color: var(--ds-text-muted);
+}
+
+.control-shell .mini-metric strong,
+html[data-theme="dark"] .control-shell .mini-metric strong {
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ds-text);
+}
+
+/* --- Intestazioni tabella: da registro, non da foglio di calcolo. --- */
+#output-table th,
+.results-section thead th,
+th {
+    background: var(--ds-surface);
+    color: var(--ds-text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--ds-border);
+}
+
+html[data-theme="dark"] #output-table th,
+html[data-theme="dark"] th {
+    background: var(--ds-surface);
+    color: var(--ds-text-muted);
+}
+
+/* --- Titoli di sezione: stretti, senza gonfiare il peso. --- */
+.results-title,
+.chart-title,
+.param-card .card-header h3,
+.intro-copy h2 {
+    font-weight: 700;
+    letter-spacing: -0.015em;
+}
+
+/* --- Card spiegazione e metriche: superfici pulite, hairline. --- */
+.result-explanation-card,
+.results-workspace .result-explanation-card {
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-border-soft);
+    border-radius: var(--radius-lg);
+}
+
+/* =========================================================
+   Invariante di specularità: stessi binding nei due temi.
+   Le regole qui sotto neutralizzano i vecchi override dark
+   che bindavano token diversi dal light: un solo set di
+   elementi, due palette — mai due binding.
+   ========================================================= */
+
+/* Card spiegazione: superficie in entrambi i temi. */
+html[data-theme="dark"] .result-explanation-card,
+html[data-theme="dark"] .results-workspace .result-explanation-card {
+    background: var(--ds-surface);
+    border-color: var(--ds-border-soft);
+}
+
+/* Bottone secondario: pannello in entrambi i temi. */
+.btn-secondary,
+html[data-theme="dark"] .btn-secondary {
+    background: var(--ds-surface-panel);
+    border-color: var(--ds-border);
+    color: var(--ds-accent);
+}
+
+.btn-secondary:hover,
+html[data-theme="dark"] .btn-secondary:hover {
+    background: var(--ds-surface-muted);
+    border-color: var(--ds-border);
+    color: var(--ds-text);
+}
+
+/* Hero (intro e indice guida): stesso gradiente-token nei due temi. */
+html[data-theme="dark"] .intro-section,
+.docs-index,
+html[data-theme="dark"] .docs-index {
+    background: var(--ds-hero);
+    border-color: var(--ds-border-soft);
+}
+
+/* Bordo delle metric card: hairline piena, niente color-mix solo-dark. */
+html[data-theme="dark"] .metric-card,
+html[data-theme="dark"] .results-workspace .metric-card {
+    border-color: var(--ds-border-soft);
+}
+
+/* Segmented attivo: primario, come ogni riempimento selezionato. */
+html[data-theme="dark"] .segmented-control button.active,
+html[data-theme="dark"] .control-shell .segmented-control button.active {
+    background: var(--ds-primary);
+    border-color: var(--ds-primary);
+    color: var(--ds-text-on-accent);
+}
+
+/* Azioni secondarie dell'intro: Condividi e Ripristina si dividono la
+   larghezza a metà sotto la Compilazione guidata. */
+.intro-actions {
+    gap: 0.5rem;
+}
+
+.intro-actions-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.intro-actions-row .intro-secondary {
+    width: 100%;
+    min-height: 2.6rem;
+    padding-inline: 0.5rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+/* Le due hero (Calcola e Informazioni) condividono altezza e stile:
+   stessa superficie piena, stesso padding, stessa altezza minima. */
+.intro-section,
+.docs-index {
+    background: var(--ds-hero);
+    border: 1px solid var(--ds-border-soft);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--ds-shadow-sm);
+    padding: 1.35rem 1.45rem;
+    min-height: 10.5rem;
+    align-content: center;
+}
+
+/* Il wrapper del grafico non aggiunge un secondo livello di padding:
+   il contenitore si allinea alla hairline del titolo di sezione. */
+.chart-section .chart-content {
+    padding: 0;
+}
+
+/* Anche il corpo della sezione tabella si allinea alla hairline del
+   titolo, come grafico ed esploratore annuale. */
+.results-section .results-content {
+    padding: 0;
+}
+
+/* =========================================================
+   Ritmo verticale: la distanza hairline -> contenuto è la
+   stessa in ogni sezione (la dà il margin-bottom del titolo,
+   niente margini extra sul primo figlio del corpo).
+   ========================================================= */
+.docs-collapsible-content > :first-child,
+.annual-explorer-body > :first-child,
+.results-content > :first-child,
+.chart-content > :first-child,
+.config-workspace .control-shell > :first-child {
+    margin-top: 0;
+}
+
+.annual-explorer-body {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+/* Selettore strategia dell'esploratore: tre bottoni uguali,
+   nessuna traccia di sfondo dietro. */
+.explorer-strategy-select {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+    background: transparent;
+    padding: 0;
+    border: 0;
+}
+
+/* La spaziatura titolo->corpo la dà solo il margine del titolo:
+   la sezione esploratore non aggiunge il proprio gap di griglia. */
+.annual-explorer-section {
+    gap: 0;
+}
+
+/* --- Compilazione guidata: binding unico nei due temi. --- */
+.guided-dialog,
+html[data-theme="dark"] .guided-dialog {
+    background: var(--ds-surface);
+    border-color: var(--ds-border-soft);
+}
+
+.guided-dialog .guided-header,
+html[data-theme="dark"] .guided-dialog .guided-header,
+.guided-dialog .guided-footer,
+html[data-theme="dark"] .guided-dialog .guided-footer {
+    background: var(--ds-surface-panel);
+    border-color: var(--ds-border-soft);
+}
+
+/* Contenuto diretto nel dialog, senza card intermedie: vale per
+   entrambi i temi. */
+.guided-dialog .guided-step.active,
+html[data-theme="dark"] .guided-dialog .guided-step.active,
+.guided-dialog .guided-body.control-shell,
+html[data-theme="dark"] .guided-dialog .guided-body.control-shell {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+/* Le card di aiuto e i chip dentro la guidata: superficie + hairline,
+   come i loro omologhi fuori dal dialog. */
+.guided-dialog .guided-note .help-entry,
+html[data-theme="dark"] .guided-dialog .guided-note .help-entry {
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-border-soft);
+}
+
+/* Il selettore strategia è una fila di bottoni separati, non un
+   segmented con traccia: nessuno sfondo dietro, in nessun tema. */
+.segmented-control.explorer-strategy-select,
+html[data-theme="dark"] .segmented-control.explorer-strategy-select,
+html[data-theme="dark"] .control-shell .segmented-control.explorer-strategy-select {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    box-shadow: none;
+}
+
+/* Le tre azioni dell'intro hanno la stessa altezza. */
+.intro-actions .intro-primary,
+.intro-actions-row .intro-secondary {
+    min-height: 3.1rem;
+}
+
+/* Su schermi stretti il grafico non si comprime: larghezza minima e
+   scorrimento orizzontale, come la tabella. */
+.chart-canvas-holder {
+    position: relative;
+    height: 100%;
+    min-width: 0;
+}
+
+@media (max-width: 900px) {
+    .chart-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .chart-canvas-holder {
+        min-width: 680px;
+    }
+}
+
+/* Hero Informazioni: "Indice" con la stessa voce del titolo dell'altra
+   hero, e voci dell'indice alte come i bottoni dell'intro. */
+.docs-index strong {
+    padding: 0;
+    margin: 0 0 0.75rem;
+    width: 100%;
+    /* Stessa voce del titolo dell'hero Calcola (regola a 1.35rem). */
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--color-text-primary);
+}
+
+.docs-index a {
+    min-height: 3.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }

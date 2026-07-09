@@ -80,7 +80,7 @@ npm run test:e2e
 
 Il progetto e una single-page app statica in HTML, CSS e JavaScript vanilla.
 
-Chart.js, le icone Lucide e il font Inter sono vendorizzati in `vendor/`: la pagina non fa richieste a CDN esterne (l'unica chiamata a terzi e il contatore visite di counterapi.dev). Le aliquote regionali e comunali sono incluse come dataset locale normalizzato; il repository non contiene una pipeline di import o scraping dei dati sorgente.
+Chart.js e il font Inter sono vendorizzati in `vendor/`; le icone sono un sottoinsieme di Lucide reso inline in `js/icons.js`: la pagina non fa richieste a CDN esterne (l'unica chiamata a terzi e il contatore visite di counterapi.dev). Le aliquote regionali e comunali sono incluse come dataset locale normalizzato; le comunali (`js/constants/local-tax-data.js`, ~700 KB) si caricano con `import()` dinamico solo quando serve la modalità "Da località". Il repository non contiene una pipeline di import o scraping dei dati sorgente.
 
 ## Licenza
 

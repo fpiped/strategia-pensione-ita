@@ -1,10 +1,12 @@
 import { FinancialModel } from '../models/FinancialModel.js';
 import { FinancialView } from '../views/FinancialView.js';
 import { FINANCIAL_CONSTANTS } from '../constants/financial-constants.js';
-import { REGIONAL_TAX_2026 } from '../constants/local-tax-data.js';
+import { REGIONAL_TAX_2026 } from '../constants/regional-tax-data.js';
 import {
   calculateLocalTaxRate,
   findMunicipalityByCode,
+  isMunicipalTaxDataLoaded,
+  loadMunicipalTaxData,
   searchMunicipalities
 } from '../utils/local-tax-helpers.js';
 import {
@@ -113,7 +115,34 @@ export class FinancialController {
         this.store.subscribe(() => this.schedulePersist());
         this.initEventListeners();
         this.updateDerivedFields(this.store.get());
+        // Scenario ripristinato/condiviso in modalità località: i dati
+        // comunali servono subito per etichette e aliquota.
+        const initialState = this.store.get();
+        if (initialState.localTaxMode === 'auto' || initialState.comuneAddizionali) {
+          this.ensureMunicipalTaxData();
+        }
       }
+
+    /**
+     * Avvia (una sola volta) il caricamento lazy dei dati comunali e, a dati
+     * pronti, riallinea aliquota derivata, UI addizionali e risultati.
+     */
+    ensureMunicipalTaxData() {
+      if (this.municipalTaxDataRequested) return;
+      this.municipalTaxDataRequested = true;
+      loadMunicipalTaxData().then(() => {
+        const state = this.store.get();
+        // Se la patch cambia lo stato il refresh arriva dalla notifica;
+        // altrimenti basta ridisegnare la UI delle addizionali.
+        if (!this.applyLocalTaxAutoRate(state)) {
+          this.updateLocalTaxUi(state);
+        }
+        this.updateResults();
+      }).catch(() => {
+        // Caricamento fallito (offline?): un nuovo gesto utente ritenta.
+        this.municipalTaxDataRequested = false;
+      });
+    }
 
     /**
      * Inizializza tutti gli event listener
@@ -372,10 +401,10 @@ export class FinancialController {
       const copied = await copyTextToClipboard(url);
       const label = document.querySelector('#copy-share-link [data-share-label]');
       if (!label) return;
-      label.textContent = copied ? 'Link copiato!' : 'Copia non riuscita';
+      label.textContent = copied ? 'Copiato!' : 'Riprova';
       window.clearTimeout(this.shareFeedbackTimer);
       this.shareFeedbackTimer = window.setTimeout(() => {
-        label.textContent = 'Condividi scenario';
+        label.textContent = 'Condividi';
       }, 2000);
     }
 
@@ -602,6 +631,7 @@ export class FinancialController {
     }
 
     setLocalTaxMode(mode, { clearLocation = false } = {}) {
+      if (mode === 'auto') this.ensureMunicipalTaxData();
       const patch = { localTaxMode: mode === 'auto' ? 'auto' : 'manual' };
       if (clearLocation) {
         Object.assign(patch, {
@@ -710,6 +740,8 @@ export class FinancialController {
         this.renderMunicipalitySuggestions(searchId, resultsId, input.value);
       });
       input.addEventListener('focus', () => {
+        // Preload al focus: i dati sono quasi sempre pronti alla prima lettera.
+        this.ensureMunicipalTaxData();
         this.renderMunicipalitySuggestions(searchId, resultsId, input.value);
       });
     }
@@ -718,6 +750,24 @@ export class FinancialController {
       const results = byId(resultsId);
       const input = byId(searchId);
       if (!results || !input) return;
+
+      if (!isMunicipalTaxDataLoaded() && query.trim()) {
+        // Dati comunali in arrivo: placeholder e nuovo render a load finito.
+        this.ensureMunicipalTaxData();
+        results.replaceChildren();
+        const loading = document.createElement('div');
+        loading.className = 'autocomplete-empty';
+        loading.textContent = 'Caricamento elenco comuni…';
+        results.appendChild(loading);
+        results.classList.add('is-visible');
+        input.setAttribute('aria-expanded', 'true');
+        loadMunicipalTaxData().then(() => {
+          if (document.activeElement === input) {
+            this.renderMunicipalitySuggestions(searchId, resultsId, input.value);
+          }
+        }).catch(() => {});
+        return;
+      }
 
       const municipalities = searchMunicipalities(query, 20);
       results.replaceChildren();
@@ -839,17 +889,17 @@ export class FinancialController {
       const equivalentCard = byId('investment-year1-equivalent-card');
       if (equivalentCard) equivalentCard.hidden = false;
       setText('investment-year1-gross-display', formatMoney(investimentoAnno));
-      setText('investment-year1-tax-saving-display', formatMoney(risparmioFiscale));
-      setText('investment-year1-equivalent-label', 'PAC equivalente anno 1');
+      setText(['investment-year1-tax-saving-display', 'guided-investment-year1-tax-saving-display'], formatMoney(risparmioFiscale));
+      setText(['investment-year1-equivalent-label', 'guided-investment-year1-equivalent-label'], 'PAC equivalente anno 1');
 
       if (config.modalitaConfronto === 'sacrificioNetto') {
-        setText('investment-year1-equivalent-display', formatMoney(Math.max(investimentoAnno - risparmioFiscale, 0)));
-        setText('investment-mode-explanation', 'Ti rientra in tasca: non viene investito.');
+        setText(['investment-year1-equivalent-display', 'guided-investment-year1-equivalent-display'], formatMoney(Math.max(investimentoAnno - risparmioFiscale, 0)));
+        setText(['investment-mode-explanation', 'guided-investment-mode-explanation'], 'Ti rientra in tasca: non viene investito.');
         return;
       }
 
-      setText('investment-year1-equivalent-display', formatMoney(investimentoAnno));
-      setText('investment-mode-explanation', "Da reinvestire attivamente ogni anno: la simulazione lo somma al budget dall'anno successivo.");
+      setText(['investment-year1-equivalent-display', 'guided-investment-year1-equivalent-display'], formatMoney(investimentoAnno));
+      setText(['investment-mode-explanation', 'guided-investment-mode-explanation'], "Da reinvestire attivamente ogni anno: la simulazione lo somma al budget dall'anno successivo.");
     }
 
     /**

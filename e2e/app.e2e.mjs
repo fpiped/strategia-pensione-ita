@@ -139,7 +139,7 @@ try {
   await pageA.waitForTimeout(200);
   const shareLabel = await pageA.evaluate(() => document.querySelector('#copy-share-link [data-share-label]').textContent);
   const shareUrl = await pageA.evaluate(() => navigator.clipboard.readText());
-  check('condivisione: feedback sul bottone', shareLabel === 'Link copiato!', shareLabel);
+  check('condivisione: feedback sul bottone', shareLabel === 'Copiato!', shareLabel);
   check('condivisione: URL con fragment #s=', shareUrl.startsWith(BASE + '#s='), shareUrl);
 
   // --- 5. Apertura del link in un contesto pulito ---
@@ -203,7 +203,84 @@ try {
   const unexpected = [...externalHosts].filter((host) => host !== 'api.counterapi.dev');
   check('vendor: nessuna richiesta a CDN esterne', unexpected.length === 0, unexpected.join(', '));
   check('vendor: font Inter caricato in locale', await pageE.evaluate(() => document.fonts.check('16px Inter')));
-  check('vendor: Chart.js e Lucide presenti', await pageE.evaluate(() => Boolean(window.Chart && window.lucide)));
+  check('vendor: Chart.js e icone presenti', await pageE.evaluate(() => Boolean(window.Chart && window.renderSiteIcons && document.querySelector('span[data-lucide] svg'))));
+
+  // --- 11. Specularità dei temi: un solo set di binding, due palette.
+  // Per ogni coppia di entità e proprietà deve valere:
+  // (uguali in light) <=> (uguali in dark). Se un override tema-specifico
+  // binda un token diverso dal light, questo controllo fallisce.
+  {
+    const entities = [
+      ['pagina', 'body'],
+      ['header', 'header'],
+      ['card-workspace', '.workspace-section'],
+      ['param-card', '.param-card'],
+      ['input', '.control-shell .control-field'],
+      ['unita', '.control-shell .unit'],
+      ['chip-output', '.control-shell .mini-metric.output'],
+      ['verdetto', '.result-decision-panel'],
+      ['metric-card', '.metric-card'],
+      ['th', '#output-table th'],
+      ['td', '#output-table td'],
+      ['riga-attiva-td', '#output-table tr.active td'],
+      ['card-spiegazione', '.result-explanation-card'],
+      ['bottone-primario', '.btn-primary'],
+      ['bottone-secondario', '.btn-secondary'],
+      ['segmented-attivo', '.segmented-control button.active'],
+      ['docs-index', '.docs-index'],
+      ['intro', '.intro-section'],
+      ['footer', 'footer'],
+      ['guidata-dialog', '.guided-dialog'],
+      ['guidata-header', '.guided-dialog .guided-header'],
+      ['guidata-step', '.guided-dialog .guided-step.active'],
+      ['guidata-body', '.guided-dialog .guided-body.control-shell'],
+      ['guidata-help', '.guided-dialog .guided-note .help-entry'],
+      ['guidata-chip', '.guided-dialog .mini-metric.output'],
+      ['guidata-input', '.guided-dialog .control-field']
+    ];
+    const props = ['backgroundColor', 'color', 'borderTopColor'];
+    // La guidata va aperta: le sue entità sono parte del contratto.
+    await pageE.click('#open-guided-mode');
+    await pageE.waitForTimeout(300);
+    const snapshot = {};
+    for (const theme of ['light', 'dark']) {
+      // Stesso meccanismo del toggle dell'app: data-theme-switching
+      // sospende le transizioni, così lo snapshot non fotografa colori
+      // a metà interpolazione.
+      await pageE.evaluate((t) => {
+        document.documentElement.setAttribute('data-theme-switching', '');
+        document.documentElement.setAttribute('data-theme', t);
+        // Niente stati di focus negli snapshot: il confronto riguarda i
+        // binding a riposo, non gli stati transitori.
+        document.activeElement?.blur?.();
+      }, theme);
+      await pageE.waitForTimeout(150);
+      snapshot[theme] = await pageE.evaluate(({ entities, props }) => {
+        const out = {};
+        for (const [name, sel] of entities) {
+          const el = document.querySelector(sel);
+          if (!el) { out[name] = null; continue; }
+          const s = getComputedStyle(el);
+          out[name] = Object.fromEntries(props.map((p) => [p, s[p]]));
+        }
+        return out;
+      }, { entities, props });
+    }
+    const names = entities.map((e) => e[0]).filter((n) => snapshot.light[n] && snapshot.dark[n]);
+    const brokenPairs = [];
+    for (const prop of props) {
+      for (let i = 0; i < names.length; i++) {
+        for (let j = i + 1; j < names.length; j++) {
+          const [a, b] = [names[i], names[j]];
+          const eqLight = snapshot.light[a][prop] === snapshot.light[b][prop];
+          const eqDark = snapshot.dark[a][prop] === snapshot.dark[b][prop];
+          if (eqLight !== eqDark) brokenPairs.push(`${prop}: ${a}/${b}`);
+        }
+      }
+    }
+    check('temi: specularità light/dark (stessi binding)', brokenPairs.length === 0, brokenPairs.slice(0, 5).join(' · '));
+    await pageE.keyboard.press('Escape');
+  }
 
   check('nessun errore JS nella sessione principale', pageErrors.length === 0, pageErrors.join(' | '));
 } finally {

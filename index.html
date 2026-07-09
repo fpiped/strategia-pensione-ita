@@ -29,7 +29,9 @@
         }
     </script>
     <link rel="preload" href="vendor/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="vendor/fonts/plex-mono-600.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="vendor/fonts/inter.css">
+    <link rel="stylesheet" href="vendor/fonts/plex-mono.css">
     <link rel="stylesheet" href="styles.css">
     <script>
         // Anti-flash: applica il tab salvato prima del primo paint, così il
@@ -62,12 +64,12 @@
             </a>
             <div class="header-side">
                 <nav class="tabs" aria-label="Sezioni principali">
-                    <div class="tab active" data-tab="calculator">
+                    <button type="button" class="tab active" data-tab="calculator" aria-current="true">
                         Calcola
-                    </div>
-                    <div class="tab" data-tab="documentation">
+                    </button>
+                    <button type="button" class="tab" data-tab="documentation">
                         Informazioni
-                    </div>
+                    </button>
                 </nav>
                 <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Attiva tema scuro" aria-pressed="false">
                     <span data-lucide="moon" class="theme-toggle-icon theme-toggle-icon-moon" aria-hidden="true"></span>
@@ -91,10 +93,16 @@
                             <span data-lucide="list-check" class="icon" aria-hidden="true"></span>
                             Compilazione guidata
                         </button>
-                        <button type="button" class="btn btn-secondary intro-secondary" id="copy-share-link">
-                            <span data-lucide="link" class="icon" aria-hidden="true"></span>
-                            <span data-share-label>Condividi scenario</span>
-                        </button>
+                        <div class="intro-actions-row">
+                            <button type="button" class="btn btn-secondary intro-secondary" id="copy-share-link">
+                                <span data-lucide="link" class="icon" aria-hidden="true"></span>
+                                <span data-share-label>Condividi</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary intro-secondary" id="reset-scenario">
+                                <span data-lucide="rotate-ccw" class="icon" aria-hidden="true"></span>
+                                Ripristina
+                            </button>
+                        </div>
                     </div>
                 </section>
 
@@ -102,10 +110,6 @@
                 <section class="workspace-section config-workspace" aria-labelledby="config-title">
                     <div class="workspace-header">
                         <h3 class="results-title" id="config-title">Pannello di controllo</h3>
-                        <button type="button" class="btn btn-secondary btn-compact" id="reset-scenario">
-                            <span data-lucide="rotate-ccw" class="icon" aria-hidden="true"></span>
-                            Ripristina predefiniti
-                        </button>
                     </div>
 
                 <form id="input-form">
@@ -171,6 +175,19 @@
                                     <div class="control-subgroup">
                                         <div class="form-row">
                                             <div class="form-group">
+                                                <label for="modalitaConfronto"><span class="help-trigger" data-help="modalitaConfronto">Modalità investimento</span></label>
+                                                <select id="modalitaConfronto" class="form-control native-select">
+                                                    <option value="budgetLordo" selected>Budget</option>
+                                                    <option value="sacrificioNetto">Netto</option>
+                                                </select>
+                                                <div class="segmented-control" data-select-group="modalitaConfronto">
+                                                    <button type="button" class="active" data-select-target="modalitaConfronto" data-select-value="budgetLordo" aria-pressed="true">Budget</button>
+                                                    <button type="button" data-select-target="modalitaConfronto" data-select-value="sacrificioNetto" aria-pressed="false">Netto</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
                                                 <label for="investimento"><span class="help-trigger" data-help="investimento">Investimento annuo</span></label>
                                                 <div class="control-field"><input type="number" id="investimento" class="form-control" value="3000" min="0" step="100"><span class="unit">EUR</span></div>
                                             </div>
@@ -201,19 +218,6 @@
                                             <div class="form-group">
                                                 <label for="variazioneInvestimentoValore">Valore aumento</label>
                                                 <div class="control-field"><input type="number" id="variazioneInvestimentoValore" class="form-control" value="0" step="0.1"><span class="unit" data-unit-for="variazioneInvestimentoTipo">%</span></div>
-                                            </div>
-                                        </div>
-                                        <div class="form-row control-followup">
-                                            <div class="form-group">
-                                                <label for="modalitaConfronto"><span class="help-trigger" data-help="modalitaConfronto">Modalità investimento</span></label>
-                                                <select id="modalitaConfronto" class="form-control native-select">
-                                                    <option value="budgetLordo" selected>Budget</option>
-                                                    <option value="sacrificioNetto">Netto</option>
-                                                </select>
-                                                <div class="segmented-control" data-select-group="modalitaConfronto">
-                                                    <button type="button" class="active" data-select-target="modalitaConfronto" data-select-value="budgetLordo" aria-pressed="true">Budget</button>
-                                                    <button type="button" data-select-target="modalitaConfronto" data-select-value="sacrificioNetto" aria-pressed="false">Netto</button>
-                                                </div>
                                             </div>
                                         </div>
                                         <div class="mini-metrics investment-mode-summary" aria-live="polite">
@@ -608,6 +612,7 @@
                             </div>
                             <div class="result-decision-side">
                                 <span class="decision-eyebrow">Allocazione nel tempo</span>
+                                <div class="decision-timeline" id="decision-timeline" aria-hidden="true"></div>
                                 <div class="result-sequence-value" id="metric-sequence-value">-</div>
                                 <p id="metric-sequence-subtitle">Intervalli consigliati per anno</p>
                             </div>
@@ -796,7 +801,9 @@
                     <h3 class="chart-title" id="toggle-chart">Andamento nel tempo</h3>
                     <div class="chart-content">
                         <div class="chart-container">
-                            <canvas id="results-chart"></canvas>
+                            <div class="chart-canvas-holder">
+                                <canvas id="results-chart" role="img" aria-label="Grafico dell'andamento del capitale nel tempo per FP deducibile, Tutto PAC e allocazione ottimale; gli stessi dati sono nella tabella Esplora il dettaglio annuale"></canvas>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -808,7 +815,7 @@
                 <div class="guided-dialog" role="dialog" aria-modal="true" aria-labelledby="guided-title">
                     <div class="guided-header">
                         <div>
-                            <div class="guided-eyebrow" id="guided-step-counter">Step 1 di 11</div>
+                            <div class="guided-eyebrow" id="guided-step-counter">Step 1 di 16</div>
                             <h2 id="guided-title">Compilazione guidata</h2>
                         </div>
                         <button type="button" class="icon-button" data-guided-close aria-label="Chiudi compilazione guidata">
@@ -821,21 +828,29 @@
                     <div class="guided-body control-shell">
                         <section class="guided-step active" data-guided-step="0">
                             <div class="guided-step-head">
-                                <h3>Orizzonte temporale</h3>
+                                <h3>Durata</h3>
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="guided-durata">Durata</label>
                                     <div class="control-field"><input type="number" id="guided-durata" class="form-control" min="1" max="100"><span class="unit">anni</span></div>
                                 </div>
+                            </div>
+                            <div class="guided-note" data-help-note="durata"></div>
+                        </section>
+                        <section class="guided-step" data-guided-step="1">
+                            <div class="guided-step-head">
+                                <h3>Anzianità FP</h3>
+                            </div>
+                            <div class="form-row">
                                 <div class="form-group">
                                     <label for="guided-anzianita">Anzianità FP</label>
                                     <div class="control-field"><input type="number" id="guided-anzianita" class="form-control" min="0" max="50" step="1"><span class="unit">anni</span></div>
                                 </div>
                             </div>
-                            <div class="guided-note" data-help-note="durata anzianitaPregressaFp"></div>
+                            <div class="guided-note" data-help-note="anzianitaPregressaFp"></div>
                         </section>
-                        <section class="guided-step" data-guided-step="1">
+                        <section class="guided-step" data-guided-step="2">
                             <div class="guided-step-head">
                                 <h3>Retribuzione</h3>
                             </div>
@@ -875,7 +890,26 @@
                             </div>
                             <div class="guided-note" data-help-note="reddito variazioneReddito"></div>
                         </section>
-                        <section class="guided-step" data-guided-step="2">
+                        <section class="guided-step" data-guided-step="3">
+                            <div class="guided-step-head">
+                                <h3>Modalità investimento</h3>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="guided-modalita-confronto">Modalità investimento</label>
+                                    <select id="guided-modalita-confronto" class="form-control native-select">
+                                        <option value="budgetLordo" selected>Budget</option>
+                                        <option value="sacrificioNetto">Netto</option>
+                                    </select>
+                                    <div class="segmented-control" data-select-group="guided-modalita-confronto">
+                                        <button type="button" class="active" data-select-target="guided-modalita-confronto" data-select-value="budgetLordo" aria-pressed="true">Budget</button>
+                                        <button type="button" data-select-target="guided-modalita-confronto" data-select-value="sacrificioNetto" aria-pressed="false">Netto</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="guided-note" data-help-note="modalitaConfronto"></div>
+                        </section>
+                        <section class="guided-step" data-guided-step="4">
                             <div class="guided-step-head">
                                 <h3>Investimento annuo</h3>
                             </div>
@@ -913,24 +947,23 @@
                                     <div class="control-field"><input type="number" id="guided-variazione-investimento-valore" class="form-control" step="0.1"><span class="unit" data-unit-for="guided-variazione-investimento-tipo">%</span></div>
                                 </div>
                             </div>
-                            <div class="form-row control-followup">
-                                <div class="form-group">
-                                    <label for="guided-modalita-confronto">Modalità investimento</label>
-                                    <select id="guided-modalita-confronto" class="form-control native-select">
-                                        <option value="budgetLordo" selected>Budget</option>
-                                        <option value="sacrificioNetto">Netto</option>
-                                    </select>
-                                    <div class="segmented-control" data-select-group="guided-modalita-confronto">
-                                        <button type="button" class="active" data-select-target="guided-modalita-confronto" data-select-value="budgetLordo" aria-pressed="true">Budget</button>
-                                        <button type="button" data-select-target="guided-modalita-confronto" data-select-value="sacrificioNetto" aria-pressed="false">Netto</button>
-                                    </div>
+                            <div class="mini-metrics" aria-live="polite">
+                                <div class="mini-metric output">
+                                    <span>Risparmio fiscale anno 1</span>
+                                    <strong id="guided-investment-year1-tax-saving-display">-</strong>
+                                    <p id="guided-investment-mode-explanation">In modalità Budget viene reinvestito dall'anno 2.</p>
+                                </div>
+                                <div class="mini-metric output">
+                                    <span id="guided-investment-year1-equivalent-label">PAC equivalente anno 1</span>
+                                    <strong id="guided-investment-year1-equivalent-display">-</strong>
+                                    <p>Confronto sul budget selezionato.</p>
                                 </div>
                             </div>
-                            <div class="guided-note" data-help-note="investimento variazioneInvestimento modalitaConfronto"></div>
+                            <div class="guided-note" data-help-note="investimento variazioneInvestimento"></div>
                         </section>
-                        <section class="guided-step" data-guided-step="3">
+                        <section class="guided-step" data-guided-step="5">
                             <div class="guided-step-head">
-                                <h3>Basi di calcolo</h3>
+                                <h3>Base e quota aderente</h3>
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
@@ -945,15 +978,8 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="guided-base-datore-tipo">Base datore</label>
-                                    <select id="guided-base-datore-tipo" class="form-control native-select">
-                                        <option value="ral" selected>RAL</option>
-                                        <option value="minimoRetributivo">Retr. minima</option>
-                                    </select>
-                                    <div class="segmented-control" data-select-group="guided-base-datore-tipo">
-                                        <button type="button" class="active" data-select-target="guided-base-datore-tipo" data-select-value="ral" aria-pressed="true">RAL</button>
-                                        <button type="button" data-select-target="guided-base-datore-tipo" data-select-value="minimoRetributivo" aria-pressed="false">Retr. min.</button>
-                                    </div>
+                                    <label for="guided-quota-min">Quota aderente</label>
+                                    <div class="control-field"><input type="number" id="guided-quota-min" class="form-control" min="0" max="100" step="0.1"><span class="unit">%</span></div>
                                 </div>
                             </div>
                             <div id="guided-minimum-wage-fields" hidden>
@@ -993,16 +1019,30 @@
                                 </div>
                                 <div class="guided-note" data-help-note="baseContributivaFp variazioneBaseContributiva"></div>
                             </div>
-                            <div class="guided-note" data-help-note="baseContributivaFpTipo baseDatoreFpTipo"></div>
+                            <div class="mini-metrics" aria-live="polite">
+                                <div class="mini-metric output">
+                                    <span>Quota aderente anno 1</span>
+                                    <strong id="guided-quota-aderente-display">-</strong>
+                                    <p>Minimo da versare per l'incentivo.</p>
+                                </div>
+                            </div>
+                            <div class="guided-note" data-help-note="baseContributivaFpTipo quotaMinAderentePerc"></div>
                         </section>
-                        <section class="guided-step" data-guided-step="4">
+                        <section class="guided-step" data-guided-step="6">
                             <div class="guided-step-head">
-                                <h3>Quote contrattuali</h3>
+                                <h3>Base e quota datore</h3>
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="guided-quota-min">Quota aderente</label>
-                                    <div class="control-field"><input type="number" id="guided-quota-min" class="form-control" min="0" max="100" step="0.1"><span class="unit">%</span></div>
+                                    <label for="guided-base-datore-tipo">Base datore</label>
+                                    <select id="guided-base-datore-tipo" class="form-control native-select">
+                                        <option value="ral" selected>RAL</option>
+                                        <option value="minimoRetributivo">Retr. minima</option>
+                                    </select>
+                                    <div class="segmented-control" data-select-group="guided-base-datore-tipo">
+                                        <button type="button" class="active" data-select-target="guided-base-datore-tipo" data-select-value="ral" aria-pressed="true">RAL</button>
+                                        <button type="button" data-select-target="guided-base-datore-tipo" data-select-value="minimoRetributivo" aria-pressed="false">Retr. min.</button>
+                                    </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="guided-datore-perc">Quota datore</label>
@@ -1011,19 +1051,14 @@
                             </div>
                             <div class="mini-metrics" aria-live="polite">
                                 <div class="mini-metric output">
-                                    <span>Quota aderente anno 1</span>
-                                    <strong id="guided-quota-aderente-display">-</strong>
-                                    <p>Minimo da versare per l'incentivo.</p>
-                                </div>
-                                <div class="mini-metric output">
                                     <span>Quota datore anno 1</span>
                                     <strong id="guided-quota-datore-display">-</strong>
                                     <p>Contributo effettivo riconosciuto.</p>
                                 </div>
                             </div>
-                            <div class="guided-note" data-help-note="quotaMinAderentePerc contribuzioneDatoreFpPerc"></div>
+                            <div class="guided-note" data-help-note="baseDatoreFpTipo contribuzioneDatoreFpPerc"></div>
                         </section>
-                        <section class="guided-step" data-guided-step="5">
+                        <section class="guided-step" data-guided-step="7">
                             <div class="guided-step-head">
                                 <h3>Versamento in busta o bonifico</h3>
                             </div>
@@ -1051,7 +1086,7 @@
                             </div>
                             <div class="guided-note" data-help-note="modalitaVersamentoFp"></div>
                         </section>
-                        <section class="guided-step" data-guided-step="6">
+                        <section class="guided-step" data-guided-step="8">
                             <div class="guided-step-head">
                                 <h3>Addizionali locali</h3>
                             </div>
@@ -1083,9 +1118,9 @@
                             </div>
                             <div class="guided-note" data-help-note="addizionaliPerc regioneAddizionali comuneAddizionali"></div>
                         </section>
-                        <section class="guided-step" data-guided-step="7">
+                        <section class="guided-step" data-guided-step="9">
                             <div class="guided-step-head">
-                                <h3>Premi, bonus e altri redditi</h3>
+                                <h3>Premi e bonus</h3>
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
@@ -1121,6 +1156,12 @@
                                     <div class="control-field"><input type="number" id="guided-variazione-premi-valore" class="form-control" step="0.1"><span class="unit" data-unit-for="guided-variazione-premi-tipo">%</span></div>
                                 </div>
                             </div>
+                            <div class="guided-note" data-help-note="premiStraordinari variazionePremi"></div>
+                        </section>
+                        <section class="guided-step" data-guided-step="10">
+                            <div class="guided-step-head">
+                                <h3>Altri redditi</h3>
+                            </div>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="guided-altri-redditi">Altri redditi</label>
@@ -1155,17 +1196,25 @@
                                     <div class="control-field"><input type="number" id="guided-variazione-altri-redditi-valore" class="form-control" step="0.1"><span class="unit" data-unit-for="guided-variazione-altri-redditi-tipo">%</span></div>
                                 </div>
                             </div>
-                            <div class="guided-note" data-help-note="premiStraordinari variazionePremi altriRedditi variazioneAltriRedditi"></div>
+                            <div class="guided-note" data-help-note="altriRedditi variazioneAltriRedditi"></div>
                         </section>
-                        <section class="guided-step" data-guided-step="8">
+                        <section class="guided-step" data-guided-step="11">
                             <div class="guided-step-head">
-                                <h3>Fiscalità personale</h3>
+                                <h3>Ulteriori detrazioni</h3>
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="guided-ulteriori-detrazioni">Ulteriori detrazioni</label>
                                     <div class="control-field"><input type="number" id="guided-ulteriori-detrazioni" class="form-control" min="0" step="100"><span class="unit">EUR</span></div>
                                 </div>
+                            </div>
+                            <div class="guided-note" data-help-note="ulterioriDetrazioni"></div>
+                        </section>
+                        <section class="guided-step" data-guided-step="12">
+                            <div class="guided-step-head">
+                                <h3>Riscatto anticipato</h3>
+                            </div>
+                            <div class="form-row">
                                 <div class="form-group option-field">
                                     <label class="binary-toggle">
                                         <input type="checkbox" id="guided-riscatto-anticipato">
@@ -1174,15 +1223,21 @@
                                     </label>
                                 </div>
                             </div>
+                            <div class="guided-note" data-help-note="riscattoAnticipato"></div>
+                        </section>
+                        <section class="guided-step" data-guided-step="13">
+                            <div class="guided-step-head">
+                                <h3>Aliquota INPS</h3>
+                            </div>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="guided-contributi-inps">Aliquota INPS</label>
                                     <div class="control-field"><input type="number" id="guided-contributi-inps" class="form-control" value="9.19" min="0" max="20" step="0.1"><span class="unit">%</span></div>
                                 </div>
                             </div>
-                            <div class="guided-note" data-help-note="ulterioriDetrazioni riscattoAnticipato contributiInpsPerc"></div>
+                            <div class="guided-note" data-help-note="contributiInpsPerc"></div>
                         </section>
-                        <section class="guided-step" data-guided-step="9">
+                        <section class="guided-step" data-guided-step="14">
                             <div class="guided-step-head">
                                 <h3>Rendimento fondo pensione</h3>
                             </div>
@@ -1221,7 +1276,7 @@
                             </div>
                             <div class="guided-note" data-help-note="rendimentoAnnualeFpPerc rendimentoFpMode costiAnnuiFpPerc quotaAgevolataFpPerc"></div>
                         </section>
-                        <section class="guided-step" data-guided-step="10">
+                        <section class="guided-step" data-guided-step="15">
                             <div class="guided-step-head">
                                 <h3>Rendimento PAC</h3>
                             </div>
@@ -1760,7 +1815,6 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
                     </div>
                     </section>
 
-                    <p class="disclaimer"><strong>Disclaimer:</strong> Questo strumento fornisce stime orientative basate su ipotesi modificabili. Non costituisce consulenza finanziaria, fiscale o previdenziale.</p>
 
                 </div>
             </div>
@@ -1785,7 +1839,7 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
         </p>
     </footer>
 
-    <script src="vendor/lucide.min.js"></script>
+    <script src="js/icons.js"></script>
     <script src="js/scripts.js"></script>
     <script src="js/app.js" type="module"></script>
 </body>
