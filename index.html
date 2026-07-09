@@ -28,9 +28,8 @@
           "description": "Calcolatore per confrontare fondo pensione e PAC nel contesto fiscale italiano."
         }
     </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap">
+    <link rel="preload" href="vendor/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="vendor/fonts/inter.css">
     <link rel="stylesheet" href="styles.css">
     <script>
         // Anti-flash: applica il tab salvato prima del primo paint, così il
@@ -52,7 +51,7 @@
             }, 1500);
         })();
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+    <script src="vendor/chart.umd.min.js"></script>
 </head>
 <body>
     <header>
@@ -1786,7 +1785,7 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
         </p>
     </footer>
 
-    <script src="https://unpkg.com/lucide@1.23.0/dist/umd/lucide.min.js"></script>
+    <script src="vendor/lucide.min.js"></script>
     <script src="js/scripts.js"></script>
     <script src="js/app.js" type="module"></script>
 </body>

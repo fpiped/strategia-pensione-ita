@@ -65,7 +65,7 @@ I test usano il runner nativo di Node.js e coprono la logica principale di calco
 
 Il progetto e una single-page app statica in HTML, CSS e JavaScript vanilla.
 
-Usa CDN esterne per Chart.js, Font Awesome e Google Fonts. Le aliquote regionali e comunali sono incluse come dataset locale normalizzato; il repository non contiene una pipeline di import o scraping dei dati sorgente.
+Chart.js, le icone Lucide e il font Inter sono vendorizzati in `vendor/`: la pagina non fa richieste a CDN esterne (l'unica chiamata a terzi e il contatore visite di counterapi.dev). Le aliquote regionali e comunali sono incluse come dataset locale normalizzato; il repository non contiene una pipeline di import o scraping dei dati sorgente.
 
 ## Licenza
 
