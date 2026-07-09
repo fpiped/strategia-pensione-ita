@@ -28,8 +28,9 @@
           "description": "Calcolatore per confrontare fondo pensione e PAC nel contesto fiscale italiano."
         }
     </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap">
     <link rel="stylesheet" href="styles.css">
     <script>
         // Anti-flash: applica il tab salvato prima del primo paint, così il
@@ -51,7 +52,7 @@
             }, 1500);
         })();
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <header>
@@ -70,7 +71,8 @@
                     </div>
                 </nav>
                 <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Attiva tema scuro" aria-pressed="false">
-                    <span class="theme-toggle-icon" aria-hidden="true"></span>
+                    <span data-lucide="moon" class="theme-toggle-icon theme-toggle-icon-moon" aria-hidden="true"></span>
+                    <span data-lucide="sun" class="theme-toggle-icon theme-toggle-icon-sun" aria-hidden="true"></span>
                 </button>
             </div>
         </div>
@@ -87,7 +89,7 @@
                     </div>
                     <div class="intro-actions">
                         <button type="button" class="btn btn-primary intro-primary" id="open-guided-mode">
-                            <i class="fas fa-list-check"></i>
+                            <span data-lucide="list-check" class="icon" aria-hidden="true"></span>
                             Compilazione guidata
                         </button>
                     </div>
@@ -651,7 +653,7 @@
                         </div>
                         <div class="action-buttons">
                             <button id="download-csv" class="btn btn-primary">
-                                <i class="fas fa-download"></i>
+                                <span data-lucide="download" class="icon" aria-hidden="true"></span>
                                 Scarica CSV
                             </button>
                         </div>
@@ -801,7 +803,7 @@
                             <h2 id="guided-title">Compilazione guidata</h2>
                         </div>
                         <button type="button" class="icon-button" data-guided-close aria-label="Chiudi compilazione guidata">
-                            <i class="fas fa-xmark"></i>
+                            <span data-lucide="x" class="icon" aria-hidden="true"></span>
                         </button>
                     </div>
                     <div class="guided-progress" aria-hidden="true">
@@ -1757,7 +1759,7 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
     </div>
 
     <a href="#" class="go-to-top" id="go-to-top">
-        <i class="fas fa-arrow-up"></i>
+        <span data-lucide="arrow-up" class="icon" aria-hidden="true"></span>
     </a>
 
     <footer class="footer">
@@ -1769,11 +1771,12 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
         </p>
         <p class="github-link">
             <a href="https://github.com/fpiped/strategia-pensione-ita" target="_blank" rel="noopener">
-                <i class="fab fa-github"></i> Ti è utile? Lascia una <i class="fas fa-star"></i> su GitHub!
+                Ti è utile? Lascia una <span data-lucide="star" class="icon icon-star" aria-hidden="true"></span> su GitHub!
             </a>
         </p>
     </footer>
 
+    <script src="https://unpkg.com/lucide@1.23.0/dist/umd/lucide.min.js"></script>
     <script src="js/scripts.js"></script>
     <script src="js/app.js" type="module"></script>
 </body>
