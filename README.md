@@ -61,6 +61,21 @@ npm test
 
 I test usano il runner nativo di Node.js e coprono la logica principale di calcolo.
 
+### Test end-to-end
+
+Coprono controller, binding e view guidando l'app in un browser headless (persistenza dello scenario, link di condivisione, rendering di tabella ed esploratore, assenza di richieste a host esterni). Richiedono una tantum:
+
+```bash
+npm install
+npx playwright install chromium
+```
+
+Poi:
+
+```bash
+npm run test:e2e
+```
+
 ## Dati e dipendenze
 
 Il progetto e una single-page app statica in HTML, CSS e JavaScript vanilla.
