@@ -5898,15 +5898,8 @@ html[data-theme="dark"] .theme-toggle {
     border-color: var(--color-border-focus);
 }
 
-/* Grafico: come la tabella, larghezza minima con scroll orizzontale. */
-.chart-content {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-.chart-container {
-    min-width: 640px;
-}
+/* Grafico: si adatta alla larghezza disponibile, senza scroll orizzontale;
+   su schermi piccoli resta compatto e si ingrandisce con lo zoom. */
 
 /* Primo paint posticipato a calcoli pronti (attributo tolto da app.js,
    fallback a 1,5s nell'inline script del head). */
