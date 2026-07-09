@@ -81,7 +81,7 @@ export const FIELDS = [
 
 const resolveBound = (bound, state) => (typeof bound === 'function' ? bound(state) : bound);
 
-function clampNumber(rawValue, field, state) {
+export function clampNumber(rawValue, field, state) {
   const min = Number.isFinite(field.min) ? field.min : 0;
   if (!Number.isFinite(rawValue)) return min; // campo svuotato -> minimo
   const max = resolveBound(field.max, state);
@@ -119,6 +119,30 @@ export function hydrateState() {
     }
   }
   return state;
+}
+
+/**
+ * Scarta dalla patch i valori di select/radio senza riscontro nel DOM
+ * (es. scenario salvato o condiviso da una versione precedente dell'app):
+ * applicarli lascerebbe il controllo su un'opzione inesistente.
+ */
+export function dropUnknownChoices(patch) {
+  if (!patch) return patch;
+  for (const field of FIELDS) {
+    if (!(field.key in patch)) continue;
+    if (field.type === 'select') {
+      const select = byId(field.panel);
+      if (select && ![...select.options].some((option) => option.value === patch[field.key])) {
+        delete patch[field.key];
+      }
+    } else if (field.type === 'radio') {
+      const radios = radiosByName(field.panel);
+      if (radios.length && !radios.some((radio) => radio.value === patch[field.key])) {
+        delete patch[field.key];
+      }
+    }
+  }
+  return Object.keys(patch).length ? patch : null;
 }
 
 function attachNumberInput(store, field, input) {

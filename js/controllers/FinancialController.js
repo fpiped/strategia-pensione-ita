@@ -11,7 +11,15 @@ import {
   buildInputWarnings
 } from '../utils/input-helpers.js';
 import { createStore } from '../store.js';
-import { hydrateState, bindFields } from '../bindings.js';
+import { hydrateState, bindFields, dropUnknownChoices } from '../bindings.js';
+import {
+  buildShareUrl,
+  clearSavedScenario,
+  clearSharedScenarioFromUrl,
+  loadSavedScenario,
+  readSharedScenario,
+  saveScenario
+} from '../utils/scenario-persistence.js';
 
 const byId = (id) => document.getElementById(id);
 
@@ -27,6 +35,30 @@ const formatPercent = (value) => `${(value * 100).toLocaleString('it-IT', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2
 })}%`;
+
+async function copyTextToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // Clipboard API assente o negata (es. http in locale): textarea usa e getta.
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    let copied = false;
+    try {
+      copied = document.execCommand('copy');
+    } catch {
+      copied = false;
+    }
+    textarea.remove();
+    return copied;
+  }
+}
 
 /**
  * FinancialController - Gestisce gli eventi e collega store, model e view.
@@ -48,19 +80,37 @@ export class FinancialController {
         this.guidedStep = 0;
         this.annualExplorerYear = 1;
         this.updateResultsTimer = null;
+        this.persistTimer = null;
+        this.shareFeedbackTimer = null;
         this.csvContent = '';
 
         this.populateLocalTaxSelectors();
         this.initVariationStates();
-        this.store = createStore({
+        // Predefiniti dell'app: base per il diff salvato/condiviso e per il
+        // ripristino. localTaxMode e municipalityLabel non hanno un campo:
+        // l'etichetta distingue una selezione confermata dal testo di ricerca
+        // ancora in digitazione.
+        this.defaultState = {
           ...hydrateState(),
           localTaxMode: 'manual',
-          // Etichetta dell'ultimo comune selezionato: distingue una selezione
-          // confermata dal testo di ricerca ancora in digitazione.
           municipalityLabel: ''
+        };
+        const savedScenario = dropUnknownChoices(loadSavedScenario(this.defaultState));
+        const sharedScenario = dropUnknownChoices(readSharedScenario(this.defaultState));
+        this.store = createStore({
+          ...this.defaultState,
+          ...savedScenario,
+          ...sharedScenario
         });
+        if (sharedScenario) {
+          // Lo scenario del link diventa quello corrente: l'URL torna pulito
+          // e il salvataggio locale riparte da qui.
+          clearSharedScenarioFromUrl();
+          saveScenario(this.store.get(), this.defaultState);
+        }
         bindFields(this.store);
         this.store.subscribe((state) => this.updateDerivedFields(state));
+        this.store.subscribe(() => this.schedulePersist());
         this.initEventListeners();
         this.updateDerivedFields(this.store.get());
       }
@@ -102,6 +152,10 @@ export class FinancialController {
       });
 
       byId('download-csv').addEventListener('click', () => this.downloadCsv());
+      byId('copy-share-link')?.addEventListener('click', () => this.copyShareLink());
+      byId('reset-scenario')?.addEventListener('click', () => this.resetScenario());
+      // Chiusura della pagina prima del debounce: salvataggio immediato.
+      window.addEventListener('pagehide', () => this.persistNow());
 
       byId('open-guided-mode').addEventListener('click', () => this.openGuidedMode());
       document.querySelectorAll('[data-guided-close]').forEach((element) => {
@@ -297,6 +351,42 @@ export class FinancialController {
       this.updateResultsTimer = window.setTimeout(() => {
         this.updateResults();
       }, delay);
+    }
+
+    schedulePersist(delay = 300) {
+      window.clearTimeout(this.persistTimer);
+      this.persistTimer = window.setTimeout(() => this.persistNow(), delay);
+    }
+
+    persistNow() {
+      window.clearTimeout(this.persistTimer);
+      saveScenario(this.store.get(), this.defaultState);
+    }
+
+    /**
+     * Copia negli appunti un link che riproduce lo scenario corrente; solo i
+     * parametri diversi dai predefiniti finiscono nell'URL.
+     */
+    async copyShareLink() {
+      const url = buildShareUrl(this.store.get(), this.defaultState);
+      const copied = await copyTextToClipboard(url);
+      const label = document.querySelector('#copy-share-link [data-share-label]');
+      if (!label) return;
+      label.textContent = copied ? 'Link copiato!' : 'Copia non riuscita';
+      window.clearTimeout(this.shareFeedbackTimer);
+      this.shareFeedbackTimer = window.setTimeout(() => {
+        label.textContent = 'Condividi scenario';
+      }, 2000);
+    }
+
+    /**
+     * Riporta tutti i parametri ai predefiniti e azzera lo scenario salvato.
+     */
+    resetScenario() {
+      if (!window.confirm('Ripristinare i valori predefiniti? I parametri attuali andranno persi.')) return;
+      clearSavedScenario();
+      this.store.set({ ...this.defaultState });
+      this.updateResults();
     }
 
     openGuidedMode() {
