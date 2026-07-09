@@ -26,43 +26,43 @@ test('calcola lo scenario cumulativo predefinito', () => {
   assert.equal(result.risparmioImposta, 6821);
 
   assert.deepEqual(result.results[0], {
-    Anno: 1,
-    'Entro Min': 300,
-    'Extra Min': 2700,
-    'Entro Ded': 3000,
-    'Extra Ded': 0,
-    Aderente: 3000,
-    Datore: 450,
-    Risparmio: 96,
-    'FP Cons': 300,
-    'PAC Cons': 2700,
-    'FP Busta': 300,
-    'FP Bonifico': 0,
-    'Diff Busta': 0,
-    Scelta: 'MIX',
-    'Exit FP': 3650,
-    'Exit PAC': 3000,
-    'Exit Mix': 3434
+    anno: 1,
+    quotaEntroMinima: 300,
+    quotaExtraMinima: 2700,
+    quotaEntroDeduzione: 3000,
+    quotaExtraDeduzione: 0,
+    quotaAderente: 3000,
+    quotaDatore: 450,
+    risparmioFiscale: 96,
+    quotaFpConsigliata: 300,
+    quotaPacConsigliata: 2700,
+    quotaFpBusta: 300,
+    quotaFpBonifico: 0,
+    diffBustaBonifico: 0,
+    scelta: 'MIX',
+    exitFp: 3650,
+    exitPac: 3000,
+    exitMix: 3434
   });
 
   assert.deepEqual(result.results.at(-1), {
-    Anno: 30,
-    'Entro Min': 300,
-    'Extra Min': 3629,
-    'Entro Ded': 3929,
-    'Extra Ded': 0,
-    Aderente: 3929,
-    Datore: 450,
-    Risparmio: 931,
-    'FP Cons': 3929,
-    'PAC Cons': 0,
-    'FP Busta': 300,
-    'FP Bonifico': 3629,
-    'Diff Busta': 267,
-    Scelta: 'FP',
-    'Exit FP': 229276,
-    'Exit PAC': 237175,
-    'Exit Mix': 262053
+    anno: 30,
+    quotaEntroMinima: 300,
+    quotaExtraMinima: 3629,
+    quotaEntroDeduzione: 3929,
+    quotaExtraDeduzione: 0,
+    quotaAderente: 3929,
+    quotaDatore: 450,
+    risparmioFiscale: 931,
+    quotaFpConsigliata: 3929,
+    quotaPacConsigliata: 0,
+    quotaFpBusta: 300,
+    quotaFpBonifico: 3629,
+    diffBustaBonifico: 267,
+    scelta: 'FP',
+    exitFp: 229276,
+    exitPac: 237175,
+    exitMix: 262053
   });
 });
 
@@ -75,8 +75,8 @@ test('non riconosce contributo datore se la quota minima non e raggiunta', () =>
   });
 
   assert.equal(result.quotaDatoreFp, 0);
-  assert.equal(result.results[0].Datore, 0);
-  assert.equal(result.results[0]['Entro Min'], 100);
+  assert.equal(result.results[0].quotaDatore, 0);
+  assert.equal(result.results[0].quotaEntroMinima, 100);
 });
 
 test('riconosce un contributo datore fisso annuo', () => {
@@ -89,8 +89,8 @@ test('riconosce un contributo datore fisso annuo', () => {
   });
 
   assert.equal(result.quotaDatoreFp, 250);
-  assert.equal(result.results[0].Datore, 250);
-  assert.equal(result.results[0]['Entro Min'], 300);
+  assert.equal(result.results[0].quotaDatore, 250);
+  assert.equal(result.results[0].quotaEntroMinima, 300);
 });
 
 test('applica il riscatto anticipato al 23%', () => {
@@ -108,7 +108,7 @@ test('applica il riscatto anticipato al 23%', () => {
 
   assert.equal(model.calcolaTassazioneFp(1, false), 0.15);
   assert.equal(model.calcolaTassazioneFp(1, true), 0.23);
-  assert.ok(earlyExit.results[0]['Exit FP'] < ordinary.results[0]['Exit FP']);
+  assert.ok(earlyExit.results[0].exitFp < ordinary.results[0].exitFp);
 });
 
 test('applica anzianita pregressa FP alla tassazione in uscita', () => {
@@ -124,7 +124,7 @@ test('applica anzianita pregressa FP alla tassazione in uscita', () => {
   });
 
   assert.equal(model.calcolaTassazioneFp(20, false), 0.132);
-  assert.ok(conPregresso.results[0]['Exit FP'] > senzaPregresso.results[0]['Exit FP']);
+  assert.ok(conPregresso.results[0].exitFp > senzaPregresso.results[0].exitFp);
 });
 
 test('calcola gli scaglioni IRPEF 2025 aggiornati alla Legge 207/2024', () => {
@@ -150,13 +150,13 @@ test('include addizionali stimate nel risparmio fiscale', () => {
     addizionaliPerc: 0.02
   });
 
-  assert.equal(result.results[0].Risparmio, 777);
-  assert.equal(result.results[0]['FP Cons'], 3000);
-  assert.equal(result.results[0]['PAC Cons'], 0);
-  assert.equal(result.results[0]['FP Busta'], 300);
-  assert.equal(result.results[0]['FP Bonifico'], 2700);
-  assert.equal(result.results[0]['Exit FP'], 3710);
-  assert.equal(result.results[0]['Exit Mix'], 3710);
+  assert.equal(result.results[0].risparmioFiscale, 777);
+  assert.equal(result.results[0].quotaFpConsigliata, 3000);
+  assert.equal(result.results[0].quotaPacConsigliata, 0);
+  assert.equal(result.results[0].quotaFpBusta, 300);
+  assert.equal(result.results[0].quotaFpBonifico, 2700);
+  assert.equal(result.results[0].exitFp, 3710);
+  assert.equal(result.results[0].exitMix, 3710);
 });
 
 test('distingue beneficio fiscale tra versamento FP in busta e bonifico', () => {
@@ -322,8 +322,8 @@ test('usa il rendimento PAC come rendimento netto senza costi o tasse aggiuntive
     rendimentoAnnualePacPerc: 0.08
   });
 
-  assert.equal(result.results[0]['Exit PAC'], 3000);
-  assert.equal(result.results[0]['Exit PAC'], 3000);
+  assert.equal(result.results[0].exitPac, 3000);
+  assert.equal(result.results[0].exitPac, 3000);
 });
 
 test('la modalita sacrificio netto confronta il PAC con il costo netto del FP', () => {
@@ -335,11 +335,11 @@ test('la modalita sacrificio netto confronta il PAC con il costo netto del FP', 
     modalitaConfronto: 'sacrificioNetto'
   });
 
-  assert.equal(result.results[0].Risparmio, 777);
-  assert.equal(result.results[0]['FP Cons'], 3000);
-  assert.equal(result.results[0]['PAC Cons'], 0);
-  assert.equal(result.results[0]['Exit PAC'], 2223);
-  assert.equal(result.results[0]['Exit Mix'], 2933);
+  assert.equal(result.results[0].risparmioFiscale, 777);
+  assert.equal(result.results[0].quotaFpConsigliata, 3000);
+  assert.equal(result.results[0].quotaPacConsigliata, 0);
+  assert.equal(result.results[0].exitPac, 2223);
+  assert.equal(result.results[0].exitMix, 2933);
 });
 
 test('applica variazioni periodiche a reddito e investimento', () => {
@@ -358,10 +358,10 @@ test('applica variazioni periodiche a reddito e investimento', () => {
     variazioneRedditoValore: 5
   });
 
-  assert.equal(result.results[0].Datore, 450);
-  assert.equal(result.results[0]['Entro Min'], 300);
-  assert.equal(result.results[3].Datore, 473);
-  assert.equal(result.results[3]['Entro Min'], 315);
+  assert.equal(result.results[0].quotaDatore, 450);
+  assert.equal(result.results[0].quotaEntroMinima, 300);
+  assert.equal(result.results[3].quotaDatore, 473);
+  assert.equal(result.results[3].quotaEntroMinima, 315);
 });
 
 test('usa una base contributiva FP alternativa e variabile', () => {
@@ -388,10 +388,10 @@ test('usa una base contributiva FP alternativa e variabile', () => {
   });
 
   assert.equal(result.quotaDatoreFp, 300);
-  assert.equal(result.results[0].Datore, 300);
-  assert.equal(result.results[0]['Entro Min'], 200);
-  assert.equal(result.results[3].Datore, 330);
-  assert.equal(result.results[3]['Entro Min'], 220);
+  assert.equal(result.results[0].quotaDatore, 300);
+  assert.equal(result.results[0].quotaEntroMinima, 200);
+  assert.equal(result.results[3].quotaDatore, 330);
+  assert.equal(result.results[3].quotaEntroMinima, 220);
 });
 
 test('puo usare basi diverse per quota aderente e contributo datore', () => {
@@ -405,8 +405,8 @@ test('puo usare basi diverse per quota aderente e contributo datore', () => {
   });
 
   assert.equal(result.quotaDatoreFp, 450);
-  assert.equal(result.results[0]['Entro Min'], 200);
-  assert.equal(result.results[0].Datore, 450);
+  assert.equal(result.results[0].quotaEntroMinima, 200);
+  assert.equal(result.results[0].quotaDatore, 450);
 });
 
 test('applica la variazione base anche quando solo il datore usa il minimo retributivo', () => {
@@ -422,10 +422,10 @@ test('applica la variazione base anche quando solo il datore usa il minimo retri
     variazioneBaseContributivaValore: 10
   });
 
-  assert.equal(result.results[0]['Entro Min'], 300);
-  assert.equal(result.results[0].Datore, 300);
-  assert.equal(result.results[3]['Entro Min'], 300);
-  assert.equal(result.results[3].Datore, 330);
+  assert.equal(result.results[0].quotaEntroMinima, 300);
+  assert.equal(result.results[0].quotaDatore, 300);
+  assert.equal(result.results[3].quotaEntroMinima, 300);
+  assert.equal(result.results[3].quotaDatore, 330);
 });
 
 test('premi e bonus aumentano il reddito fiscale ma non la base FP su RAL', () => {
@@ -443,9 +443,9 @@ test('premi e bonus aumentano il reddito fiscale ma non la base FP su RAL', () =
   });
 
   assert.equal(bonusResult.quotaDatoreFp, baseResult.quotaDatoreFp);
-  assert.equal(bonusResult.results[0].Datore, baseResult.results[0].Datore);
-  assert.equal(bonusResult.results[0]['Entro Min'], baseResult.results[0]['Entro Min']);
-  assert.ok(bonusResult.results[0].Risparmio > baseResult.results[0].Risparmio);
+  assert.equal(bonusResult.results[0].quotaDatore, baseResult.results[0].quotaDatore);
+  assert.equal(bonusResult.results[0].quotaEntroMinima, baseResult.results[0].quotaEntroMinima);
+  assert.ok(bonusResult.results[0].risparmioFiscale > baseResult.results[0].risparmioFiscale);
 });
 
 test('manda sempre nel PAC la quota oltre deduzione', () => {
@@ -457,11 +457,11 @@ test('manda sempre nel PAC la quota oltre deduzione', () => {
     addizionaliPerc: 0.02
   });
 
-  assert.equal(result.results[0]['Entro Ded'], 4850);
-  assert.equal(result.results[0]['Extra Ded'], 3150);
-  assert.equal(result.results[0]['FP Cons'], 4850);
-  assert.equal(result.results[0]['PAC Cons'], 3150);
-  assert.equal(result.results[0].Scelta, 'MIX');
+  assert.equal(result.results[0].quotaEntroDeduzione, 4850);
+  assert.equal(result.results[0].quotaExtraDeduzione, 3150);
+  assert.equal(result.results[0].quotaFpConsigliata, 4850);
+  assert.equal(result.results[0].quotaPacConsigliata, 3150);
+  assert.equal(result.results[0].scelta, 'MIX');
 });
 
 test('altri redditi e premi crescenti alzano il reddito fiscale e il risparmio', () => {
@@ -484,10 +484,10 @@ test('altri redditi e premi crescenti alzano il reddito fiscale e il risparmio',
   });
 
   // Più imponibile IRPEF -> aliquota marginale più alta -> risparmio maggiore.
-  assert.ok(conAltri.results[0].Risparmio > base.results[0].Risparmio);
+  assert.ok(conAltri.results[0].risparmioFiscale > base.results[0].risparmioFiscale);
   // I premi crescenti aumentano il beneficio negli anni successivi.
-  assert.ok(conPremiCrescenti.results[3].Risparmio >= conPremiCrescenti.results[0].Risparmio);
-  assert.ok(conPremiCrescenti.results[0].Risparmio >= base.results[0].Risparmio);
+  assert.ok(conPremiCrescenti.results[3].risparmioFiscale >= conPremiCrescenti.results[0].risparmioFiscale);
+  assert.ok(conPremiCrescenti.results[0].risparmioFiscale >= base.results[0].risparmioFiscale);
 });
 
 test('l allocazione ottimale puo dividere la quota deducibile prima del FP pieno', () => {
@@ -498,13 +498,13 @@ test('l allocazione ottimale puo dividere la quota deducibile prima del FP pieno
   });
 
   assert.equal(result.breakeven, 25);
-  assert.equal(result.results[0].Scelta, 'MIX');
-  assert.equal(result.results[19].Scelta, 'MIX');
-  assert.equal(result.results[23].Scelta, 'MIX');
-  assert.equal(result.results[23].Scelta, 'MIX');
-  assert.equal(result.results[24].Scelta, 'FP');
-  assert.equal(result.results.at(-1).Scelta, 'FP');
-  assert.ok(result.results.at(-1)['Exit Mix'] > result.results.at(-1)['Exit PAC']);
+  assert.equal(result.results[0].scelta, 'MIX');
+  assert.equal(result.results[19].scelta, 'MIX');
+  assert.equal(result.results[23].scelta, 'MIX');
+  assert.equal(result.results[23].scelta, 'MIX');
+  assert.equal(result.results[24].scelta, 'FP');
+  assert.equal(result.results.at(-1).scelta, 'FP');
+  assert.ok(result.results.at(-1).exitMix > result.results.at(-1).exitPac);
 });
 
 test('l allocazione ottimale non e inferiore agli scenari puri sull exit finale', () => {
@@ -522,8 +522,8 @@ test('l allocazione ottimale non e inferiore agli scenari puri sull exit finale'
     const result = model.calculateResults(config);
     const finalRow = result.results.at(-1);
 
-    assert.ok(finalRow['Exit Mix'] >= finalRow['Exit FP'] - 1);
-    assert.ok(finalRow['Exit Mix'] >= finalRow['Exit PAC'] - 1);
+    assert.ok(finalRow.exitMix >= finalRow.exitFp - 1);
+    assert.ok(finalRow.exitMix >= finalRow.exitPac - 1);
   }
 });
 

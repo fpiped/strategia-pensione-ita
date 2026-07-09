@@ -303,9 +303,9 @@ export class FinancialModel {
         }));
       }
 
-      const finalOptimized = optimizedResults.at(-1)['Exit Mix'];
-      const finalFp = optimizedResults.at(-1)['Exit FP'];
-      const finalPac = optimizedResults.at(-1)['Exit PAC'];
+      const finalOptimized = optimizedResults.at(-1).exitMix;
+      const finalFp = optimizedResults.at(-1).exitFp;
+      const finalPac = optimizedResults.at(-1).exitPac;
       const selectedStrategy = [
         { results: optimizedResults, plan: recommendedPlan, exit: finalOptimized },
         { results: fpStrategyResults, plan: fpPlan, exit: finalFp },
@@ -589,9 +589,9 @@ export class FinancialModel {
         }));
       }
 
-      const finalOptimized = optimizedResults.at(-1)['Exit Mix'];
-      const finalFp = optimizedResults.at(-1)['Exit FP'];
-      const finalPac = optimizedResults.at(-1)['Exit PAC'];
+      const finalOptimized = optimizedResults.at(-1).exitMix;
+      const finalFp = optimizedResults.at(-1).exitFp;
+      const finalPac = optimizedResults.at(-1).exitPac;
       const selectedStrategy = [
         { results: optimizedResults, plan: recommendedPlan, exit: finalOptimized },
         { results: fpStrategyResults, plan: fpPlan, exit: finalFp },
@@ -1041,23 +1041,23 @@ export class FinancialModel {
       exitMix
     }) {
       return {
-        "Anno": anno,
-        "Entro Min": Math.round(quotaEntroMinAnno),
-        "Extra Min": Math.round(quotaExtraMinAnno),
-        "Entro Ded": Math.round(quotaEntroDedAnno),
-        "Extra Ded": Math.round(quotaExtraDedAnno),
-        "Aderente": Math.round(aderenteAnno),
-        "Datore": Math.round(datoreAnno),
-        "Risparmio": Math.round(risparmioAnnoEffettivo),
-        "FP Cons": Math.round(quotaFpConsigliataAnno),
-        "PAC Cons": Math.round(quotaPacConsigliataAnno),
-        "FP Busta": Math.round(quotaBustaAnno),
-        "FP Bonifico": Math.round(quotaBonificoAnno),
-        "Diff Busta": Math.round(risparmioOttimizzazioneBustaAnno),
-        "Scelta": sceltaAnno,
-        "Exit FP": Math.round(exitFP),
-        "Exit PAC": Math.round(exitPAC),
-        "Exit Mix": Math.round(exitMix),
+        anno,
+        quotaEntroMinima: Math.round(quotaEntroMinAnno),
+        quotaExtraMinima: Math.round(quotaExtraMinAnno),
+        quotaEntroDeduzione: Math.round(quotaEntroDedAnno),
+        quotaExtraDeduzione: Math.round(quotaExtraDedAnno),
+        quotaAderente: Math.round(aderenteAnno),
+        quotaDatore: Math.round(datoreAnno),
+        risparmioFiscale: Math.round(risparmioAnnoEffettivo),
+        quotaFpConsigliata: Math.round(quotaFpConsigliataAnno),
+        quotaPacConsigliata: Math.round(quotaPacConsigliataAnno),
+        quotaFpBusta: Math.round(quotaBustaAnno),
+        quotaFpBonifico: Math.round(quotaBonificoAnno),
+        diffBustaBonifico: Math.round(risparmioOttimizzazioneBustaAnno),
+        scelta: sceltaAnno,
+        exitFp: Math.round(exitFP),
+        exitPac: Math.round(exitPAC),
+        exitMix: Math.round(exitMix)
       };
     }
 
@@ -1069,8 +1069,8 @@ export class FinancialModel {
      */
     _calculateFirstFullFpYear(results) {
       for (let i = 0; i < results.length; i++) {
-        if (results[i]['Entro Ded'] > 0 && results[i]['FP Cons'] >= results[i]['Entro Ded']) {
-          return results[i]['Anno'];
+        if (results[i].quotaEntroDeduzione > 0 && results[i].quotaFpConsigliata >= results[i].quotaEntroDeduzione) {
+          return results[i].anno;
         }
       }
       return null;
@@ -1299,25 +1299,36 @@ export class FinancialModel {
     }
 
     /**
-     * Converte i risultati in formato CSV
+     * Converte i risultati in formato CSV con intestazioni leggibili
+     * (le righe internamente usano chiavi camelCase stabili).
      * @param {Array} rows - Dati dei risultati
      * @returns {string} Stringa formattata CSV
      */
     convertToCSV(rows) {
       if (!rows.length) return '';
 
-      let str = '';
-      const headers = Object.keys(rows[0]).join(',');
-      str += headers + '\r\n';
+      const columns = [
+        ['anno', 'Anno'],
+        ['quotaEntroMinima', 'Entro Min'],
+        ['quotaExtraMinima', 'Extra Min'],
+        ['quotaEntroDeduzione', 'Entro Ded'],
+        ['quotaExtraDeduzione', 'Extra Ded'],
+        ['quotaAderente', 'Aderente'],
+        ['quotaDatore', 'Datore'],
+        ['risparmioFiscale', 'Risparmio'],
+        ['quotaFpConsigliata', 'FP Cons'],
+        ['quotaPacConsigliata', 'PAC Cons'],
+        ['quotaFpBusta', 'FP Busta'],
+        ['quotaFpBonifico', 'FP Bonifico'],
+        ['diffBustaBonifico', 'Diff Busta'],
+        ['scelta', 'Scelta'],
+        ['exitFp', 'Exit FP'],
+        ['exitPac', 'Exit PAC'],
+        ['exitMix', 'Exit Mix']
+      ];
 
-      for (let i = 0; i < rows.length; i++) {
-        let line = '';
-        for (let index in rows[i]) {
-          if (line !== '') line += ',';
-          line += rows[i][index];
-        }
-        str += line + '\r\n';
-      }
-      return str;
+      const header = columns.map(([, label]) => label).join(',');
+      const lines = rows.map((row) => columns.map(([key]) => row[key]).join(','));
+      return [header, ...lines, ''].join('\r\n');
     }
   }
