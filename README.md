@@ -80,7 +80,7 @@ npm run test:e2e
 
 Il progetto e una single-page app statica in HTML, CSS e JavaScript vanilla.
 
-Chart.js e i font (Inter per l'interfaccia, IBM Plex Mono per i numeri) sono vendorizzati in `vendor/`; le icone sono un sottoinsieme di Lucide reso inline nel modulo `js/icons.js`; l'immagine dell'hero è in `vendor/img/hero.webp`. La pagina non fa richieste a CDN esterne (l'unica chiamata a terzi e il contatore visite di counterapi.dev). Le aliquote regionali e comunali sono incluse come dataset locale normalizzato; le comunali (`js/constants/local-tax-data.js`, ~700 KB) si caricano con `import()` dinamico solo quando serve la modalità "Da località". Il repository non contiene una pipeline di import o scraping dei dati sorgente.
+Chart.js e i font (Inter per l'interfaccia, IBM Plex Mono per i numeri) sono vendorizzati in `vendor/`; le icone sono un sottoinsieme di Lucide reso inline nel modulo `js/icons.js`; l'illustrazione social (og:image) è un SVG flat in `vendor/img/` renderizzato in PNG. La pagina non fa richieste a CDN esterne (l'unica chiamata a terzi e il contatore visite di counterapi.dev). Le aliquote regionali e comunali sono incluse come dataset locale normalizzato; le comunali (`js/constants/local-tax-data.js`, ~700 KB) si caricano con `import()` dinamico solo quando serve la modalità "Da località". Il repository non contiene una pipeline di import o scraping dei dati sorgente.
 
 ## Design system
 

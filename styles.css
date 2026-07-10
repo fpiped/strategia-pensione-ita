@@ -5744,7 +5744,6 @@ html[data-theme="dark"] .logo h1 {
 .control-shell .segmented-control,
 .control-shell .binary-toggle-state,
 .guided-dialog .guided-header,
-.guided-dialog .guided-progress,
 .guided-dialog .variation-grid,
 .guided-dialog #guided-minimum-wage-fields,
 .help-modal-header,
@@ -7122,17 +7121,17 @@ html[data-theme="dark"] .control-shell .segmented-control button.active {
     white-space: nowrap;
 }
 
-/* Le due hero (Calcola e Informazioni) condividono altezza e stile:
-   stessa superficie piena, stesso padding, stessa altezza minima. */
+/* Masthead (Calcola) e barra-indice (Informazioni): stessa lingua
+   (superficie, hairline, radius), altezze naturali perché i contenuti
+   hanno lavori diversi. Niente immagini di sfondo: l'illustrazione
+   vive come og:image (vendor/img/og.png). */
 .intro-section,
 .docs-index {
     background: var(--ds-hero);
     border: 1px solid var(--ds-border-soft);
     border-radius: var(--radius-lg);
     box-shadow: var(--ds-shadow-sm);
-    padding: 1.35rem 1.45rem;
-    min-height: 10.5rem;
-    align-content: center;
+    padding: 1.15rem 1.45rem;
 }
 
 /* Il wrapper del grafico non aggiunge un secondo livello di padding:
@@ -7256,72 +7255,43 @@ html[data-theme="dark"] .control-shell .segmented-control.explorer-strategy-sele
    hero, e voci dell'indice alte come i bottoni dell'intro. */
 .docs-index strong {
     padding: 0;
-    margin: 0 0 0.75rem;
+    margin: 0 0 0.6rem;
     width: 100%;
-    /* Stessa voce del titolo dell'hero Calcola (regola a 1.35rem). */
-    font-size: 1.35rem;
-    font-weight: 700;
-    line-height: 1.08;
-    letter-spacing: normal;
-    text-transform: none;
-    color: var(--color-text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ds-text-muted);
 }
 
 .docs-index a {
-    min-height: 3.1rem;
+    min-height: 2.5rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
 }
 
-/* =========================================================
-   Hero image-first: fondo scuro col glow del brand, IDENTICO
-   nei due temi (è contenuto illustrativo, non superficie UI).
-   Sostituire vendor/img/hero.webp per cambiare immagine.
-   ========================================================= */
-.intro-section,
-.docs-index,
-html[data-theme="dark"] .intro-section,
-html[data-theme="dark"] .docs-index {
-    background:
-        linear-gradient(90deg, rgb(4 16 12 / 0.96) 0%, rgb(4 16 12 / 0.78) 46%, rgb(4 16 12 / 0.12) 100%),
-        #04100C url('vendor/img/hero.webp') right center / auto 100% no-repeat;
-    border-color: #14261F;
-    min-height: 15rem;
-    align-content: center;
-}
-
-.intro-copy h2,
-.docs-index strong,
-html[data-theme="dark"] .intro-copy h2,
-html[data-theme="dark"] .docs-index strong {
-    color: #F2FAF6;
-}
-
-.intro-copy p,
-html[data-theme="dark"] .intro-copy p {
-    color: #A9BFB4;
-}
-
-/* Layout hero: colonna unica a sinistra (titolo, riga, azioni),
-   la metà destra resta all'immagine. */
+/* Masthead Calcola: colonna unica — titolo, riga, azioni. */
 .intro-section {
     display: block;
 }
 
 .intro-section .intro-copy {
-    max-width: 36rem;
+    max-width: 54rem;
 }
+
+
 
 .intro-section .intro-actions {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-start;
-    justify-self: start;
     gap: 0.5rem;
     width: auto;
     max-width: none;
-    margin: 1.1rem 0 0;
+    margin: 0.9rem 0 0;
 }
 
 .intro-section .intro-actions-row {
@@ -7333,20 +7303,7 @@ html[data-theme="dark"] .intro-copy p {
     padding-inline: 1.1rem;
 }
 
-/* Azioni secondarie sull'hero: ghost sul fondo scuro. */
-.intro-section .btn-secondary,
-html[data-theme="dark"] .intro-section .btn-secondary {
-    background: rgb(255 255 255 / 0.05);
-    border-color: rgb(65 224 180 / 0.35);
-    color: #8FEBCF;
-}
 
-.intro-section .btn-secondary:hover,
-html[data-theme="dark"] .intro-section .btn-secondary:hover {
-    background: rgb(65 224 180 / 0.14);
-    border-color: rgb(65 224 180 / 0.55);
-    color: #C4F6E6;
-}
 
 .intro-section .btn:focus-visible,
 .docs-index a:focus-visible {
@@ -7457,5 +7414,72 @@ a.logo:hover h1 {
         align-items: center;
         gap: 1rem;
         min-width: 0;
+    }
+}
+
+/* Masthead mobile: compatto — titolo ridotto, CTA a tutta larghezza,
+   secondari affiancati. */
+@media (max-width: 768px) {
+    .intro-section {
+        padding: 1rem 1.15rem;
+    }
+
+    .intro-copy h2 {
+        font-size: 1.15rem;
+    }
+
+    .intro-copy p {
+        font-size: 0.85rem;
+    }
+
+    .intro-section .intro-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem;
+    }
+
+    .intro-section .intro-actions .intro-primary {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
+
+    .intro-section .intro-actions-row {
+        display: contents;
+    }
+
+    .intro-section .intro-actions .intro-secondary {
+        width: 100%;
+        min-height: 2.7rem;
+    }
+
+    .intro-section .intro-actions .intro-primary {
+        min-height: 2.9rem;
+    }
+}
+
+/* Mascotte nel masthead: oggetto illustrativo a destra, solo dove
+   c'è spazio. Su mobile lo spazio è del contenuto. */
+.intro-section {
+    position: relative;
+}
+
+.masthead-art {
+    display: none;
+}
+
+@media (min-width: 981px) {
+    .masthead-art {
+        display: block;
+        position: absolute;
+        right: 2.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        height: calc(100% - 2.2rem);
+        max-height: 190px;
+        width: auto;
+    }
+
+    .intro-section {
+        padding-right: 250px;
     }
 }
