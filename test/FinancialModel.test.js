@@ -537,3 +537,53 @@ test('converte i risultati in CSV con intestazione coerente', () => {
       '1,300,2700,3000,0,3000,450,717,3000,0,300,2700,182,FP,3650,3000,3650\r\n'
   );
 });
+
+test('esploratore annuale: fiscalità dell\'anno dal model', () => {
+  const model = new FinancialModel();
+  const config = {
+    ...baseConfig,
+    contributiInpsPerc: 0.0919,
+    addizionaliPerc: 0.02
+  };
+  const { results } = model.calculateResults(config);
+
+  const anno1 = model.buildAnnualExplorerData(config, results, 1);
+  assert.equal(Math.round(anno1.imponibileIrpef), 27243);
+  assert.equal(Math.round(anno1.contributiInps), 2757);
+  assert.equal(Math.round(anno1.irpefLorda), 6266);
+  assert.equal(Math.round(anno1.addizionali), 545);
+  assert.equal(anno1.aliquotaMarginale, 23);
+  assert.equal(Math.round(anno1.capienzaResidua), 4550);
+  assert.equal(Math.round(anno1.versatoFp), 750);
+  assert.equal(anno1.tassoUscitaFp, 0.15);
+  assert.equal(anno1.anniPartecipazione, 1);
+
+  // Dopo 15 anni di partecipazione l'aliquota di uscita FP scende.
+  const anno23 = model.buildAnnualExplorerData(config, results, 23);
+  assert.equal(anno23.tassoUscitaFp, 0.126);
+  assert.equal(Math.round(anno23.versatoFp), 17250);
+});
+
+test('esploratore annuale: variazioni, riscatto e PAC lordo', () => {
+  const model = new FinancialModel();
+  const config = {
+    ...baseConfig,
+    contributiInpsPerc: 0.0919,
+    addizionaliPerc: 0.02,
+    variazioneRedditoTipo: 'percentuale',
+    variazioneRedditoFrequenza: 1,
+    variazioneRedditoValore: 2,
+    riscattoAnticipato: true,
+    rendimentoPacMode: 'lordo',
+    quotaAgevolataPacPerc: 0.3
+  };
+  const { results } = model.calculateResults(config);
+  const anno15 = model.buildAnnualExplorerData(config, results, 15);
+
+  assert.equal(Math.round(anno15.redditoAnno), 39584);
+  assert.equal(Math.round(anno15.imponibileIrpef), 35947);
+  // Riscatto anticipato: aliquota fissa al 23%.
+  assert.equal(anno15.tassoUscitaFp, 0.23);
+  assert.equal(anno15.pacTassatoInUscita, true);
+  assert.equal(Number(anno15.aliquotaPacUscita.toFixed(2)), 21.95);
+});

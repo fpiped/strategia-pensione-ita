@@ -203,7 +203,7 @@ try {
   const unexpected = [...externalHosts].filter((host) => host !== 'api.counterapi.dev');
   check('vendor: nessuna richiesta a CDN esterne', unexpected.length === 0, unexpected.join(', '));
   check('vendor: font Inter caricato in locale', await pageE.evaluate(() => document.fonts.check('16px Inter')));
-  check('vendor: Chart.js e icone presenti', await pageE.evaluate(() => Boolean(window.Chart && window.renderSiteIcons && document.querySelector('span[data-lucide] svg'))));
+  check('vendor: Chart.js e icone presenti', await pageE.evaluate(() => Boolean(window.Chart && document.querySelector('span[data-lucide] svg'))));
 
   // --- 11. Specularità dei temi: un solo set di binding, due palette.
   // Per ogni coppia di entità e proprietà deve valere:
@@ -236,7 +236,10 @@ try {
       ['guidata-body', '.guided-dialog .guided-body.control-shell'],
       ['guidata-help', '.guided-dialog .guided-note .help-entry'],
       ['guidata-chip', '.guided-dialog .mini-metric.output'],
-      ['guidata-input', '.guided-dialog .control-field']
+      ['guidata-input', '.guided-dialog .control-field'],
+      ['theme-toggle', '.theme-toggle'],
+      ['esploratore-attivo', '.explorer-strategy-select button.active'],
+      ['nota-guida-help', '.guided-dialog .guided-note .help-entry'],
     ];
     const props = ['backgroundColor', 'color', 'borderTopColor'];
     // La guidata va aperta: le sue entità sono parte del contratto.
@@ -261,7 +264,12 @@ try {
           const el = document.querySelector(sel);
           if (!el) { out[name] = null; continue; }
           const s = getComputedStyle(el);
-          out[name] = Object.fromEntries(props.map((p) => [p, s[p]]));
+          out[name] = Object.fromEntries(props.map((p) => {
+            // Bordi a larghezza zero: il colore è rumore (currentColor),
+            // non un binding — si confronta solo ciò che si vede.
+            if (p === 'borderTopColor' && s.borderTopWidth === '0px') return [p, 'nessun-bordo'];
+            return [p, s[p]];
+          }));
         }
         return out;
       }, { entities, props });

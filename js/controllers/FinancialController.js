@@ -1,6 +1,8 @@
 import { FinancialModel } from '../models/FinancialModel.js';
 import { FinancialView } from '../views/FinancialView.js';
 import { FINANCIAL_CONSTANTS } from '../constants/financial-constants.js';
+import { applyPeriodicVariation } from '../calculators/pension-contributions.js';
+import { calculateEffectiveTaxRate, calculateNetAnnualReturn } from '../calculators/investment-growth.js';
 import { REGIONAL_TAX_2026 } from '../constants/regional-tax-data.js';
 import {
   calculateLocalTaxRate,
@@ -113,6 +115,10 @@ export class FinancialController {
         bindFields(this.store);
         this.store.subscribe((state) => this.updateDerivedFields(state));
         this.store.subscribe(() => this.schedulePersist());
+        // Ciclo reattivo unico: qualunque mutazione dello stato ricalcola,
+        // con debounce che coalizza la digitazione. Niente più richiami
+        // manuali sparsi a updateResults dopo store.set.
+        this.store.subscribe(() => this.scheduleResultsUpdate(150));
         this.initEventListeners();
         this.updateDerivedFields(this.store.get());
         // Scenario ripristinato/condiviso in modalità località: i dati
@@ -148,28 +154,10 @@ export class FinancialController {
      * Inizializza tutti gli event listener
      */
     initEventListeners() {
-      // I valori sono già nello store (binding): qui resta solo la
-      // schedulazione del ricalcolo, con debounce durante la digitazione.
-      const form = byId('input-form');
-      form.addEventListener('input', (event) => {
-        if (event.target?.type === 'number') {
-          this.scheduleResultsUpdate(200);
-          return;
-        }
-        this.updateResults();
-      });
-      form.addEventListener('change', () => this.updateResults());
+      // Il ricalcolo è guidato dallo store (vedi subscribe nel costruttore):
+      // qui restano solo i trigger che non passano dallo stato, come il
+      // ridisegno del grafico al cambio tema.
       window.addEventListener('strategia-theme-change', () => this.updateResults());
-
-      const guidedDialog = document.querySelector('#guided-modal .guided-dialog');
-      guidedDialog.addEventListener('input', (event) => {
-        if (event.target?.type === 'number') {
-          this.scheduleResultsUpdate(250);
-          return;
-        }
-        this.updateResults();
-      });
-      guidedDialog.addEventListener('change', () => this.updateResults());
 
       document.querySelectorAll('[data-select-target]').forEach((button) => {
         button.addEventListener('click', () => {
@@ -187,6 +175,12 @@ export class FinancialController {
       window.addEventListener('pagehide', () => this.persistNow());
 
       byId('open-guided-mode').addEventListener('click', () => this.openGuidedMode());
+      // Escape chiude la guidata (come backdrop e X).
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && byId('guided-modal')?.classList.contains('is-open')) {
+          this.closeGuidedMode();
+        }
+      });
       document.querySelectorAll('[data-guided-close]').forEach((element) => {
         element.addEventListener('click', () => this.closeGuidedMode());
       });
@@ -201,7 +195,7 @@ export class FinancialController {
         event.stopPropagation();
         this.annualExplorerYear = parseInt(event.target.value, 10) || 1;
         if (this.latestResults?.config) {
-          this.view.updateAnnualExplorer(this.getStrategyRows(), this.latestResults.config, this.annualExplorerYear);
+          this.renderAnnualExplorer();
         }
         this.view.highlightTableYear(this.annualExplorerYear);
       });
@@ -214,7 +208,7 @@ export class FinancialController {
         const yearSelect = byId('annual-explorer-year');
         if (yearSelect) yearSelect.value = String(year);
         if (this.latestResults?.config) {
-          this.view.updateAnnualExplorer(this.getStrategyRows(), this.latestResults.config, year);
+          this.renderAnnualExplorer(year);
         }
         this.view.highlightTableYear(year);
       });
@@ -224,13 +218,11 @@ export class FinancialController {
       document.querySelectorAll('[data-local-tax-mode]').forEach((button) => {
         button.addEventListener('click', () => {
           this.setLocalTaxMode(button.dataset.localTaxMode, { clearLocation: button.dataset.localTaxMode === 'manual' });
-          this.updateResults();
         });
       });
       document.querySelectorAll('[data-guided-tax-mode]').forEach((button) => {
         button.addEventListener('click', () => {
           this.setLocalTaxMode(button.dataset.guidedTaxMode, { clearLocation: button.dataset.guidedTaxMode === 'manual' });
-          this.updateResults();
         });
       });
       ['regioneAddizionali', 'guided-regione-addizionali'].forEach((id) => {
@@ -342,6 +334,18 @@ export class FinancialController {
       });
     }
 
+    /**
+     * Rende l'esploratore annuale: i dati fiscali arrivano dal model,
+     * la view formatta soltanto.
+     */
+    renderAnnualExplorer(year = this.annualExplorerYear) {
+      const config = this.latestResults?.config;
+      if (!config) return;
+      const rows = this.getStrategyRows();
+      const explorer = this.model.buildAnnualExplorerData(config, rows, year);
+      this.view.updateAnnualExplorer(rows, config, year, explorer);
+    }
+
     getStrategyRows() {
       const strategies = this.latestResults?.strategies;
       return (strategies && strategies[this.strategyView]) || this.latestResults?.results || [];
@@ -359,7 +363,7 @@ export class FinancialController {
       this.view.createTable(this.getStrategyRows(), this.tableView, this.getStrategyExitLabel());
       this.view.highlightTableYear(this.annualExplorerYear);
       if (this.latestResults.config) {
-        this.view.updateAnnualExplorer(this.getStrategyRows(), this.latestResults.config, this.annualExplorerYear);
+        this.renderAnnualExplorer();
         this.updateFpSplitCards(this.latestResults.results, this.latestResults.config);
       }
     }
@@ -415,7 +419,6 @@ export class FinancialController {
       if (!window.confirm('Ripristinare i valori predefiniti? I parametri attuali andranno persi.')) return;
       clearSavedScenario();
       this.store.set({ ...this.defaultState });
-      this.updateResults();
     }
 
     openGuidedMode() {
@@ -532,17 +535,10 @@ export class FinancialController {
       this.view.updateMetricsDashboard(results.results);
       this.view.updateChoiceSequence(results.results);
       this.view.updateResultExplanation(results.results);
-      this.view.updateAnnualExplorer(this.getStrategyRows(), config, this.annualExplorerYear);
+      this.renderAnnualExplorer();
       this.view.updateInputWarnings(buildInputWarnings(config));
       this.view.updateChart(results.results);
 
-      // Aggiorna la visualizzazione dell'investimento minimo
-      this.updateMinInvestimentoDisplay(
-        config.reddito,
-        config.quotaMinAderentePerc,
-        config.baseContributivaFpTipo,
-        config.baseContributivaFp
-      );
       this.updateInvestmentModeSummary(config, results.results);
       this.updateFpSplitCards(results.results, config);
 
@@ -574,8 +570,8 @@ export class FinancialController {
       const quotaPacAgevolata = pacIsGross ? state.quotaAgevolataPacPerc / 100 : 0;
       const costiFp = fpIsGross ? state.costiAnnuiFpPerc : 0;
       const costiPac = pacIsGross ? state.costiAnnuiPacPerc : 0;
-      const tassaFp = (quotaFpAgevolata * 0.125) + ((1 - quotaFpAgevolata) * 0.20);
-      const tassaPac = (quotaPacAgevolata * 0.125) + ((1 - quotaPacAgevolata) * 0.26);
+      const tassaFp = calculateEffectiveTaxRate(quotaFpAgevolata, FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_AGEVOLATA, FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_FP_ORDINARIA);
+      const tassaPac = calculateEffectiveTaxRate(quotaPacAgevolata, FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_AGEVOLATA, FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_PAC_ORDINARIA);
 
       setText(['tassaEffettivaFp', 'guided-tassa-effettiva-fp'], formatPercent(tassaFp));
       setText(['tassaEffettivaPac', 'guided-tassa-effettiva-pac'], formatPercent(tassaPac));
@@ -595,17 +591,23 @@ export class FinancialController {
       if (mode !== 'lordo') return grossReturn;
 
       const costs = isFp ? state.costiAnnuiFpPerc : state.costiAnnuiPacPerc;
-      const quotaAgevolata = Math.min(Math.max((isFp ? state.quotaAgevolataFpPerc : state.quotaAgevolataPacPerc) / 100, 0), 1);
-      const ordinaryTax = isFp ? 0.20 : 0.26;
-      const taxRate = (quotaAgevolata * 0.125) + ((1 - quotaAgevolata) * ordinaryTax);
+      const quotaAgevolata = (isFp ? state.quotaAgevolataFpPerc : state.quotaAgevolataPacPerc) / 100;
+      const taxRate = calculateEffectiveTaxRate(
+        quotaAgevolata,
+        FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_AGEVOLATA,
+        isFp ? FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_FP_ORDINARIA : FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_PAC_ORDINARIA
+      );
       return this.calculateNetReturnFromValues(grossReturn, costs, taxRate);
     }
 
     calculateNetReturnFromValues(grossReturnPerc, annualCostsPerc, taxRate) {
-      const grossReturn = Math.max(grossReturnPerc, 0) / 100;
-      const annualCosts = Math.min(Math.max(annualCostsPerc, 0), 100) / 100;
-      const safeTaxRate = Math.min(Math.max(taxRate, 0), 1);
-      return ((((1 + (grossReturn * (1 - safeTaxRate))) * (1 - annualCosts)) - 1) * 100);
+      // La formula vive nel calculator: qui solo conversione %<->frazione.
+      return calculateNetAnnualReturn(Math.max(grossReturnPerc, 0) / 100, {
+        mode: 'lordo',
+        costiAnnui: Math.min(Math.max(annualCostsPerc, 0), 100) / 100,
+        taxRate,
+        taxTiming: 'annual'
+      }) * 100;
     }
 
     // Campi minimo retributivo visibili solo se una delle basi lo usa.
@@ -819,18 +821,6 @@ export class FinancialController {
         municipalityLabel: label
       });
       this.hideMunicipalitySuggestions();
-      this.updateResults();
-    }
-
-    /**
-     * Aggiorna la visualizzazione dell'investimento minimo
-     */
-    updateMinInvestimentoDisplay(reddito, quotaMinAderentePerc, baseContributivaFpTipo = 'ral', baseContributivaFp = 0) {
-      const baseContributiva = baseContributivaFpTipo === 'ral' || baseContributivaFp <= 0
-        ? reddito
-        : baseContributivaFp;
-      const minInvestimento = Math.round(baseContributiva * quotaMinAderentePerc);
-      setText('min-investimento-display', minInvestimento.toLocaleString('it-IT') + ' €');
     }
 
     /**
@@ -877,7 +867,7 @@ export class FinancialController {
       if (!firstYear) return;
 
       const formatMoney = (value) => `${Math.round(Math.max(value, 0)).toLocaleString('it-IT')} €`;
-      const investimentoAnno = this.model._applyPeriodicVariation(
+      const investimentoAnno = applyPeriodicVariation(
         config.investimento,
         1,
         config.variazioneInvestimentoTipo,
