@@ -19,9 +19,8 @@ import {
   splitBudget
 } from '../calculators/pension-contributions.js';
 import {
-  applyPacAnnualGrowth,
   applyYearGrowth,
-  calculateFpExit,
+  calculateEffectiveTaxRate,
   calculatePacExit,
   calculateStrategyExit,
   createGrowthOptions,
@@ -42,6 +41,80 @@ export class FinancialModel {
      */
     calculateResults(config) {
       return this._simulateStrategies(this._normalizeConfig(config));
+    }
+
+    /**
+     * Dati fiscali dell'esploratore annuale per l'anno selezionato:
+     * variazioni, IRPEF, capienza deduzione e fiscalità di uscita vivono
+     * qui; la view si limita a formattare. config è quello già mappato
+     * dal controller (percentuali in frazione).
+     */
+    buildAnnualExplorerData(config, results, anno) {
+      const row = results.find((item) => item.anno === anno) || results[0];
+      if (!row) return null;
+      const annoRif = row.anno;
+      const varia = (base, tipo, freq, val) =>
+        applyPeriodicVariation(base || 0, annoRif, tipo, freq || 0, val || 0);
+
+      const redditoAnno = varia(config.reddito, config.variazioneRedditoTipo, config.variazioneRedditoFrequenza, config.variazioneRedditoValore);
+      const investimentoAnno = varia(config.investimento, config.variazioneInvestimentoTipo, config.variazioneInvestimentoFrequenza, config.variazioneInvestimentoValore);
+      const premiAnno = varia(config.premiStraordinari, config.variazionePremiTipo, config.variazionePremiFrequenza, config.variazionePremiValore);
+      const altriRedditiAnno = varia(config.altriRedditi, config.variazioneAltriRedditiTipo, config.variazioneAltriRedditiFrequenza, config.variazioneAltriRedditiValore);
+      const fpBase = config.baseContributivaFpTipo === 'ral' || (config.baseContributivaFp || 0) <= 0
+        ? redditoAnno
+        : varia(config.baseContributivaFp, config.variazioneBaseContributivaTipo, config.variazioneBaseContributivaFrequenza, config.variazioneBaseContributivaValore);
+
+      const quotaFp = row.quotaFpConsigliata || 0;
+      const datore = row.quotaDatore || 0;
+      const risparmio = row.risparmioFiscale || 0;
+
+      const redditoFiscaleAnno = redditoAnno + premiAnno + altriRedditiAnno;
+      const imponibileIrpef = calculateIrpefTaxableIncome({
+        reddito: redditoFiscaleAnno,
+        contributiInpsPerc: config.contributiInpsPerc,
+        massimaleContributivoInps: config.massimaleContributivoInps,
+        sogliaIvsAggiuntivo: config.sogliaIvsAggiuntivo,
+        aliquotaIvsAggiuntivaPerc: config.aliquotaIvsAggiuntivaPerc
+      });
+      const irpefLorda = calculateIncomeTax(imponibileIrpef);
+      const addizionali = imponibileIrpef * (config.addizionaliPerc || 0);
+
+      const limiteAnno = FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP;
+      const deduzioneUsata = quotaFp + datore;
+      const rowsUpToYear = results.filter((item) => item.anno <= annoRif);
+      const versatoFp = rowsUpToYear.reduce((tot, item) => tot + (item.quotaFpConsigliata || 0) + (item.quotaDatore || 0), 0);
+      const tassoUscitaFp = this.calcolaTassazioneFp((config.anzianitaPregressaFp || 0) + annoRif - 1, Boolean(config.riscattoAnticipato));
+
+      return {
+        redditoAnno,
+        investimentoAnno,
+        premiAnno,
+        altriRedditiAnno,
+        fpBase,
+        quotaMinimaStimata: fpBase * (config.quotaMinAderentePerc || 0),
+        redditoFiscaleAnno,
+        imponibileIrpef,
+        contributiInps: Math.max(redditoFiscaleAnno - imponibileIrpef, 0),
+        irpefLorda,
+        addizionali,
+        aliquotaMarginale: imponibileIrpef <= 28000 ? 23 : imponibileIrpef <= 50000 ? 35 : 43,
+        impostaAnnoLorda: irpefLorda + addizionali,
+        limiteAnno,
+        deduzioneUsata,
+        capienzaResidua: Math.max(limiteAnno - deduzioneUsata, 0),
+        aliquotaEffettiva: quotaFp > 0 ? (risparmio / quotaFp) * 100 : 0,
+        versatoFp,
+        versatoPac: rowsUpToYear.reduce((tot, item) => tot + (item.quotaPacConsigliata || 0), 0),
+        anniPartecipazione: (config.anzianitaPregressaFp || 0) + annoRif,
+        tassoUscitaFp,
+        impostaUscitaFp: versatoFp * tassoUscitaFp,
+        pacTassatoInUscita: config.rendimentoPacMode === 'lordo',
+        aliquotaPacUscita: calculateEffectiveTaxRate(
+          config.quotaAgevolataPacPerc || 0,
+          FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_AGEVOLATA,
+          FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_PAC_ORDINARIA
+        ) * 100
+      };
     }
 
     /**
@@ -672,10 +745,6 @@ export class FinancialModel {
       });
     }
 
-    _applyPacAnnualGrowth(montante, contributo, rendimento) {
-      return applyPacAnnualGrowth(montante, contributo, rendimento);
-    }
-
     _createGrowthOptions({
       rendimentoFpMode = 'netto',
       costiAnnuiFpPerc = 0,
@@ -714,28 +783,6 @@ export class FinancialModel {
       return calculateStrategyExit(state, tassazioneFP, reinvestiRisparmio, includeTaxSavings, pacExitOptions);
     }
 
-    /**
-     * Calcola il netto di uscita per la componente Fondo Pensione.
-     * La tassazione 15-9% si applica solo ai contributi, non ai rendimenti
-     * gia considerati netti nel rendimento FP.
-     */
-    _calculateFpExit({
-      montante,
-      contributi,
-      tassazione,
-      risparmioAnno,
-      risparmioAccumulato,
-      reinvestiRisparmio
-    }) {
-      return calculateFpExit({
-        montante,
-        contributi,
-        tassazione,
-        risparmioAnno,
-        risparmioAccumulato,
-        reinvestiRisparmio
-      });
-    }
 
     /**
      * Calcola il netto PAC. Il rendimento PAC inserito e gia netto di costi e fiscalita stimata.

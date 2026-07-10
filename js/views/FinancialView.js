@@ -1,10 +1,4 @@
-import { FINANCIAL_CONSTANTS } from '../constants/financial-constants.js';
-import {
-  calculateIncomeTax,
-  calculateIrpefTaxableIncome
-} from '../calculators/tax-calculator.js';
-import { calculateEffectiveTaxRate } from '../calculators/investment-growth.js';
-import { FinancialModel } from '../models/FinancialModel.js';
+import { renderSiteIcons } from '../icons.js';
 
 /**
  * FinancialView - Gestisce tutto il rendering dell'interfaccia
@@ -428,10 +422,10 @@ export class FinancialView {
 
       primaryGrid.replaceChildren(...primaryCards.map(card => renderCard(card, 'primary')));
       secondaryGrid.replaceChildren(...secondaryCards.map(card => renderCard(card, 'secondary')));
-      if (window.renderSiteIcons) window.renderSiteIcons();
+      renderSiteIcons();
     }
 
-    updateAnnualExplorer(results, config, selectedYear = 1) {
+    updateAnnualExplorer(results, config, selectedYear = 1, explorer = null) {
       const yearSelect = document.getElementById('annual-explorer-year');
       if (!yearSelect || !results.length || !config) return;
 
@@ -467,45 +461,7 @@ export class FinancialView {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       })}%`;
-      const applyVariation = (baseValue, year, type, frequency, value) => {
-        const safeBase = Math.max(baseValue || 0, 0);
-        const safeFrequency = Math.max(parseInt(frequency, 10) || 0, 0);
-        const safeValue = Number(value) || 0;
-        if (safeFrequency <= 0 || safeValue === 0 || year <= 1) return safeBase;
-        const increments = Math.floor((year - 1) / safeFrequency);
-        if (increments <= 0) return safeBase;
-        if (type === 'euro') return Math.max(safeBase + safeValue * increments, 0);
-        return Math.max(safeBase * Math.pow(1 + safeValue / 100, increments), 0);
-      };
-
-      const redditoAnno = applyVariation(
-        config.reddito,
-        row.anno,
-        config.variazioneRedditoTipo,
-        config.variazioneRedditoFrequenza,
-        config.variazioneRedditoValore
-      );
-      const investimentoAnno = applyVariation(
-        config.investimento,
-        row.anno,
-        config.variazioneInvestimentoTipo,
-        config.variazioneInvestimentoFrequenza,
-        config.variazioneInvestimentoValore
-      );
-      const premiAnno = applyVariation(
-        config.premiStraordinari,
-        row.anno,
-        config.variazionePremiTipo,
-        config.variazionePremiFrequenza,
-        config.variazionePremiValore
-      );
-      const altriRedditiAnno = applyVariation(
-        config.altriRedditi,
-        row.anno,
-        config.variazioneAltriRedditiTipo,
-        config.variazioneAltriRedditiFrequenza,
-        config.variazioneAltriRedditiValore
-      );
+      const e = explorer || {};
       const quotaFp = row.quotaFpConsigliata || 0;
       const quotaPac = row.quotaPacConsigliata || 0;
       const quotaBusta = row.quotaFpBusta || 0;
@@ -518,83 +474,33 @@ export class FinancialView {
       const exitPac = row.exitPac || 0;
       const deltaFp = exitMix - exitFp;
       const deltaPac = exitMix - exitPac;
-      const fpBase = config.baseContributivaFpTipo === 'ral' || (config.baseContributivaFp || 0) <= 0
-        ? redditoAnno
-        : applyVariation(
-          config.baseContributivaFp,
-          row.anno,
-          config.variazioneBaseContributivaTipo,
-          config.variazioneBaseContributivaFrequenza,
-          config.variazioneBaseContributivaValore
-        );
-      const quotaMinimaStimata = fpBase * (config.quotaMinAderentePerc || 0);
-
-      // Step 1 - Imponibile e IRPEF: ricostruzione presentazionale con gli stessi calculator del modello.
-      const redditoFiscaleAnno = redditoAnno + premiAnno + altriRedditiAnno;
-      const imponibileIrpef = calculateIrpefTaxableIncome({
-        reddito: redditoFiscaleAnno,
-        contributiInpsPerc: config.contributiInpsPerc,
-        massimaleContributivoInps: config.massimaleContributivoInps,
-        sogliaIvsAggiuntivo: config.sogliaIvsAggiuntivo,
-        aliquotaIvsAggiuntivaPerc: config.aliquotaIvsAggiuntivaPerc
-      });
-      const contributiInps = Math.max(redditoFiscaleAnno - imponibileIrpef, 0);
-      const irpefLorda = calculateIncomeTax(imponibileIrpef);
-      const addizionali = imponibileIrpef * (config.addizionaliPerc || 0);
-      const aliquotaMarginale = imponibileIrpef <= 28000 ? 23 : imponibileIrpef <= 50000 ? 35 : 43;
-
-      // Step 2 - Capienza deduzione.
-      const limiteAnno = FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP;
-      const limiteOrdinario = FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP;
-      const deduzioneUsata = quotaFp + datore;
-      const capienzaResidua = Math.max(limiteAnno - deduzioneUsata, 0);
-
-      // Step 5 - aliquota effettiva del risparmio sulla quota dedotta dall'aderente.
-      const aliquotaEffettiva = quotaFp > 0 ? (risparmio / quotaFp) * 100 : 0;
-      const impostaAnnoLorda = irpefLorda + addizionali;
-
-      // Step 6 - dettaglio exit: versato cumulato e fiscalita di uscita.
-      const rowsUpToYear = results.filter((item) => item.anno <= safeYear);
-      const versatoFp = rowsUpToYear.reduce((total, item) => total + (item.quotaFpConsigliata || 0) + (item.quotaDatore || 0), 0);
-      const versatoPac = rowsUpToYear.reduce((total, item) => total + (item.quotaPacConsigliata || 0), 0);
-      const anniPartecipazione = (config.anzianitaPregressaFp || 0) + row.anno;
-      const tassoUscitaFp = new FinancialModel()
-        .calcolaTassazioneFp((config.anzianitaPregressaFp || 0) + row.anno - 1, Boolean(config.riscattoAnticipato));
-      const impostaUscitaFp = versatoFp * tassoUscitaFp;
-      const pacTassatoInUscita = config.rendimentoPacMode === 'lordo';
-      const aliquotaPacUscita = calculateEffectiveTaxRate(
-        config.quotaAgevolataPacPerc || 0,
-        FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_AGEVOLATA,
-        FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_PAC_ORDINARIA
-      ) * 100;
 
       setText('annual-exit-value', money(exitMix));
       setText('annual-choice-value', this.formatChoiceLabel(row.scelta || '-'));
       setText('annual-fp-value', money(quotaFp));
       setText('annual-pac-value', money(quotaPac));
-      setText('annual-income-value', money(redditoAnno));
-      setText('annual-extra-income-value', money(premiAnno + altriRedditiAnno));
-      setText('annual-budget-value', money(investimentoAnno));
+      setText('annual-income-value', money(e.redditoAnno));
+      setText('annual-extra-income-value', money(e.premiAnno + e.altriRedditiAnno));
+      setText('annual-budget-value', money(e.investimentoAnno));
       setText('annual-returns-value', `${percent((config.rendimentoNettoFpEffettivo || 0) * 100)} / ${percent((config.rendimentoNettoPacEffettivo || 0) * 100)}`);
       // Step 1 - Imponibile e IRPEF
-      setText('annual-taxable-step-value', money(imponibileIrpef));
-      setText('annual-taxable-formula', `${money(redditoAnno)} retribuzione + ${money(premiAnno + altriRedditiAnno)} accessori - ${money(contributiInps)} INPS = ${money(imponibileIrpef)} imponibile IRPEF.`);
-      setText('annual-gross-income-value', money(redditoFiscaleAnno));
-      setText('annual-inps-value', `-${money(contributiInps)}`);
-      setText('annual-irpef-value', money(irpefLorda));
-      setText('annual-addizionali-value', money(addizionali));
-      setText('annual-marginal-rate-value', `${aliquotaMarginale}%`);
+      setText('annual-taxable-step-value', money(e.imponibileIrpef));
+      setText('annual-taxable-formula', `${money(e.redditoAnno)} retribuzione + ${money(e.premiAnno + e.altriRedditiAnno)} accessori - ${money(e.contributiInps)} INPS = ${money(e.imponibileIrpef)} imponibile IRPEF.`);
+      setText('annual-gross-income-value', money(e.redditoFiscaleAnno));
+      setText('annual-inps-value', `-${money(e.contributiInps)}`);
+      setText('annual-irpef-value', money(e.irpefLorda));
+      setText('annual-addizionali-value', money(e.addizionali));
+      setText('annual-marginal-rate-value', `${e.aliquotaMarginale}%`);
 
       // Step 2 - Capienza e limite deduzione
-      setText('annual-limit-step-value', moneyExact(limiteAnno));
-      setText('annual-limit-formula', `Limite anno = ${moneyExact(limiteOrdinario)} ordinario; dedotti ${money(deduzioneUsata)} (aderente + datore).`);
-      setText('annual-limit-ordinary-value', moneyExact(limiteOrdinario));
-      setText('annual-limit-extra-value', 'Non prevista');
-      setText('annual-limit-used-value', `${money(deduzioneUsata)} / ${moneyExact(limiteAnno)}`);
-      setText('annual-limit-headroom-value', money(capienzaResidua));
+      setText('annual-limit-step-value', moneyExact(e.limiteAnno));
+      setText('annual-limit-formula', `Limite anno = ${moneyExact(e.limiteAnno)} ordinario; dedotti ${money(e.deduzioneUsata)} (aderente + datore).`);
+      setText('annual-limit-ordinary-value', moneyExact(e.limiteAnno));
+      setText('annual-limit-used-value', `${money(e.deduzioneUsata)} / ${moneyExact(e.limiteAnno)}`);
+      setText('annual-limit-headroom-value', money(e.capienzaResidua));
 
       setText('annual-fp-step-value', money(quotaFp));
-      setText('annual-fp-formula', `${money(fpBase)} base quota aderente x ${percent((config.quotaMinAderentePerc || 0) * 100)} = ${money(quotaMinimaStimata)} quota minima; quota FP scelta = ${money(quotaFp)}.`);
+      setText('annual-fp-formula', `${money(e.fpBase)} base quota aderente x ${percent((config.quotaMinAderentePerc || 0) * 100)} = ${money(e.quotaMinimaStimata)} quota minima; quota FP scelta = ${money(quotaFp)}.`);
       setText('annual-employer-value', money(datore));
       setText('annual-deducted-value', money(dedotto));
       setText('annual-payroll-step-value', money(quotaBusta + quotaBonifico));
@@ -603,22 +509,22 @@ export class FinancialView {
       setText('annual-transfer-value', money(quotaBonifico));
       setText('annual-tax-saving-value', money(risparmio));
       setText('annual-tax-formula', quotaFp > 0
-        ? `${money(quotaFp)} dedotti x ${percent(aliquotaEffettiva)} aliquota effettiva = ${money(risparmio)} risparmio (IRPEF + addizionali + detrazioni).`
+        ? `${money(quotaFp)} dedotti x ${percent(e.aliquotaEffettiva)} aliquota effettiva = ${money(risparmio)} risparmio (IRPEF + addizionali + detrazioni).`
         : 'Nessuna quota FP dedotta quest\'anno: risparmio fiscale 0 €.');
-      setText('annual-effective-rate-value', quotaFp > 0 ? percent(aliquotaEffettiva) : '-');
-      setText('annual-tax-before-after-value', `${money(impostaAnnoLorda)} → ${money(impostaAnnoLorda - risparmio)}`);
+      setText('annual-effective-rate-value', quotaFp > 0 ? percent(e.aliquotaEffettiva) : '-');
+      setText('annual-tax-before-after-value', `${money(e.impostaAnnoLorda)} → ${money(e.impostaAnnoLorda - risparmio)}`);
       setText('annual-exit-step-value', money(exitMix));
       setText('annual-exit-formula', previousRow
         ? `Da ${money(previousRow.exitMix || 0)} a ${money(exitMix)}; delta vs FP ${signedMoney(deltaFp)}, delta vs PAC ${signedMoney(deltaPac)}.`
         : `Primo anno: exit ottimale ${money(exitMix)}; delta vs FP ${signedMoney(deltaFp)}, delta vs PAC ${signedMoney(deltaPac)}.`);
-      setText('annual-exit-contrib-fp-value', money(versatoFp));
-      setText('annual-exit-contrib-pac-value', money(versatoPac));
+      setText('annual-exit-contrib-fp-value', money(e.versatoFp));
+      setText('annual-exit-contrib-pac-value', money(e.versatoPac));
       setText('annual-exit-fp-tax-label', config.riscattoAnticipato
         ? 'Riscatto anticipato: aliquota fissa'
-        : `15% → 9%: ${anniPartecipazione} anni di partecipazione`);
-      setText('annual-exit-fp-tax-value', `${percent(tassoUscitaFp * 100)} ≈ -${money(impostaUscitaFp)}`);
-      setText('annual-exit-pac-tax-value', pacTassatoInUscita
-        ? `${percent(aliquotaPacUscita)} sul gain`
+        : `15% → 9%: ${e.anniPartecipazione} anni di partecipazione`);
+      setText('annual-exit-fp-tax-value', `${percent(e.tassoUscitaFp * 100)} ≈ -${money(e.impostaUscitaFp)}`);
+      setText('annual-exit-pac-tax-value', e.pacTassatoInUscita
+        ? `${percent(e.aliquotaPacUscita)} sul gain`
         : 'Già inclusa nel rendimento netto');
       setText('annual-exit-fp-value', money(exitFp));
       setText('annual-exit-pac-value', money(exitPac));
@@ -646,7 +552,7 @@ export class FinancialView {
         item.append(icon, text);
         container.appendChild(item);
       });
-      if (window.renderSiteIcons) window.renderSiteIcons();
+      renderSiteIcons();
     }
 
     /**
@@ -685,6 +591,7 @@ export class FinancialView {
         pac: styles.getPropertyValue('--color-metric-pac').trim() || '#d97706',
         mix: styles.getPropertyValue('--color-metric-mix').trim() || '#0E7C6B'
       };
+      const formatMoney = (value) => this.formatMoney(value);
       const withAlpha = (hex, alpha) => {
         const value = hex.replace('#', '');
         const n = parseInt(value.length === 3 ? value.replace(/./g, '$&$&') : value, 16);

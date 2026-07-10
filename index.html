@@ -86,7 +86,7 @@
                 <section class="intro-section" aria-labelledby="intro-title">
                     <div class="intro-copy">
                         <h2 id="intro-title">Quanto conviene mettere nel fondo pensione e quanto nel PAC?</h2>
-                        <p>Confronta i versamenti annui al fondo pensione con lo stesso budget investito in un PAC: tasse, contributo del datore e rendimenti inclusi, con la ripartizione più conveniente anno per anno e ogni calcolo spiegato.</p>
+                        <p>Tasse, contributo del datore e rendimenti inclusi: la ripartizione più conveniente, anno per anno.</p>
                     </div>
                     <div class="intro-actions">
                         <button type="button" class="btn btn-primary intro-primary" id="open-guided-mode">
@@ -602,7 +602,10 @@
                 </section>
 
                 <!-- Metrics Dashboard -->
-                <section class="workspace-section results-workspace" aria-label="Sintesi risultati">
+                <section class="workspace-section results-workspace" aria-labelledby="toggle-summary">
+                    <div class="workspace-header">
+                        <h3 class="results-title" id="toggle-summary">Sintesi risultato</h3>
+                    </div>
                     <div class="results-body">
                         <section class="result-decision-panel" aria-label="Decisione della simulazione" data-strategy="mix" role="button" tabindex="0" title="Mostra questa strategia in tabella e nei calcoli">
                             <div class="result-decision-main">
@@ -1839,8 +1842,7 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
         </p>
     </footer>
 
-    <script src="js/icons.js"></script>
-    <script src="js/scripts.js"></script>
+    <script src="js/scripts.js" type="module"></script>
     <script src="js/app.js" type="module"></script>
 </body>
 </html>
