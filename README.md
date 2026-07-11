@@ -86,7 +86,7 @@ Chart.js e i font (Inter per l'interfaccia, IBM Plex Mono per i numeri) sono ven
 
 L'interfaccia segue il design system "Registro": tutti i colori vivono come token (`--ds-*`) nel layer canonico in fondo a `styles.css`, con due palette (chiara e scura) sugli stessi binding — un componente non può avere binding diversi nei due temi, e il test e2e di specularità lo garantisce. Il colore-firma `--ds-brand` (verde acqua) è identico nei due temi e si usa solo come riempimento con testo inchiostro sopra; i colori-dato (FP blu, PAC ambra, MIX verde) colorano esclusivamente dati. Raggi in scala 8/4/2, pesi tipografici 400-800, ogni cifra calcolata è in Plex Mono con `tabular-nums`.
 
-La compilazione guidata procede in 16 passi monotematici e si chiude con Escape, X o click sul fondo.
+La compilazione guidata procede in 15 passi monotematici e si chiude con Escape, X o click sul fondo.
 
 ## Licenza
 

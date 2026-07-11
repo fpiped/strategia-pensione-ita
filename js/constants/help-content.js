@@ -60,9 +60,9 @@ export const HELP_CONTENT = {
         },
         modalitaConfronto: {
             title: 'Modalità investimento',
-            dove: 'Scelta di metodo, non un dato da recuperare: decide come confrontare FP e PAC.',
-            come: 'Budget parte dall\'importo annuo pianificato e reinveste il risparmio fiscale l\'anno successivo. Netto confronta a parità di esborso effettivo: il PAC investe il costo netto equivalente del versamento FP, senza reinvestire il risparmio fiscale.',
-            effetto: 'Con Budget il beneficio fiscale resta investito; con Netto ti rientra in tasca e il confronto è a parità di sacrificio.'
+            dove: 'Scelta di metodo, non un dato da recuperare: decide che cosa il confronto FP/PAC tiene fermo, ed è l\'opzione che più cambia l\'approccio della simulazione.',
+            come: 'Budget fissa quanto destini ogni anno: FP e PAC ricevono lo stesso importo e il risparmio fiscale del FP viene reinvestito dall\'anno successivo. Netto fissa il sacrificio reale: il risparmio fiscale ti rientra in tasca e il PAC investe solo il costo netto del versamento FP. Esempio con 3.000 € e aliquota marginale 33%: il FP genera ~990 € di risparmio IRPEF; in Budget il PAC di confronto investe 3.000 € e i 990 € si sommano al budget dell\'anno dopo, in Netto il versamento FP "costa" 2.010 € e il PAC di confronto investe 2.010 €.',
+            effetto: 'Cambia la domanda a cui risponde il verdetto: con Budget "dove rendono di più 3.000 € l\'anno?", con Netto "a parità di rinuncia sul netto, cosa conviene?".'
         },
         baseContributivaFpTipo: {
             title: 'Base quota aderente',
