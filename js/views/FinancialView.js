@@ -502,15 +502,19 @@ export class FinancialView {
       setText('annual-limit-ordinary-value', moneyExact(e.limiteAnno));
       setText('annual-limit-used-value', `${money(e.deduzioneUsata)} / ${moneyExact(e.limiteAnno)}`);
       setText('annual-limit-headroom-value', money(e.capienzaResidua));
+      setText('annual-over-limit-value', money(e.quotaExtraDeduzione));
 
       setText('annual-fp-step-value', money(quotaFp));
       setText('annual-fp-formula', `${money(e.fpBase)} base quota aderente x ${percent((config.quotaMinAderentePerc || 0) * 100)} = ${money(e.quotaMinimaStimata)} quota minima; quota FP scelta = ${money(quotaFp)}.`);
+      setText('annual-within-min-value', money(e.quotaEntroMinima));
+      setText('annual-above-min-value', money(e.quotaExtraMinima));
       setText('annual-employer-value', money(datore));
       setText('annual-deducted-value', money(dedotto));
       setText('annual-payroll-step-value', money(quotaBusta + quotaBonifico));
       setText('annual-payroll-formula', `${money(quotaFp)} FP = ${money(quotaBusta)} in busta + ${money(quotaBonifico)} via bonifico.`);
       setText('annual-payroll-value', money(quotaBusta));
       setText('annual-transfer-value', money(quotaBonifico));
+      setText('annual-split-diff-value', signedMoney(e.diffBustaBonifico));
       setText('annual-tax-saving-value', money(risparmio));
       const notaCapienza = e.impostaNetta <= 0
         ? ' Capienza esaurita: le detrazioni azzerano già l\'imposta, la deduzione non genera risparmio.'
