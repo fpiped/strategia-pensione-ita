@@ -964,11 +964,11 @@ body.modal-open {
 
 .guided-header {
     display: flex;
+    flex-shrink: 0;
     align-items: flex-start;
     justify-content: space-between;
     gap: 1rem;
     padding: 1.125rem 1.25rem;
-    border-bottom: 1px solid var(--color-blue-line);
     background: linear-gradient(180deg, var(--ds-page), var(--color-bg-card));
 }
 
@@ -985,6 +985,9 @@ body.modal-open {
 }
 
 .guided-progress {
+    /* Figlio del dialog flex a colonna: senza flex-shrink 0 gli step con
+       contenuto alto la schiacciano sotto i 4px dichiarati. */
+    flex-shrink: 0;
     height: 0.25rem;
     background: var(--ds-surface-panel);
 }
@@ -1087,6 +1090,7 @@ body.modal-open {
 
 .guided-footer {
     display: flex;
+    flex-shrink: 0;
     justify-content: flex-end;
     gap: 0.75rem;
     padding: 1rem 1.25rem;
@@ -2651,7 +2655,7 @@ tr:hover td {
 }
 
 .guided-progress {
-    background: var(--ds-surface-selected);
+    background: var(--ds-border-soft);
 }
 
 .guided-progress span {
@@ -4976,7 +4980,7 @@ td {
 
 .guided-dialog .guided-header {
     background: var(--ds-page);
-    border-bottom: 1px solid var(--color-border-soft);
+    border-bottom: 0;
 }
 
 .guided-dialog .guided-eyebrow {
@@ -4987,7 +4991,7 @@ td {
 }
 
 .guided-dialog .guided-progress {
-    background: var(--ds-surface-selected);
+    background: var(--ds-border-soft);
 }
 
 .guided-dialog .guided-progress span {
