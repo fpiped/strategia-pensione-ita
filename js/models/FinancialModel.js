@@ -92,6 +92,15 @@ export class FinancialModel {
 
       const limiteAnno = FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP;
       const deduzioneUsata = quotaFp + datore;
+      // Secondo limite, quello fiscale: oltre l'imposta ancora dovuta la
+      // deduzione non produce risparmio. Stima: imposta netta ÷ pressione
+      // marginale (IRPEF + addizionali) sull'ultimo euro dedotto.
+      const aliquotaMarginale = imponibileIrpef <= 28000 ? 23 : imponibileIrpef <= 50000 ? 33 : 43;
+      const pressioneMarginale = aliquotaMarginale / 100 + (config.addizionaliPerc || 0);
+      const deduzioneUtile = Math.min(
+        limiteAnno,
+        pressioneMarginale > 0 ? impostaNetta / pressioneMarginale : 0
+      );
       const rowsUpToYear = results.filter((item) => item.anno <= annoRif);
       const versatoFp = rowsUpToYear.reduce((tot, item) => tot + (item.quotaFpConsigliata || 0) + (item.quotaDatore || 0), 0);
       const tassoUscitaFp = this.calcolaTassazioneFp((config.anzianitaPregressaFp || 0) + annoRif - 1, Boolean(config.riscattoAnticipato));
@@ -108,7 +117,7 @@ export class FinancialModel {
         contributiInps: Math.max(redditoFiscaleAnno - imponibileIrpef, 0),
         irpefLorda,
         addizionali,
-        aliquotaMarginale: imponibileIrpef <= 28000 ? 23 : imponibileIrpef <= 50000 ? 33 : 43,
+        aliquotaMarginale,
         impostaAnnoLorda: irpefLorda + addizionali,
         detrazioneLavoro,
         ulterioriDetrazioni,
@@ -118,6 +127,7 @@ export class FinancialModel {
         limiteAnno,
         deduzioneUsata,
         capienzaResidua: Math.max(limiteAnno - deduzioneUsata, 0),
+        deduzioneUtile,
         quotaEntroMinima: row.quotaEntroMinima || 0,
         quotaExtraMinima: row.quotaExtraMinima || 0,
         quotaExtraDeduzione: row.quotaExtraDeduzione || 0,

@@ -561,6 +561,7 @@ test('esploratore annuale: fiscalità dell\'anno dal model', () => {
   assert.equal(anno1.trattamentoIntegrativo, 0);
   assert.equal(anno1.bonusCuneo, 1000);
   assert.equal(Math.round(anno1.capienzaResidua), 4550);
+  assert.equal(anno1.deduzioneUtile, 5300);
   assert.equal(anno1.quotaEntroMinima, 300);
   assert.equal(anno1.quotaExtraMinima, 2700);
   assert.equal(anno1.quotaExtraDeduzione, 0);

@@ -497,9 +497,15 @@ export class FinancialView {
       setText('annual-bonuses-value', `+${money(e.trattamentoIntegrativo + e.bonusCuneo)}`);
 
       // Step 2 - Capienza e limite deduzione
+      const notaUtile = e.deduzioneUtile >= e.limiteAnno
+        ? "L'imposta netta copre tutto il limite: ogni euro dedotto genera risparmio."
+        : e.deduzioneUtile <= 0
+          ? 'Le detrazioni azzerano già l\'imposta: nessuna deduzione produce risparmio quest\'anno.'
+          : `Le detrazioni riducono la deduzione utile a ~${money(e.deduzioneUtile)}: oltre, il risparmio si ferma.`;
       setText('annual-limit-step-value', moneyExact(e.limiteAnno));
-      setText('annual-limit-formula', `Limite anno = ${moneyExact(e.limiteAnno)} ordinario; dedotti ${money(e.deduzioneUsata)} (aderente + datore).`);
+      setText('annual-limit-formula', `Limite anno = ${moneyExact(e.limiteAnno)} ordinario; dedotti ${money(e.deduzioneUsata)} (aderente + datore). ${notaUtile}`);
       setText('annual-limit-ordinary-value', moneyExact(e.limiteAnno));
+      setText('annual-useful-deduction-value', e.deduzioneUtile >= e.limiteAnno ? money(e.limiteAnno) : `~${money(e.deduzioneUtile)}`);
       setText('annual-limit-used-value', `${money(e.deduzioneUsata)} / ${moneyExact(e.limiteAnno)}`);
       setText('annual-limit-headroom-value', money(e.capienzaResidua));
       setText('annual-over-limit-value', money(e.quotaExtraDeduzione));
