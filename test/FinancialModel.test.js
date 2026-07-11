@@ -555,6 +555,11 @@ test('esploratore annuale: fiscalità dell\'anno dal model', () => {
   assert.equal(Math.round(anno1.irpefLorda), 6266);
   assert.equal(Math.round(anno1.addizionali), 545);
   assert.equal(anno1.aliquotaMarginale, 23);
+  assert.equal(Math.round(anno1.detrazioneLavoro), 2044);
+  assert.equal(anno1.ulterioriDetrazioni, 0);
+  assert.equal(Math.round(anno1.impostaNetta), 4766);
+  assert.equal(anno1.trattamentoIntegrativo, 0);
+  assert.equal(anno1.bonusCuneo, 1000);
   assert.equal(Math.round(anno1.capienzaResidua), 4550);
   assert.equal(Math.round(anno1.versatoFp), 750);
   assert.equal(anno1.tassoUscitaFp, 0.15);

@@ -491,6 +491,10 @@ export class FinancialView {
       setText('annual-irpef-value', money(e.irpefLorda));
       setText('annual-addizionali-value', money(e.addizionali));
       setText('annual-marginal-rate-value', `${e.aliquotaMarginale}%`);
+      setText('annual-employee-deduction-value', `-${money(e.detrazioneLavoro)}`);
+      setText('annual-other-deductions-value', `-${money(e.ulterioriDetrazioni)}`);
+      setText('annual-net-tax-value', money(e.impostaNetta));
+      setText('annual-bonuses-value', `+${money(e.trattamentoIntegrativo + e.bonusCuneo)}`);
 
       // Step 2 - Capienza e limite deduzione
       setText('annual-limit-step-value', moneyExact(e.limiteAnno));
@@ -508,11 +512,15 @@ export class FinancialView {
       setText('annual-payroll-value', money(quotaBusta));
       setText('annual-transfer-value', money(quotaBonifico));
       setText('annual-tax-saving-value', money(risparmio));
+      const notaCapienza = e.impostaNetta <= 0
+        ? ' Capienza esaurita: le detrazioni azzerano già l\'imposta, la deduzione non genera risparmio.'
+        : '';
       setText('annual-tax-formula', quotaFp > 0
-        ? `${money(quotaFp)} dedotti x ${percent(e.aliquotaEffettiva)} aliquota effettiva = ${money(risparmio)} risparmio (IRPEF + addizionali + detrazioni).`
-        : 'Nessuna quota FP dedotta quest\'anno: risparmio fiscale 0 €.');
+        ? `${money(quotaFp)} dedotti x ${percent(e.aliquotaEffettiva)} aliquota effettiva = ${money(risparmio)} risparmio (IRPEF + addizionali + detrazioni).${notaCapienza}`
+        : `Nessuna quota FP dedotta quest'anno: risparmio fiscale 0 €.${notaCapienza}`);
       setText('annual-effective-rate-value', quotaFp > 0 ? percent(e.aliquotaEffettiva) : '-');
       setText('annual-tax-before-after-value', `${money(e.impostaAnnoLorda)} → ${money(e.impostaAnnoLorda - risparmio)}`);
+      setText('annual-capienza-cap-value', money(e.impostaNetta));
       setText('annual-exit-step-value', money(exitMix));
       setText('annual-exit-formula', previousRow
         ? `Da ${money(previousRow.exitMix || 0)} a ${money(exitMix)}; delta vs FP ${signedMoney(deltaFp)}, delta vs PAC ${signedMoney(deltaPac)}.`
