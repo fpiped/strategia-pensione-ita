@@ -79,6 +79,17 @@ export class FinancialModel {
       const irpefLorda = calculateIncomeTax(imponibileIrpef);
       const addizionali = imponibileIrpef * (config.addizionaliPerc || 0);
 
+      const detrazioneLavoro = calculateEmployeeDeduction(imponibileIrpef);
+      const ulterioriDetrazioni = config.ulterioriDetrazioni || 0;
+      const impostaNetta = Math.max(irpefLorda + addizionali - detrazioneLavoro - ulterioriDetrazioni, 0);
+      const trattamentoIntegrativo = calculateTrattamentoIntegrativo({
+        reddito: imponibileIrpef,
+        impostaLorda: irpefLorda,
+        detrazioniLavoro: detrazioneLavoro,
+        ulterioriDetrazioni
+      });
+      const bonusCuneo = calculateBonusCuneoFiscale(imponibileIrpef);
+
       const limiteAnno = FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP;
       const deduzioneUsata = quotaFp + datore;
       const rowsUpToYear = results.filter((item) => item.anno <= annoRif);
@@ -99,6 +110,11 @@ export class FinancialModel {
         addizionali,
         aliquotaMarginale: imponibileIrpef <= 28000 ? 23 : imponibileIrpef <= 50000 ? 33 : 43,
         impostaAnnoLorda: irpefLorda + addizionali,
+        detrazioneLavoro,
+        ulterioriDetrazioni,
+        impostaNetta,
+        trattamentoIntegrativo,
+        bonusCuneo,
         limiteAnno,
         deduzioneUsata,
         capienzaResidua: Math.max(limiteAnno - deduzioneUsata, 0),
