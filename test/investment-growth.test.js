@@ -57,6 +57,15 @@ test('applica costi annui PAC durante la crescita e tassazione alla exit', () =>
   assert.equal(Math.round(calculatePacExit(montante, 1000, options)), 1060);
 });
 
+test('applica il costo fisso una volta l anno solo in modalita lorda e a strumento attivo', () => {
+  const gross = createGrowthOptions({ mode: 'lordo', costoFissoAnnuo: 20 });
+  assert.equal(applyFpAnnualGrowth(0, 1000, 0.05, gross), 980);
+  assert.equal(Math.round(applyFpAnnualGrowth(980, 0, 0.05, gross) * 100), 99626);
+  assert.equal(applyPacAnnualGrowth(0, 1000, 0.05, gross), 980);
+  assert.equal(applyPacAnnualGrowth(0, 0, 0.05, gross), 0);
+  assert.equal(applyFpAnnualGrowth(0, 1000, 0.05, { ...gross, mode: 'netto' }), 1000);
+});
+
 test('aggiorna lo stato annuale di FP, PAC e risparmio fiscale', () => {
   const state = {
     montanteFP: 1000,

@@ -93,6 +93,28 @@ test('riconosce un contributo datore fisso annuo', () => {
   assert.equal(result.results[0].quotaEntroMinima, 300);
 });
 
+test('applica e rende esplorabili i costi annui EUR di FP e PAC', () => {
+  const model = new FinancialModel();
+  const config = {
+    ...baseConfig,
+    durata: 2,
+    rendimentoAnnualeFpPerc: 0,
+    rendimentoAnnualePacPerc: 0,
+    rendimentoFpMode: 'lordo',
+    rendimentoPacMode: 'lordo',
+    costiFissiFp: 25,
+    costiFissiPac: 40
+  };
+  const result = model.calculateResults(config);
+  const pacRows = result.strategies.pac;
+  const explorer = model.buildAnnualExplorerData(config, pacRows, 2);
+
+  assert.equal(pacRows.at(-1).exitPac, 5920);
+  assert.equal(explorer.costoFissoFpAnno, 0);
+  assert.equal(explorer.costoFissoPacAnno, 40);
+  assert.equal(explorer.montantePac, 5920);
+});
+
 test('applica il riscatto anticipato al 23%', () => {
   const model = new FinancialModel();
   const ordinary = model.calculateResults({
@@ -561,7 +583,7 @@ test('esploratore annuale: fiscalità dell\'anno dal model', () => {
   assert.equal(anno1.trattamentoIntegrativo, 0);
   assert.equal(anno1.bonusCuneo, 1000);
   assert.equal(Math.round(anno1.capienzaResidua), 4550);
-  assert.equal(anno1.deduzioneUtile, 5300);
+  assert.equal(Math.round(anno1.limiteDisponibileAderente), 4850);
   assert.equal(anno1.quotaEntroMinima, 300);
   assert.equal(anno1.quotaExtraMinima, 2700);
   assert.equal(anno1.quotaExtraDeduzione, 0);
@@ -569,11 +591,20 @@ test('esploratore annuale: fiscalità dell\'anno dal model', () => {
   assert.equal(Math.round(anno1.versatoFp), 750);
   assert.equal(anno1.tassoUscitaFp, 0.15);
   assert.equal(anno1.anniPartecipazione, 1);
+  assert.equal(Math.round(anno1.montanteFp), 750);
+  assert.equal(Math.round(anno1.montantePac), 2700);
+  assert.equal(Math.round(anno1.taxComparison.saving), Math.round(anno1.risparmioBaselineBusta));
+  assert.equal(
+    Math.round(anno1.montanteFp + anno1.montantePac - anno1.impostaUscitaFp - anno1.impostaUscitaPac + anno1.risparmioInExit),
+    results[0].exitMix
+  );
 
   // Dopo 15 anni di partecipazione l'aliquota di uscita FP scende.
   const anno23 = model.buildAnnualExplorerData(config, results, 23);
   assert.equal(anno23.tassoUscitaFp, 0.126);
   assert.equal(Math.round(anno23.versatoFp), 17250);
+  assert.ok(anno23.montanteFp > anno23.versatoFp);
+  assert.ok(anno23.rendimentoFpAnno + anno23.rendimentoPacAnno > 0);
 });
 
 test('esploratore annuale: variazioni, riscatto e PAC lordo', () => {

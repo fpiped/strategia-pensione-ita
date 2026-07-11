@@ -1,6 +1,19 @@
 import { FINANCIAL_CONSTANTS } from '../constants/financial-constants.js';
+import { CURRENT_FISCAL_RULES } from '../constants/fiscal-rules.js';
+
+const { irpef } = CURRENT_FISCAL_RULES;
 
 export function calculateTaxSavings({
+  ...options
+}) {
+  return calculateTaxComparison(options).saving;
+}
+
+/**
+ * Restituisce lo stesso confronto usato dal modello per il beneficio fiscale,
+ * mantenendo visibili tutte le componenti prima e dopo il versamento FP.
+ */
+export function calculateTaxComparison({
   reddito,
   investimento,
   quotaDatoreFp,
@@ -64,7 +77,34 @@ export function calculateTaxSavings({
   );
   const costoFiscaleNettoDedotto = impostaNettaDedotta - trattamentoIntegrativoDedotto - bonusCuneoDedotto;
 
-  return costoFiscaleNetto - costoFiscaleNettoDedotto;
+  return {
+    deduction: deduzione,
+    payrollContribution: quotaBusta,
+    before: {
+      taxableIncome: redditoImponibile,
+      grossIncomeTax: impostaLorda,
+      localTaxes: addizionali,
+      employeeDeduction: detrazione,
+      otherDeductions: ulterioriDetrazioni,
+      netTax: impostaNetta,
+      supplementaryTreatment: trattamentoIntegrativo,
+      taxWedgeBonus: bonusCuneo,
+      fiscalCost: costoFiscaleNetto
+    },
+    after: {
+      taxableIncome: redditoDedotto,
+      employeeDeductionIncome: redditoDetrazioniDedotto,
+      grossIncomeTax: impostaLordaDedotta,
+      localTaxes: addizionaliDedotte,
+      employeeDeduction: detrazioneDedotta,
+      otherDeductions: ulterioriDetrazioni,
+      netTax: impostaNettaDedotta,
+      supplementaryTreatment: trattamentoIntegrativoDedotto,
+      taxWedgeBonus: bonusCuneoDedotto,
+      fiscalCost: costoFiscaleNettoDedotto
+    },
+    saving: costoFiscaleNetto - costoFiscaleNettoDedotto
+  };
 }
 
 export function splitFpPayment(quotaFp, quotaMinAderente = 0, modalitaVersamentoFp = 'quotaMinimaBusta') {
@@ -152,39 +192,49 @@ export function calculateIrpefTaxableIncome({
 }
 
 export function calculateIncomeTax(reddito) {
-  let imposta;
-  if (reddito <= 28000) {
-    imposta = reddito * 0.23;
-  } else if (reddito <= 50000) {
-    imposta = 28000 * 0.23 + (reddito - 28000) * 0.33;
-  } else {
-    imposta = 28000 * 0.23 + 22000 * 0.33 + (reddito - 50000) * 0.43;
+  const safeReddito = Math.max(reddito, 0);
+  let imposta = 0;
+  let lowerBound = 0;
+
+  for (const bracket of irpef.brackets) {
+    const taxableAmount = Math.max(Math.min(safeReddito, bracket.upTo) - lowerBound, 0);
+    imposta += taxableAmount * bracket.rate;
+    if (safeReddito <= bracket.upTo) break;
+    lowerBound = bracket.upTo;
   }
-  // Legge di Bilancio 2026: sopra 200.000 € il taglio del secondo scaglione
-  // (35% → 33%, max 440 €) è sterilizzato con una riduzione delle detrazioni.
-  if (reddito > 200000) {
-    imposta += 440;
+
+  if (safeReddito > irpef.highIncomeAdjustment.threshold) {
+    imposta += irpef.highIncomeAdjustment.amount;
   }
   return imposta;
 }
 
+export function calculateMarginalIncomeTaxRate(reddito) {
+  const safeReddito = Math.max(reddito, 0);
+  return irpef.brackets.find((bracket) => safeReddito <= bracket.upTo)?.rate
+    ?? irpef.brackets.at(-1).rate;
+}
+
 export function calculateEmployeeDeduction(reddito) {
+  const rules = irpef.employeeDeduction;
   let detrazione;
 
-  if (reddito <= 15000) {
-    detrazione = 1955;
-  } else if (reddito <= 28000) {
-    const rapporto = (28000 - reddito) / 13000;
-    detrazione = 1910 + (1190 * rapporto);
-  } else if (reddito <= 50000) {
-    const rapporto = (50000 - reddito) / 22000;
-    detrazione = 1910 * rapporto;
+  if (reddito <= rules.minimumIncomeLimit) {
+    detrazione = rules.minimumAmount;
+  } else if (reddito <= rules.middleIncomeLimit) {
+    const range = rules.middleIncomeLimit - rules.minimumIncomeLimit;
+    const rapporto = (rules.middleIncomeLimit - reddito) / range;
+    detrazione = rules.middleBaseAmount + (rules.middleVariableAmount * rapporto);
+  } else if (reddito <= rules.maximumIncomeLimit) {
+    const range = rules.maximumIncomeLimit - rules.middleIncomeLimit;
+    const rapporto = (rules.maximumIncomeLimit - reddito) / range;
+    detrazione = rules.middleBaseAmount * rapporto;
   } else {
     detrazione = 0;
   }
 
-  if (reddito >= 25000 && reddito <= 35000) {
-    detrazione += 65;
+  if (reddito >= rules.extraFrom && reddito <= rules.extraTo) {
+    detrazione += rules.extraAmount;
   }
 
   return detrazione;

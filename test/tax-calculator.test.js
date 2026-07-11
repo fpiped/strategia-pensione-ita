@@ -6,6 +6,7 @@ import {
   calculateEmployeeDeduction,
   calculateIncomeTax,
   calculateIrpefTaxableIncome,
+  calculateTaxComparison,
   calculateTaxSavings,
   calculateTrattamentoIntegrativo,
   splitFpPayment
@@ -52,4 +53,24 @@ test('calcola split versamento FP e risparmio fiscale', () => {
     quotaMinAderente: 300,
     modalitaVersamentoFp: 'quotaMinimaBusta'
   })), 777);
+});
+
+test('espone il confronto fiscale completo senza FP e con FP', () => {
+  const comparison = calculateTaxComparison({
+    reddito: 32304,
+    investimento: 3000,
+    quotaDatoreFp: 450,
+    contributiInpsPerc: 0.0919,
+    addizionaliPerc: 0.02,
+    ulterioriDetrazioni: 4600,
+    quotaMinAderente: 1500,
+    quotaBustaFp: 3000
+  });
+
+  assert.equal(comparison.deduction, 3000);
+  assert.equal(comparison.payrollContribution, 3000);
+  assert.equal(Math.round(comparison.before.fiscalCost - comparison.after.fiscalCost), Math.round(comparison.saving));
+  assert.ok(comparison.before.taxableIncome > comparison.after.taxableIncome);
+  assert.ok(Number.isFinite(comparison.before.taxWedgeBonus));
+  assert.ok(Number.isFinite(comparison.after.employeeDeduction));
 });

@@ -1,9 +1,12 @@
 import { FINANCIAL_CONSTANTS } from '../constants/financial-constants.js';
+import { CURRENT_FISCAL_RULES } from '../constants/fiscal-rules.js';
 import {
   calculateBonusCuneoFiscale,
   calculateEmployeeDeduction,
   calculateIncomeTax,
   calculateIrpefTaxableIncome,
+  calculateMarginalIncomeTaxRate,
+  calculateTaxComparison,
   calculateTaxSavings,
   calculateTrattamentoIntegrativo,
   splitFpPayment
@@ -21,6 +24,8 @@ import {
 import {
   applyYearGrowth,
   calculateEffectiveTaxRate,
+  calculateNetAnnualReturn,
+  calculatePacExitTax,
   calculatePacExit,
   calculateStrategyExit,
   createGrowthOptions,
@@ -92,18 +97,72 @@ export class FinancialModel {
 
       const limiteAnno = FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP;
       const deduzioneUsata = quotaFp + datore;
-      // Secondo limite, quello fiscale: oltre l'imposta ancora dovuta la
-      // deduzione non produce risparmio. Stima: imposta netta ÷ pressione
-      // marginale (IRPEF + addizionali) sull'ultimo euro dedotto.
-      const aliquotaMarginale = imponibileIrpef <= 28000 ? 23 : imponibileIrpef <= 50000 ? 33 : 43;
-      const pressioneMarginale = aliquotaMarginale / 100 + (config.addizionaliPerc || 0);
-      const deduzioneUtile = Math.min(
-        limiteAnno,
-        pressioneMarginale > 0 ? impostaNetta / pressioneMarginale : 0
-      );
+      const aliquotaMarginale = calculateMarginalIncomeTaxRate(imponibileIrpef) * 100;
       const rowsUpToYear = results.filter((item) => item.anno <= annoRif);
-      const versatoFp = rowsUpToYear.reduce((tot, item) => tot + (item.quotaFpConsigliata || 0) + (item.quotaDatore || 0), 0);
       const tassoUscitaFp = this.calcolaTassazioneFp((config.anzianitaPregressaFp || 0) + annoRif - 1, Boolean(config.riscattoAnticipato));
+      const reinvestiRisparmio = config.modalitaConfronto !== 'sacrificioNetto' && config.reinvestiRisparmio;
+      const includeTaxSavingsInExit = config.modalitaConfronto !== 'sacrificioNetto';
+      const growthOptions = this._createGrowthOptions(config);
+      const previousState = results.find((item) => item.anno === annoRif - 1)?._state;
+      const annualState = row._state ? { ...row._state } : this._createStrategyState();
+      let openingFp = previousState?.montanteFP || 0;
+      let openingPac = previousState?.montantePAC || 0;
+
+      // Fallback per righe importate o costruite da versioni precedenti.
+      if (!row._state) {
+        for (const item of rowsUpToYear) {
+          if (item.anno === annoRif) {
+            openingFp = annualState.montanteFP;
+            openingPac = annualState.montantePAC;
+          }
+          this._applyYearGrowth(annualState, {
+            fpContributo: (item.quotaFpConsigliata || 0) + (item.quotaDatore || 0),
+            pacContributo: item.quotaPacConsigliata || 0,
+            risparmioAnno: item.risparmioFiscale || 0,
+            rFP: config.rendimentoAnnualeFpPerc,
+            rPAC: config.rendimentoAnnualePacPerc,
+            fpGrowthOptions: growthOptions.fp,
+            pacGrowthOptions: growthOptions.pac,
+            reinvestiRisparmio
+          });
+        }
+      }
+
+      const netFpReturn = calculateNetAnnualReturn(config.rendimentoAnnualeFpPerc, {
+        ...growthOptions.fp,
+        taxTiming: growthOptions.fp.mode === 'lordo' ? 'annual' : 'none'
+      });
+      const netPacReturn = calculateNetAnnualReturn(config.rendimentoAnnualePacPerc, {
+        ...growthOptions.pac,
+        taxTiming: 'exit'
+      });
+      const pacExitTax = calculatePacExitTax(
+        annualState.montantePAC,
+        annualState.investimentoPAC,
+        growthOptions.pac
+      );
+      const taxSavingExitValue = includeTaxSavingsInExit
+        ? (reinvestiRisparmio ? annualState.risparmioDaReinvestire : annualState.risparmioAccumulato)
+        : 0;
+
+      const taxInputs = {
+        reddito: redditoFiscaleAnno,
+        investimento: quotaFp,
+        quotaDatoreFp: datore,
+        contributiInpsPerc: config.contributiInpsPerc,
+        massimaleContributivoInps: config.massimaleContributivoInps,
+        sogliaIvsAggiuntivo: config.sogliaIvsAggiuntivo,
+        aliquotaIvsAggiuntivaPerc: config.aliquotaIvsAggiuntivaPerc,
+        addizionaliPerc: config.addizionaliPerc,
+        ulterioriDetrazioni: config.ulterioriDetrazioni,
+        quotaMinAderente: fpBase * (config.quotaMinAderentePerc || 0),
+        modalitaVersamentoFp: config.modalitaVersamentoFp,
+        limiteDeduzioneTotale: limiteAnno
+      };
+      const taxComparison = calculateTaxComparison({ ...taxInputs, quotaBustaFp: row.quotaFpBusta || 0 });
+      const baselinePayroll = Math.min(quotaFp, taxInputs.quotaMinAderente);
+      const baselineTaxComparison = calculateTaxComparison({ ...taxInputs, quotaBustaFp: baselinePayroll });
+      const allPayrollTaxComparison = calculateTaxComparison({ ...taxInputs, quotaBustaFp: quotaFp });
 
       return {
         redditoAnno,
@@ -127,17 +186,33 @@ export class FinancialModel {
         limiteAnno,
         deduzioneUsata,
         capienzaResidua: Math.max(limiteAnno - deduzioneUsata, 0),
-        deduzioneUtile,
+        limiteDisponibileAderente: Math.max(limiteAnno - datore, 0),
         quotaEntroMinima: row.quotaEntroMinima || 0,
         quotaExtraMinima: row.quotaExtraMinima || 0,
         quotaExtraDeduzione: row.quotaExtraDeduzione || 0,
         diffBustaBonifico: row.diffBustaBonifico || 0,
         aliquotaEffettiva: quotaFp > 0 ? (risparmio / quotaFp) * 100 : 0,
-        versatoFp,
-        versatoPac: rowsUpToYear.reduce((tot, item) => tot + (item.quotaPacConsigliata || 0), 0),
+        taxComparison,
+        risparmioBaselineBusta: baselineTaxComparison.saving,
+        risparmioTuttoBusta: allPayrollTaxComparison.saving,
+        openingFp,
+        openingPac,
+        rendimentoFpAnno: openingFp * netFpReturn,
+        rendimentoPacAnno: openingPac * netPacReturn,
+        costoFissoFpAnno: growthOptions.fp.mode === 'lordo' && (openingFp > 0 || quotaFp + datore > 0)
+          ? growthOptions.fp.costoFissoAnnuo : 0,
+        costoFissoPacAnno: growthOptions.pac.mode === 'lordo' && (openingPac > 0 || (row.quotaPacConsigliata || 0) > 0)
+          ? growthOptions.pac.costoFissoAnnuo : 0,
+        montanteFp: annualState.montanteFP,
+        montantePac: annualState.montantePAC,
+        versatoFp: annualState.contributiFP,
+        versatoPac: annualState.investimentoPAC,
+        risparmioAccumulato: annualState.risparmioAccumulato,
+        risparmioInExit: taxSavingExitValue,
         anniPartecipazione: (config.anzianitaPregressaFp || 0) + annoRif,
         tassoUscitaFp,
-        impostaUscitaFp: versatoFp * tassoUscitaFp,
+        impostaUscitaFp: annualState.contributiFP * tassoUscitaFp,
+        impostaUscitaPac: pacExitTax,
         pacTassatoInUscita: config.rendimentoPacMode === 'lordo',
         aliquotaPacUscita: calculateEffectiveTaxRate(
           config.quotaAgevolataPacPerc || 0,
@@ -186,9 +261,11 @@ export class FinancialModel {
         modalitaVersamentoFp = 'quotaMinimaBusta',
         rendimentoFpMode = 'netto',
         costiAnnuiFpPerc = 0,
+        costiFissiFp = 0,
         quotaAgevolataFpPerc = 0,
         rendimentoPacMode = 'netto',
         costiAnnuiPacPerc = 0,
+        costiFissiPac = 0,
         quotaAgevolataPacPerc = 0
       } = config;
 
@@ -210,8 +287,8 @@ export class FinancialModel {
         baseDatoreFpTipo, baseDatoreFp,
         variazioneBaseContributivaTipo, variazioneBaseContributivaFrequenza, variazioneBaseContributivaValore,
         modalitaVersamentoFp,
-        rendimentoFpMode, costiAnnuiFpPerc, quotaAgevolataFpPerc,
-        rendimentoPacMode, costiAnnuiPacPerc, quotaAgevolataPacPerc
+        rendimentoFpMode, costiAnnuiFpPerc, costiFissiFp, quotaAgevolataFpPerc,
+        rendimentoPacMode, costiAnnuiPacPerc, costiFissiPac, quotaAgevolataPacPerc
       };
     }
 
@@ -352,7 +429,9 @@ export class FinancialModel {
           pacGrowthOptions: growthOptions.pac,
           pacExitOptions: growthOptions.pac,
           anniResidui: ctx.anniResidui,
-          tassazioneFP: ctx.tassazioneFP
+          tassazioneFP: ctx.tassazioneFP,
+          fpAlreadyActive: recommendedPlan.montanteFP > 0,
+          pacAlreadyActive: recommendedPlan.montantePAC > 0
         };
 
         // Punto di divergenza dei due confronti: budget del PAC puro,
@@ -450,7 +529,8 @@ export class FinancialModel {
           sceltaAnno: recommendedAllocation.scelta,
           exitFP,
           exitPAC,
-          exitMix: exitRecommended
+          exitMix: exitRecommended,
+          strategyState: recommendedPlan
         }));
 
         fpStrategyResults.push(this._createResultRow({
@@ -469,7 +549,8 @@ export class FinancialModel {
           sceltaAnno: fpAllocation.quotaExtraPac > 0 ? 'MIX' : 'FP',
           exitFP,
           exitPAC,
-          exitMix: exitFP
+          exitMix: exitFP,
+          strategyState: fpPlan
         }));
 
         pacStrategyResults.push(this._createResultRow({
@@ -488,7 +569,8 @@ export class FinancialModel {
           sceltaAnno: 'PAC',
           exitFP,
           exitPAC,
-          exitMix: exitPAC
+          exitMix: exitPAC,
+          strategyState: pacPlan
         }));
       }
 
@@ -650,7 +732,9 @@ export class FinancialModel {
       pacGrowthOptions = {},
       pacExitOptions = {},
       anniResidui,
-      tassazioneFP
+      tassazioneFP,
+      fpAlreadyActive = false,
+      pacAlreadyActive = false
     }) {
       const isNetSacrifice = netBudget !== null;
       if (grossBudget <= 0) {
@@ -683,8 +767,10 @@ export class FinancialModel {
       // contributo: il fattore di capitalizzazione si calcola una volta sola
       // invece di rifare il loop sugli anni residui per ognuno dei
       // (potenziali) ~5.300 candidati.
-      const fpFactor = this._projectFpContribution(1, rFP, anniResidui, fpGrowthOptions);
-      const pacFactor = this._projectPacContribution(1, rPAC, anniResidui, pacGrowthOptions);
+      const fpOptionsWithoutFixed = { ...fpGrowthOptions, costoFissoAnnuo: 0 };
+      const pacOptionsWithoutFixed = { ...pacGrowthOptions, costoFissoAnnuo: 0 };
+      const fpFactor = this._projectFpContribution(1, rFP, anniResidui, fpOptionsWithoutFixed);
+      const pacFactor = this._projectPacContribution(1, rPAC, anniResidui, pacOptionsWithoutFixed);
       const limiteDeduzioneTotale = this._getTotalDeductionLimit();
 
       let best = null;
@@ -721,10 +807,14 @@ export class FinancialModel {
         const fpContributo = quotaFp + quotaDatore;
         // A parità di budget lordo il risparmio fiscale rientra nell'exit FP;
         // a parità di sacrificio netto è già dentro il budget PAC residuo.
-        const fpNetto = (fpContributo * fpFactor)
+        const fpFixedDrag = !fpAlreadyActive && fpContributo > 0
+          ? this._projectFixedCostDrag(fpGrowthOptions, rFP, anniResidui, true) : 0;
+        const pacFixedDrag = !pacAlreadyActive && quotaPac > 0
+          ? this._projectFixedCostDrag(pacGrowthOptions, rPAC, anniResidui, false) : 0;
+        const fpNetto = Math.max((fpContributo * fpFactor) - fpFixedDrag, 0)
           - (fpContributo * tassazioneFP)
           + (isNetSacrifice ? 0 : risparmio);
-        const pacNetto = this._calculatePacExit(quotaPac * pacFactor, quotaPac, pacExitOptions);
+        const pacNetto = this._calculatePacExit(Math.max((quotaPac * pacFactor) - pacFixedDrag, 0), quotaPac, pacExitOptions);
         const totaleNetto = fpNetto + pacNetto;
 
         if (!best || totaleNetto > best.totaleNetto) {
@@ -778,15 +868,18 @@ export class FinancialModel {
     _createGrowthOptions({
       rendimentoFpMode = 'netto',
       costiAnnuiFpPerc = 0,
+      costiFissiFp = 0,
       quotaAgevolataFpPerc = 0,
       rendimentoPacMode = 'netto',
       costiAnnuiPacPerc = 0,
+      costiFissiPac = 0,
       quotaAgevolataPacPerc = 0
     } = {}) {
       return {
         fp: createGrowthOptions({
           mode: rendimentoFpMode,
           costiAnnui: costiAnnuiFpPerc,
+          costoFissoAnnuo: costiFissiFp,
           quotaAgevolataPerc: quotaAgevolataFpPerc,
           aliquotaAgevolata: FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_AGEVOLATA,
           aliquotaOrdinaria: FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_FP_ORDINARIA
@@ -794,6 +887,7 @@ export class FinancialModel {
         pac: createGrowthOptions({
           mode: rendimentoPacMode,
           costiAnnui: costiAnnuiPacPerc,
+          costoFissoAnnuo: costiFissiPac,
           quotaAgevolataPerc: quotaAgevolataPacPerc,
           aliquotaAgevolata: FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_AGEVOLATA,
           aliquotaOrdinaria: FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_PAC_ORDINARIA
@@ -803,6 +897,18 @@ export class FinancialModel {
 
     _projectFpContribution(contributo, rendimento, anni, options = {}) {
       return projectFpContribution(contributo, rendimento, anni, options);
+    }
+
+    _projectFixedCostDrag(options, rendimento, anni, isFp) {
+      if (options.mode !== 'lordo' || !(options.costoFissoAnnuo > 0)) return 0;
+      const withoutFixed = { ...options, costoFissoAnnuo: 0 };
+      const oneYearFactor = isFp
+        ? this._projectFpContribution(1, rendimento, 2, withoutFixed)
+        : this._projectPacContribution(1, rendimento, 2, withoutFixed);
+      const growth = Number.isFinite(oneYearFactor) ? oneYearFactor : 1;
+      let drag = 0;
+      for (let year = 0; year < anni; year++) drag = (drag * growth) + options.costoFissoAnnuo;
+      return drag;
     }
 
     _projectPacContribution(contributo, rendimento, anni, options = {}) {
@@ -838,9 +944,10 @@ export class FinancialModel {
       sceltaAnno,
       exitFP,
       exitPAC,
-      exitMix
+      exitMix,
+      strategyState = null
     }) {
-      return {
+      const row = {
         anno,
         quotaEntroMinima: Math.round(quotaEntroMinAnno),
         quotaExtraMinima: Math.round(quotaExtraMinAnno),
@@ -859,6 +966,15 @@ export class FinancialModel {
         exitPac: Math.round(exitPAC),
         exitMix: Math.round(exitMix)
       };
+      // Dettaglio numerico esatto per l'esploratore. Non è enumerabile:
+      // CSV, link condivisi e contratto pubblico delle righe restano invariati.
+      if (strategyState) {
+        Object.defineProperty(row, '_state', {
+          value: { ...strategyState },
+          enumerable: false
+        });
+      }
+      return row;
     }
 
     /**
@@ -1072,10 +1188,15 @@ export class FinancialModel {
      * @returns {number} Aliquota di tassazione
      */
     calcolaTassazioneFp(anni, riscattoAnticipato = false) {
+      const rules = CURRENT_FISCAL_RULES.pensionFund.exitTax;
       if (riscattoAnticipato) {
-        return 0.23; // Tassazione fissa 23% per riscatto anticipato
+        return rules.earlyRedemptionRate;
       }
-      return Math.max((15 - Math.max(anni + 1 - 15, 0) * 0.3), 9) / 100;
+      const yearsWithReduction = Math.max(anni + 1 - rules.reductionStartsAfterYears, 0);
+      return Math.max(
+        rules.initialRate - yearsWithReduction * rules.reductionPerYear,
+        rules.minimumRate
+      );
     }
 
     /**

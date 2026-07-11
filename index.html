@@ -92,7 +92,6 @@
                         <h2 id="intro-title">Quanto conviene mettere nel fondo pensione e quanto nel PAC?</h2>
                         <p>Tasse, contributo del datore e rendimenti inclusi: la ripartizione più conveniente, anno per anno.</p>
                     </div>
-                    <img class="masthead-art" src="vendor/img/mascotte.svg" alt="" width="270" height="240">
                     <div class="intro-actions">
                         <button type="button" class="btn btn-primary intro-primary" id="open-guided-mode">
                             <span data-lucide="list-check" class="icon" aria-hidden="true"></span>
@@ -105,7 +104,7 @@
                             </button>
                             <button type="button" class="btn btn-secondary intro-secondary" id="reset-scenario">
                                 <span data-lucide="rotate-ccw" class="icon" aria-hidden="true"></span>
-                                Ripristina
+                                <span class="intro-secondary-label">Ripristina</span>
                             </button>
                         </div>
                     </div>
@@ -513,9 +512,6 @@
                                         </div>
                                     </div>
 
-                                    <input type="hidden" id="massimaleContributivoInps" value="120607">
-                                    <input type="hidden" id="sogliaIvsAggiuntivo" value="55448">
-                                    <input type="hidden" id="aliquotaIvsAggiuntivaPerc" value="1">
                                 </div>
                             </section>
 
@@ -533,7 +529,7 @@
                                                 <div class="control-field"><input type="number" id="rendimentoAnnualeFpPerc" class="form-control" value="4" min="0" max="100" step="0.1"><span class="unit">%</span></div>
                                             </div>
                                             <div class="form-group">
-                                                <label for="rendimentoFpMode"><span class="help-trigger" data-help="rendimentoFpMode">Tipo rendimento FP</span></label>
+                                                <label for="rendimentoFpMode"><span class="help-trigger" data-help="rendimentoFpMode">Tipo rendimento</span></label>
                                                 <select id="rendimentoFpMode" class="form-control native-select">
                                                     <option value="netto" selected>Netto</option>
                                                     <option value="lordo">Lordo</option>
@@ -547,9 +543,15 @@
                                         <div class="return-gross-fields conditional-grid" data-return-extra="fp" hidden>
                                             <div class="form-row">
                                                 <div class="form-group">
-                                                    <label for="costiAnnuiFpPerc"><span class="help-trigger" data-help="costiAnnuiFpPerc">Costi annui FP</span></label>
+                                                    <label for="costiAnnuiFpPerc"><span class="help-trigger" data-help="costiAnnuiFpPerc">Costi annui %</span></label>
                                                     <div class="control-field"><input type="number" id="costiAnnuiFpPerc" class="form-control" value="0" min="0" max="5" step="0.1"><span class="unit">%</span></div>
                                                 </div>
+                                                <div class="form-group">
+                                                    <label for="costiFissiFp"><span class="help-trigger" data-help="costiFissiFp">Costi annui EUR</span></label>
+                                                    <div class="control-field"><input type="number" id="costiFissiFp" class="form-control" value="0" min="0" max="10000" step="1"><span class="unit">€/anno</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
                                                 <div class="form-group">
                                                     <label for="quotaAgevolataFpPerc"><span class="help-trigger" data-help="quotaAgevolataFpPerc">Quota FP agevolata</span></label>
                                                     <div class="control-field"><input type="number" id="quotaAgevolataFpPerc" class="form-control" value="0" min="0" max="100" step="0.1"><span class="unit">%</span></div>
@@ -557,7 +559,7 @@
                                             </div>
                                             <div class="mini-metrics">
                                                 <div class="mini-metric output"><span>Tassa effettiva FP</span><strong id="tassaEffettivaFp">20,00%</strong><p>Da quota agevolata e ordinaria.</p></div>
-                                                <div class="mini-metric output"><span>Netto calcolato FP</span><strong id="rendimentoNettoFp">4,00%</strong><p>Rendimento dopo costi e tasse.</p></div>
+                                                <div class="mini-metric output"><span>Netto calcolato FP</span><strong id="rendimentoNettoFp">4,00%</strong><p>Dopo costi % e tasse; i costi EUR sono applicati al montante.</p></div>
                                             </div>
                                         </div>
                                     </div>
@@ -569,7 +571,7 @@
                                                 <div class="control-field"><input type="number" id="rendimentoAnnualePacPerc" class="form-control" value="6" min="0" max="100" step="0.1"><span class="unit">%</span></div>
                                             </div>
                                             <div class="form-group">
-                                                <label for="rendimentoPacMode"><span class="help-trigger" data-help="rendimentoPacMode">Tipo rendimento PAC</span></label>
+                                                <label for="rendimentoPacMode"><span class="help-trigger" data-help="rendimentoPacMode">Tipo rendimento</span></label>
                                                 <select id="rendimentoPacMode" class="form-control native-select">
                                                     <option value="netto" selected>Netto</option>
                                                     <option value="lordo">Lordo</option>
@@ -583,9 +585,15 @@
                                         <div class="return-gross-fields conditional-grid" data-return-extra="pac" hidden>
                                             <div class="form-row">
                                                 <div class="form-group">
-                                                    <label for="costiAnnuiPacPerc"><span class="help-trigger" data-help="costiAnnuiPacPerc">Costi annui PAC</span></label>
+                                                    <label for="costiAnnuiPacPerc"><span class="help-trigger" data-help="costiAnnuiPacPerc">Costi annui %</span></label>
                                                     <div class="control-field"><input type="number" id="costiAnnuiPacPerc" class="form-control" value="0" min="0" max="5" step="0.1"><span class="unit">%</span></div>
                                                 </div>
+                                                <div class="form-group">
+                                                    <label for="costiFissiPac"><span class="help-trigger" data-help="costiFissiPac">Costi annui EUR</span></label>
+                                                    <div class="control-field"><input type="number" id="costiFissiPac" class="form-control" value="0" min="0" max="10000" step="1"><span class="unit">€/anno</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
                                                 <div class="form-group">
                                                     <label for="quotaAgevolataPacPerc"><span class="help-trigger" data-help="quotaAgevolataPacPerc">Quota PAC agevolata</span></label>
                                                     <div class="control-field"><input type="number" id="quotaAgevolataPacPerc" class="form-control" value="0" min="0" max="100" step="0.1"><span class="unit">%</span></div>
@@ -593,7 +601,7 @@
                                             </div>
                                             <div class="mini-metrics">
                                                 <div class="mini-metric output"><span>Tassa effettiva PAC</span><strong id="tassaEffettivaPac">26,00%</strong><p>Da quota agevolata e ordinaria.</p></div>
-                                                <div class="mini-metric output"><span>Netto calcolato PAC</span><strong id="rendimentoNettoPac">5,80%</strong><p>Rendimento confrontabile.</p></div>
+                                                <div class="mini-metric output"><span>Netto calcolato PAC</span><strong id="rendimentoNettoPac">5,80%</strong><p>Dopo costi %; i costi EUR sono applicati al montante.</p></div>
                                             </div>
                                         </div>
                                         <span data-return-net-note="pac" hidden></span>
@@ -696,11 +704,12 @@
                         </div>
                     </div>
                     <div class="annual-explorer">
+                        <p class="explorer-intro">Dal reddito al valore netto: segui i sei passaggi nell'ordine. Ogni importo finale deve potersi ricostruire con i numeri mostrati qui sotto.</p>
                         <div class="year-answer" aria-label="Risultato anno selezionato">
                             <div class="year-answer-card main">
-                                <span>Exit netta</span>
+                                <span>Valore netto a fine anno</span>
                                 <strong id="annual-exit-value">-</strong>
-                                <p id="annual-exit-copy">Netto della strategia a quest'anno.</p>
+                                <p id="annual-exit-copy">Quanto avresti se liquidassi la strategia alla fine dell'anno.</p>
                             </div>
                             <div class="year-answer-card">
                                 <span>Scelta</span>
@@ -727,7 +736,7 @@
                         <div class="calc-flow" aria-label="Passaggi di calcolo anno selezionato">
                             <section class="calc-step">
                                 <div class="step-content">
-                                    <div class="step-title"><div><span class="step-meta">Fiscalità</span><h4>Imponibile e IRPEF</h4></div><strong id="annual-taxable-step-value">-</strong></div>
+                                    <div class="step-title"><div><span class="step-meta">1 · Punto di partenza</span><h4>Dal reddito all'imposta</h4></div><strong id="annual-taxable-step-value">-</strong></div>
                                     <p>Reddito fiscale dell'anno, contributi INPS dedotti e imposta lorda.</p>
                                     <div class="step-formula" id="annual-taxable-formula">-</div>
                                     <div class="step-rows">
@@ -745,65 +754,75 @@
                             </section>
                             <section class="calc-step">
                                 <div class="step-content">
-                                    <div class="step-title"><div><span class="step-meta">Deduzione</span><h4>Capienza e limite</h4></div><strong id="annual-limit-step-value">-</strong></div>
-                                    <p>Limite deducibile dell'anno e quota effettivamente usata.</p>
+                                    <div class="step-title"><div><span class="step-meta">2 · Limite fiscale</span><h4>Quanto può entrare nel FP</h4></div><strong id="annual-limit-step-value">-</strong></div>
+                                    <p>Il contributo del datore occupa una parte del limite; il resto è disponibile per il tuo versamento.</p>
                                     <div class="step-formula" id="annual-limit-formula">-</div>
                                     <div class="step-rows">
                                         <div class="step-row"><div><span>Limite ordinario</span><b>Art. 8 D.Lgs. 252/2005</b></div><strong id="annual-limit-ordinary-value">-</strong></div>
-                                        <div class="step-row"><div><span>Deduzione utile</span><b>Stima: oltre questa cifra le detrazioni hanno già azzerato l'imposta</b></div><strong id="annual-useful-deduction-value">-</strong></div>
-                                        <div class="step-row"><div><span>Dedotto vs limite</span><b>Quota aderente + datore</b></div><strong id="annual-limit-used-value">-</strong></div>
-                                        <div class="step-row"><div><span>Capienza residua</span><b>Margine deducibile non usato</b></div><strong id="annual-limit-headroom-value">-</strong></div>
+                                        <div class="step-row"><div><span>Datore dentro il limite</span><b>Riduce lo spazio disponibile per il tuo versamento</b></div><strong id="annual-employer-limit-value">-</strong></div>
+                                        <div class="step-row"><div><span>Massimo disponibile per te</span><b>Limite ordinario − contributo datore</b></div><strong id="annual-available-limit-value">-</strong></div>
+                                        <div class="step-row"><div><span>Usato complessivamente</span><b>Tuo versamento FP + datore</b></div><strong id="annual-limit-used-value">-</strong></div>
+                                        <div class="step-row"><div><span>Spazio ancora libero</span><b>Parte del limite non utilizzata</b></div><strong id="annual-limit-headroom-value">-</strong></div>
                                         <div class="step-row"><div><span>Oltre il limite → PAC</span><b>Eccedenza non deducibile investita nel PAC</b></div><strong id="annual-over-limit-value">-</strong></div>
                                     </div>
                                 </div>
                             </section>
                             <section class="calc-step">
                                 <div class="step-content">
-                                    <div class="step-title"><div><span class="step-meta">Fondo pensione</span><h4>Quote FP e datore</h4></div><strong id="annual-fp-step-value">-</strong></div>
-                                    <p>Il modello calcola quota minima, quota datore e quota FP consigliata.</p>
+                                    <div class="step-title"><div><span class="step-meta">3 · Allocazione</span><h4>Perché FP, PAC o entrambi</h4></div><strong id="annual-fp-step-value">-</strong></div>
+                                    <p>Prima si valuta la quota minima che sblocca il datore; poi il resto viene assegnato in base all'orizzonte e ai rendimenti.</p>
                                     <div class="step-formula" id="annual-fp-formula">-</div>
                                     <div class="step-rows">
                                         <div class="step-row"><div><span>Vincolata alla minima</span><b>Serve ad agganciare il contributo datore</b></div><strong id="annual-within-min-value">-</strong></div>
                                         <div class="step-row"><div><span>Libera oltre la minima</span><b>Contesa tra FP e PAC dall'ottimizzatore</b></div><strong id="annual-above-min-value">-</strong></div>
                                         <div class="step-row"><div><span>Quota datore</span><b>Incentivo riconosciuto nell'anno</b></div><strong id="annual-employer-value">-</strong></div>
                                         <div class="step-row"><div><span>Deduzione usata</span><b>Quota FP nel perimetro deducibile</b></div><strong id="annual-deducted-value">-</strong></div>
+                                        <div class="step-row"><div><span>Orizzonte residuo</span><b>Anni di crescita considerati per questa scelta</b></div><strong id="annual-years-left-value">-</strong></div>
                                     </div>
                                 </div>
                             </section>
                             <section class="calc-step">
                                 <div class="step-content">
-                                    <div class="step-title"><div><span class="step-meta">Busta e bonifico</span><h4>Ripartizione FP</h4></div><strong id="annual-payroll-step-value">-</strong></div>
+                                    <div class="step-title"><div><span class="step-meta">4 · Modalità di versamento</span><h4>Busta paga o bonifico</h4></div><strong id="annual-payroll-step-value">-</strong></div>
                                     <p>Mostra quanta quota passa in busta e quanta via bonifico.</p>
                                     <div class="step-formula" id="annual-payroll-formula">-</div>
                                     <div class="step-rows">
-                                        <div class="step-row"><div><span>In busta</span><b>Quota indicata in payroll</b></div><strong id="annual-payroll-value">-</strong></div>
-                                        <div class="step-row"><div><span>Via bonifico</span><b>Extra fuori payroll</b></div><strong id="annual-transfer-value">-</strong></div>
-                                        <div class="step-row"><div><span>Extra busta vs bonifico</span><b>Positivo: conviene l'extra in busta</b></div><strong id="annual-split-diff-value">-</strong></div>
+                                        <div class="step-row"><div><span>In busta paga</span><b>Incide anche su detrazioni e bonus</b></div><strong id="annual-payroll-value">-</strong></div>
+                                        <div class="step-row"><div><span>Via bonifico</span><b>Riduce l'IRPEF, ma non modifica la busta</b></div><strong id="annual-transfer-value">-</strong></div>
+                                        <div class="step-row"><div><span>Beneficio con minimo in busta</span><b>Quota minima in busta, extra via bonifico</b></div><strong id="annual-baseline-saving-value">-</strong></div>
+                                        <div class="step-row"><div><span>Beneficio con tutto in busta</span><b>Intero versamento FP trattenuto in busta</b></div><strong id="annual-all-payroll-saving-value">-</strong></div>
+                                        <div class="step-row"><div><span>Differenza</span><b>Positivo: conviene mettere l'extra in busta</b></div><strong id="annual-split-diff-value">-</strong></div>
                                     </div>
                                 </div>
                             </section>
                             <section class="calc-step">
                                 <div class="step-content">
-                                    <div class="step-title"><div><span class="step-meta">Fiscalità</span><h4>Risparmio fiscale</h4></div><strong id="annual-tax-saving-value">-</strong></div>
-                                    <p>La deduzione FP riduce l'imponibile e genera beneficio fiscale.</p>
+                                    <div class="step-title"><div><span class="step-meta">5 · Confronto fiscale esatto</span><h4>Senza FP e con FP</h4></div><strong id="annual-tax-saving-value">-</strong></div>
+                                    <p>Il beneficio è la differenza finale dopo IRPEF, addizionali, detrazioni e bonus. Un costo fiscale negativo significa che i bonus superano l'imposta netta.</p>
                                     <div class="step-formula" id="annual-tax-formula">-</div>
                                     <div class="step-rows">
-                                        <div class="step-row"><div><span>Aliquota effettiva</span><b>Risparmio ÷ quota dedotta</b></div><strong id="annual-effective-rate-value">-</strong></div>
-                                        <div class="step-row"><div><span>Imposta prima → dopo</span><b>IRPEF + addizionali sull'anno</b></div><strong id="annual-tax-before-after-value">-</strong></div>
-                                        <div class="step-row"><div><span>Tetto da capienza</span><b>Il risparmio non supera l'imposta netta</b></div><strong id="annual-capienza-cap-value">-</strong></div>
+                                        <div class="step-row"><div><span>Imponibile IRPEF</span><b>Senza FP → con FP</b></div><strong id="annual-taxable-before-after-value">-</strong></div>
+                                        <div class="step-row"><div><span>IRPEF + addizionali</span><b>Senza FP → con FP</b></div><strong id="annual-gross-tax-before-after-value">-</strong></div>
+                                        <div class="step-row"><div><span>Detrazione lavoro</span><b>Senza FP → con FP</b></div><strong id="annual-deduction-before-after-value">-</strong></div>
+                                        <div class="step-row"><div><span>Bonus riconosciuti</span><b>Trattamento integrativo + bonus cuneo</b></div><strong id="annual-bonus-before-after-value">-</strong></div>
+                                        <div class="step-row"><div><span>Costo fiscale finale</span><b>Imposta netta − bonus</b></div><strong id="annual-fiscal-cost-before-after-value">-</strong></div>
+                                        <div class="step-row"><div><span>Aliquota effettiva</span><b>Beneficio ÷ tuo versamento dedotto</b></div><strong id="annual-effective-rate-value">-</strong></div>
                                     </div>
                                 </div>
                             </section>
                             <section class="calc-step">
                                 <div class="step-content">
-                                    <div class="step-title"><div><span class="step-meta">Exit netta</span><h4>Somma e confronto</h4></div><strong id="annual-exit-step-value">-</strong></div>
-                                    <p>Combina montanti FP/PAC e confronta con le strategie pure.</p>
+                                    <div class="step-title"><div><span class="step-meta">6 · Risultato riconciliato</span><h4>Come si ottiene il valore netto</h4></div><strong id="annual-exit-step-value">-</strong></div>
+                                    <p>Montanti maturati, imposte di uscita e beneficio fiscale ancora disponibile devono sommare al risultato.</p>
                                     <div class="step-formula" id="annual-exit-formula">-</div>
                                     <div class="step-rows">
-                                        <div class="step-row"><div><span>Versato FP cumulato</span><b>Contributi aderente + datore</b></div><strong id="annual-exit-contrib-fp-value">-</strong></div>
-                                        <div class="step-row"><div><span>Versato PAC cumulato</span><b>Capitale investito nel PAC</b></div><strong id="annual-exit-contrib-pac-value">-</strong></div>
+                                        <div class="step-row"><div><span>Montante FP lordo</span><b>Versamenti + rendimenti maturati</b></div><strong id="annual-montante-fp-value">-</strong></div>
+                                        <div class="step-row"><div><span>Montante PAC lordo</span><b>Versamenti + rendimenti prima dell'imposta finale</b></div><strong id="annual-montante-pac-value">-</strong></div>
+                                        <div class="step-row"><div><span>Rendimento maturato nell'anno</span><b>FP + PAC sui montanti iniziali</b></div><strong id="annual-growth-value">-</strong></div>
+                                        <div class="step-row"><div><span>Costi annui EUR</span><b>Una volta per ogni strumento attivo</b></div><strong id="annual-fixed-costs-value">-</strong></div>
                                         <div class="step-row"><div><span>Tassazione uscita FP</span><b id="annual-exit-fp-tax-label">Sui contributi dedotti</b></div><strong id="annual-exit-fp-tax-value">-</strong></div>
-                                        <div class="step-row"><div><span>Tassazione PAC</span><b>Capital gain in uscita</b></div><strong id="annual-exit-pac-tax-value">-</strong></div>
+                                        <div class="step-row"><div><span>Tassazione uscita PAC</span><b>Solo sul capital gain, se il rendimento è lordo</b></div><strong id="annual-exit-pac-tax-value">-</strong></div>
+                                        <div class="step-row"><div><span>Beneficio fiscale nell'exit</span><b>Corrente o accumulato, secondo la modalità</b></div><strong id="annual-saving-in-exit-value">-</strong></div>
                                         <div class="step-row"><div><span>Exit FP puro</span><b>Benchmark tutto nel FP</b></div><strong id="annual-exit-fp-value">-</strong></div>
                                         <div class="step-row"><div><span>Exit PAC puro</span><b>Benchmark tutto nel PAC</b></div><strong id="annual-exit-pac-value">-</strong></div>
                                     </div>
@@ -1259,7 +1278,7 @@
                                     <div class="control-field"><input type="number" id="guided-rendimento-fp" class="form-control" min="0" max="100" step="0.1"><span class="unit">%</span></div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="guided-rendimento-fp-mode">Tipo rendimento FP</label>
+                                    <label for="guided-rendimento-fp-mode">Tipo rendimento</label>
                                     <select id="guided-rendimento-fp-mode" class="form-control native-select">
                                         <option value="netto" selected>Netto</option>
                                         <option value="lordo">Lordo</option>
@@ -1273,9 +1292,15 @@
                             <div class="conditional-grid" data-guided-return-extra="fp" hidden>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="guided-costi-fp">Costi annui FP</label>
+                                        <label for="guided-costi-fp">Costi annui %</label>
                                         <div class="control-field"><input type="number" id="guided-costi-fp" class="form-control" min="0" max="5" step="0.1"><span class="unit">%</span></div>
                                     </div>
+                                    <div class="form-group">
+                                        <label for="guided-costi-fissi-fp">Costi annui EUR</label>
+                                        <div class="control-field"><input type="number" id="guided-costi-fissi-fp" class="form-control" min="0" max="10000" step="1"><span class="unit">€/anno</span></div>
+                                    </div>
+                                </div>
+                                <div class="form-row">
                                     <div class="form-group">
                                         <label for="guided-quota-agevolata-fp">Quota FP agevolata</label>
                                         <div class="control-field"><input type="number" id="guided-quota-agevolata-fp" class="form-control" min="0" max="100" step="0.1"><span class="unit">%</span></div>
@@ -1283,10 +1308,10 @@
                                 </div>
                                 <div class="mini-metrics">
                                     <div class="mini-metric output"><span>Tassa effettiva FP</span><strong id="guided-tassa-effettiva-fp">20,00%</strong><p>Da quota agevolata e ordinaria.</p></div>
-                                    <div class="mini-metric output"><span>Netto calcolato FP</span><strong id="guided-rendimento-netto-fp">4,00%</strong><p>Rendimento dopo costi e tasse.</p></div>
+                                    <div class="mini-metric output"><span>Netto calcolato FP</span><strong id="guided-rendimento-netto-fp">4,00%</strong><p>Dopo costi % e tasse; i costi EUR sono applicati al montante.</p></div>
                                 </div>
                             </div>
-                            <div class="guided-note" data-help-note="rendimentoAnnualeFpPerc rendimentoFpMode costiAnnuiFpPerc quotaAgevolataFpPerc"></div>
+                            <div class="guided-note" data-help-note="rendimentoAnnualeFpPerc rendimentoFpMode costiAnnuiFpPerc costiFissiFp quotaAgevolataFpPerc"></div>
                         </section>
                         <section class="guided-step" data-guided-step="14">
                             <div class="guided-step-head">
@@ -1298,7 +1323,7 @@
                                     <div class="control-field"><input type="number" id="guided-rendimento-pac" class="form-control" min="0" max="100" step="0.1"><span class="unit">%</span></div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="guided-rendimento-pac-mode">Tipo rendimento PAC</label>
+                                    <label for="guided-rendimento-pac-mode">Tipo rendimento</label>
                                     <select id="guided-rendimento-pac-mode" class="form-control native-select">
                                         <option value="netto" selected>Netto</option>
                                         <option value="lordo">Lordo</option>
@@ -1312,9 +1337,15 @@
                             <div class="conditional-grid" data-guided-return-extra="pac" hidden>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="guided-costi-pac">Costi annui PAC</label>
+                                        <label for="guided-costi-pac">Costi annui %</label>
                                         <div class="control-field"><input type="number" id="guided-costi-pac" class="form-control" min="0" max="5" step="0.1"><span class="unit">%</span></div>
                                     </div>
+                                    <div class="form-group">
+                                        <label for="guided-costi-fissi-pac">Costi annui EUR</label>
+                                        <div class="control-field"><input type="number" id="guided-costi-fissi-pac" class="form-control" min="0" max="10000" step="1"><span class="unit">€/anno</span></div>
+                                    </div>
+                                </div>
+                                <div class="form-row">
                                     <div class="form-group">
                                         <label for="guided-quota-agevolata-pac">Quota PAC agevolata</label>
                                         <div class="control-field"><input type="number" id="guided-quota-agevolata-pac" class="form-control" min="0" max="100" step="0.1"><span class="unit">%</span></div>
@@ -1322,10 +1353,10 @@
                                 </div>
                                 <div class="mini-metrics">
                                     <div class="mini-metric output"><span>Tassa effettiva PAC</span><strong id="guided-tassa-effettiva-pac">26,00%</strong><p>Da quota agevolata e ordinaria.</p></div>
-                                    <div class="mini-metric output"><span>Netto calcolato PAC</span><strong id="guided-rendimento-netto-pac">5,80%</strong><p>Rendimento confrontabile.</p></div>
+                                    <div class="mini-metric output"><span>Netto calcolato PAC</span><strong id="guided-rendimento-netto-pac">5,80%</strong><p>Dopo costi %; i costi EUR sono applicati al montante.</p></div>
                                 </div>
                             </div>
-                            <div class="guided-note" data-help-note="rendimentoAnnualePacPerc rendimentoPacMode costiAnnuiPacPerc quotaAgevolataPacPerc"></div>
+                            <div class="guided-note" data-help-note="rendimentoAnnualePacPerc rendimentoPacMode costiAnnuiPacPerc costiFissiPac quotaAgevolataPacPerc"></div>
                         </section>
                     </div>
                     <div class="guided-footer">
@@ -1766,22 +1797,8 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
                     <div class="docs-collapsible-content">
 
                     <h3>Fonti normative usate nel calcolo</h3>
-                    <p>Ogni costante del modello con la sua fonte e la decorrenza dell'ultimo aggiornamento.</p>
-                    <div class="docs-source-list">
-                        <article class="docs-source-item"><h4>Scaglioni IRPEF</h4><p><strong>Valore usato:</strong> 23% fino a 28.000, 33% fino a 50.000, 43% oltre; sopra 200.000 € di reddito il beneficio del taglio (440 €) è sterilizzato.</p><p><strong>Fonte:</strong> <a href="https://www.agenziaentrate.gov.it/portale/imposta-sul-reddito-delle-persone-fisiche-irpef-/aliquote-e-calcolo-dell-irpef" target="_blank" rel="noopener">Agenzia delle Entrate — aliquote IRPEF (Bilancio 2026)</a>.</p><p><strong>Aggiornamento:</strong> dal 2026.</p></article>
-                        <article class="docs-source-item"><h4>Detrazione lavoro dipendente minima</h4><p><strong>Valore usato:</strong> 1.955 €.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2024-12-30;207" target="_blank" rel="noopener">L. 207/2024</a>, art. 13 TUIR.</p><p><strong>Aggiornamento:</strong> dal 2025.</p></article>
-                        <article class="docs-source-item"><h4>Limite deduzione FP</h4><p><strong>Valore usato:</strong> 5.300 €/anno, datore incluso e TFR escluso.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2025-12-30;199" target="_blank" rel="noopener">L. 199/2025 (Bilancio 2026)</a>, art. 1 c. 195-205, che modifica l'<a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2005-12-05;252" target="_blank" rel="noopener">art. 8 c. 4 D.Lgs. 252/2005</a>.</p><p><strong>Aggiornamento:</strong> dal 1/1/2026, primo adeguamento dal 2007.</p></article>
-                        <article class="docs-source-item"><h4>Tassazione uscita FP</h4><p><strong>Valore usato:</strong> 15%, -0,3%/anno oltre il 15°, minimo 9%.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2005-12-05;252" target="_blank" rel="noopener">Art. 11 c. 6 D.Lgs. 252/2005</a>.</p><p><strong>Aggiornamento:</strong> in vigore dal 2007.</p></article>
-                        <article class="docs-source-item"><h4>Riscatto anticipato</h4><p><strong>Valore usato:</strong> 23% sui contributi dedotti.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2005-12-05;252" target="_blank" rel="noopener">Art. 14 c. 5 D.Lgs. 252/2005</a>.</p><p><strong>Aggiornamento:</strong> in vigore dal 2007.</p></article>
-                        <article class="docs-source-item"><h4>Aliquota INPS lavoratore</h4><p><strong>Valore usato:</strong> 9,19%, modificabile.</p><p><strong>Fonte:</strong> <a href="https://www.inps.it/it/it/inps-comunica/atti/circolari-messaggi-e-normativa.html" target="_blank" rel="noopener">Circolare INPS aliquote contributive</a> per FPLD dipendenti.</p><p><strong>Aggiornamento:</strong> valori 2026.</p></article>
-                        <article class="docs-source-item"><h4>Massimale contributivo INPS</h4><p><strong>Valore usato:</strong> 120.607 €.</p><p><strong>Fonte:</strong> <a href="https://www.inps.it/it/it/inps-comunica/atti/circolari-messaggi-e-normativa.html" target="_blank" rel="noopener">Circolare INPS minimali e massimali</a>, art. 2 c. 18 L. 335/1995.</p><p><strong>Aggiornamento:</strong> valori 2026.</p></article>
-                        <article class="docs-source-item"><h4>IVS aggiuntivo</h4><p><strong>Valore usato:</strong> +1% oltre 55.448 €.</p><p><strong>Fonte:</strong> art. 3-ter L. 438/1992; soglia da <a href="https://www.inps.it/it/it/inps-comunica/atti/circolari-messaggi-e-normativa.html" target="_blank" rel="noopener">circolare INPS</a>.</p><p><strong>Aggiornamento:</strong> soglia 2026.</p></article>
-                        <article class="docs-source-item"><h4>Trattamento integrativo</h4><p><strong>Valore usato:</strong> 1.200 €/anno; pieno fino a 15.000 €, a capienza fino a 28.000 €.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2020-02-05;3" target="_blank" rel="noopener">D.L. 3/2020 conv. L. 21/2020</a>, mod. L. 234/2021.</p><p><strong>Aggiornamento:</strong> dal 2022.</p></article>
-                        <article class="docs-source-item"><h4>Bonus cuneo dipendenti</h4><p><strong>Valore usato:</strong> somma integrativa fino a 20.000 €; detrazione 1.000 € tra 20.000 e 40.000 €.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2024-12-30;207" target="_blank" rel="noopener">L. 207/2024, art. 1 c. 4-9</a>.</p><p><strong>Aggiornamento:</strong> dal 2025, a regime.</p></article>
-                        <article class="docs-source-item"><h4>Tassazione annua rendimenti FP</h4><p><strong>Valore usato:</strong> 20% ordinaria, 12,5% su quota titoli di Stato in modalità lorda.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2014-12-23;190" target="_blank" rel="noopener">L. 190/2014, art. 1 c. 621-624</a>.</p><p><strong>Aggiornamento:</strong> dal 2015.</p></article>
-                        <article class="docs-source-item"><h4>Capital gain PAC</h4><p><strong>Valore usato:</strong> 26% ordinaria, 12,5% su quota titoli di Stato in modalità lorda.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2014-04-24;66" target="_blank" rel="noopener">D.L. 66/2014 conv. L. 89/2014</a>.</p><p><strong>Aggiornamento:</strong> dal 1/7/2014.</p></article>
-                        <article class="docs-source-item"><h4>Addizionali regionali e comunali</h4><p><strong>Valore usato:</strong> dataset aliquote per Regione/Comune.</p><p><strong>Fonte:</strong> <a href="https://www1.finanze.gov.it/finanze2/dipartimentopolitichefiscali/fiscalitalocale/" target="_blank" rel="noopener">MEF - Fiscalità locale</a>.</p><p><strong>Aggiornamento:</strong> dati 2026 importati nel dataset locale.</p></article>
-                    </div>
+                    <p>Regole fiscali applicate: <strong data-fiscal-year>2026</strong>. Ogni costante del modello è accompagnata dalla fonte e dalla decorrenza dell'ultimo aggiornamento.</p>
+                    <div class="docs-source-list" id="fiscal-source-list"></div>
 
                     <h3>Fonti informative sui rendimenti</h3>
                     <p>I rendimenti dei fondi pensione sono ipotesi ispirate ai dati storici pubblicati da <a href="https://www.covip.it/" target="_blank" rel="noopener">COVIP</a>. Se usi la modalità netta, sono trattati come già al netto di costi e tassazione annuale; se usi la modalità lorda, il modello applica costi annui e tassazione dei rendimenti. In ogni caso non sono rendimenti futuri garantiti.</p>

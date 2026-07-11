@@ -179,10 +179,16 @@ export const HELP_CONTENT = {
             effetto: 'Il calcolatore mostra il netto risultante, confrontabile con il PAC.'
         },
         costiAnnuiFpPerc: {
-            title: 'Costi annui FP',
+            title: 'Costi annui % FP',
             dove: 'ISC nella scheda costi del fondo pensione.',
             come: 'Percentuale annua sottratta al montante FP quando il rendimento è impostato come lordo.',
             effetto: 'Più i costi sono alti, più il netto composto si riduce. Con rendimento netto lasciala a 0 per evitare doppio conteggio.'
+        },
+        costiFissiFp: {
+            title: 'Costi annui EUR FP',
+            dove: 'Scheda costi del fondo: quota associativa, spese amministrative o altre commissioni espresse in euro.',
+            come: 'Importo sottratto una volta per ogni anno in cui il FP è attivo. Si applica solo con rendimento Lordo.',
+            effetto: 'Pesa soprattutto sui montanti piccoli. Non inserirlo se è già incluso nel rendimento netto.'
         },
         quotaAgevolataFpPerc: {
             title: 'Quota FP agevolata 12,5%',
@@ -203,10 +209,16 @@ export const HELP_CONTENT = {
             effetto: 'Il calcolatore mostra il netto risultante, confrontabile con il FP.'
         },
         costiAnnuiPacPerc: {
-            title: 'Costi annui PAC',
+            title: 'Costi annui % PAC',
             dove: 'TER nel KID dell\'ETF, più bollo e altri costi ricorrenti se non già inclusi nel rendimento.',
             come: 'Percentuale annua sottratta al montante PAC quando il rendimento è lordo.',
             effetto: 'Costi più alti riducono il rendimento netto composto anno dopo anno.'
+        },
+        costiFissiPac: {
+            title: 'Costi annui EUR PAC',
+            dove: 'Canone del broker, commissioni minime e altri costi ricorrenti espressi in euro.',
+            come: 'Importo sottratto una volta per ogni anno in cui il PAC è attivo. Nel costo percentuale includi invece TER, bollo e altri costi proporzionali.',
+            effetto: 'Pesa soprattutto sui PAC piccoli. Non inserirlo se è già incluso nel rendimento netto.'
         },
         quotaAgevolataPacPerc: {
             title: 'Quota PAC agevolata 12,5%',

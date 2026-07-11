@@ -126,6 +126,17 @@ try {
   await pageA.evaluate(() => document.querySelector('#output-table tbody tr:nth-child(5)').click());
   await pageA.waitForTimeout(200);
   check('esploratore: click su riga seleziona anno', (await fieldValue(pageA, 'annual-explorer-year')) === '5');
+  check('esploratore: confronto fiscale prima/dopo', await pageA.evaluate(() =>
+    document.getElementById('annual-fiscal-cost-before-after-value')?.textContent.includes('→')
+  ));
+  check('esploratore: exit riconciliata', await pageA.evaluate(() => {
+    const formula = document.getElementById('annual-exit-formula')?.textContent || '';
+    return formula.includes(' FP + ') && formula.includes(' = ') && formula.includes(' netto');
+  }));
+  check('esploratore: nessuna falsa soglia di capienza', await pageA.evaluate(() => {
+    const text = document.querySelector('.annual-explorer-section')?.textContent || '';
+    return !text.includes('Tetto da capienza') && !text.includes('Deduzione utile') && !/NaN|undefined/.test(text);
+  }));
 
   // --- 3. Reload: lo scenario sopravvive ---
   await pageA.reload();
@@ -200,10 +211,23 @@ try {
   await pageE.goto(BASE);
   await waitBoot(pageE);
   await pageE.waitForTimeout(1200);
-  const unexpected = [...externalHosts].filter((host) => host !== 'api.counterapi.dev');
-  check('vendor: nessuna richiesta a CDN esterne', unexpected.length === 0, unexpected.join(', '));
+  const unexpected = [...externalHosts];
+  check('privacy: nessuna richiesta a host esterni', unexpected.length === 0, unexpected.join(', '));
   check('vendor: font Inter caricato in locale', await pageE.evaluate(() => document.fonts.check('16px Inter')));
   check('vendor: Chart.js e icone presenti', await pageE.evaluate(() => Boolean(window.Chart && document.querySelector('span[data-lucide] svg'))));
+  check('fonti: regole fiscali 2026 renderizzate', await pageE.evaluate(() =>
+    document.querySelector('[data-fiscal-year]')?.textContent === '2026' &&
+    document.querySelectorAll('#fiscal-source-list .docs-source-item').length === 13
+  ));
+  const fiscalSourceDetails = await pageE.evaluate(() => {
+    const deduction = document.querySelector('[data-fiscal-rule="pensionDeduction"]');
+    return {
+      text: deduction?.textContent.replace(/\s/g, ' ') ?? '',
+      links: deduction?.querySelectorAll('a[href]').length ?? 0
+    };
+  });
+  check('fonti: valore deduzione presente', fiscalSourceDetails.text.includes('5.300 €'), fiscalSourceDetails.text);
+  check('fonti: riferimenti deduzione presenti', fiscalSourceDetails.links === 2, String(fiscalSourceDetails.links));
 
   // --- 11. Specularità dei temi: un solo set di binding, due palette.
   // Per ogni coppia di entità e proprietà deve valere:
