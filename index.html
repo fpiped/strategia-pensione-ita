@@ -767,7 +767,7 @@
                                     <div class="step-rows">
                                         <div class="step-row"><div><span>Reddito fiscale</span><b>Retribuzione + premi + altri redditi</b></div><strong id="annual-gross-income-value">-</strong></div>
                                         <div class="step-row"><div><span>Contributi INPS</span><b>Dedotti prima dell'IRPEF</b></div><strong id="annual-inps-value">-</strong></div>
-                                        <div class="step-row"><div><span>IRPEF lorda</span><b>Scaglioni 23% · 35% · 43%</b></div><strong id="annual-irpef-value">-</strong></div>
+                                        <div class="step-row"><div><span>IRPEF lorda</span><b>Scaglioni 23% · 33% · 43%</b></div><strong id="annual-irpef-value">-</strong></div>
                                         <div class="step-row"><div><span>Addizionali</span><b>Regionale + comunale stimate</b></div><strong id="annual-addizionali-value">-</strong></div>
                                         <div class="step-row"><div><span>Aliquota marginale</span><b>IRPEF sull'ultimo euro dedotto</b></div><strong id="annual-marginal-rate-value">-</strong></div>
                                     </div>
@@ -1482,7 +1482,7 @@ Mario versa €3.000 → l'azienda aggiunge €450 gratis</pre>
 
                     <h3>Deduzione fiscale</h3>
                     <p>I versamenti si deducono dal reddito → paghi meno imposte oggi.</p>
-                    <p><small>Ordine di calcolo: contributi INPS dedotti dal lordo → IRPEF a scaglioni (23/35/43%) → addizionali locali → detrazioni e bonus. Dettagli e fonti nelle sezioni dedicate.</small></p>
+                    <p><small>Ordine di calcolo: contributi INPS dedotti dal lordo → IRPEF a scaglioni (23/33/43%) → addizionali locali → detrazioni e bonus. Dettagli e fonti nelle sezioni dedicate.</small></p>
 <pre>Step fiscale con i parametri default:
 
 Reddito annuo/RAL:       €30.000
@@ -1786,7 +1786,7 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
                     <h3>Fonti normative usate nel calcolo</h3>
                     <p>Ogni costante del modello con la sua fonte e la decorrenza dell'ultimo aggiornamento.</p>
                     <div class="docs-source-list">
-                        <article class="docs-source-item"><h4>Scaglioni IRPEF</h4><p><strong>Valore usato:</strong> 23% fino a 28.000, 35% fino a 50.000, 43% oltre.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2024-12-30;207" target="_blank" rel="noopener">L. 207/2024 (Bilancio 2025)</a>.</p><p><strong>Aggiornamento:</strong> dal 2025, a regime.</p></article>
+                        <article class="docs-source-item"><h4>Scaglioni IRPEF</h4><p><strong>Valore usato:</strong> 23% fino a 28.000, 33% fino a 50.000, 43% oltre; sopra 200.000 € di reddito il beneficio del taglio (440 €) è sterilizzato.</p><p><strong>Fonte:</strong> <a href="https://www.agenziaentrate.gov.it/portale/imposta-sul-reddito-delle-persone-fisiche-irpef-/aliquote-e-calcolo-dell-irpef" target="_blank" rel="noopener">Agenzia delle Entrate — aliquote IRPEF (Bilancio 2026)</a>.</p><p><strong>Aggiornamento:</strong> dal 2026.</p></article>
                         <article class="docs-source-item"><h4>Detrazione lavoro dipendente minima</h4><p><strong>Valore usato:</strong> 1.955 €.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2024-12-30;207" target="_blank" rel="noopener">L. 207/2024</a>, art. 13 TUIR.</p><p><strong>Aggiornamento:</strong> dal 2025.</p></article>
                         <article class="docs-source-item"><h4>Limite deduzione FP</h4><p><strong>Valore usato:</strong> 5.300 €/anno, datore incluso e TFR escluso.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2025-12-30;199" target="_blank" rel="noopener">L. 199/2025 (Bilancio 2026)</a>, art. 1 c. 195-205, che modifica l'<a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2005-12-05;252" target="_blank" rel="noopener">art. 8 c. 4 D.Lgs. 252/2005</a>.</p><p><strong>Aggiornamento:</strong> dal 1/1/2026, primo adeguamento dal 2007.</p></article>
                         <article class="docs-source-item"><h4>Tassazione uscita FP</h4><p><strong>Valore usato:</strong> 15%, -0,3%/anno oltre il 15°, minimo 9%.</p><p><strong>Fonte:</strong> <a href="https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2005-12-05;252" target="_blank" rel="noopener">Art. 11 c. 6 D.Lgs. 252/2005</a>.</p><p><strong>Aggiornamento:</strong> in vigore dal 2007.</p></article>

@@ -152,13 +152,20 @@ export function calculateIrpefTaxableIncome({
 }
 
 export function calculateIncomeTax(reddito) {
+  let imposta;
   if (reddito <= 28000) {
-    return reddito * 0.23;
+    imposta = reddito * 0.23;
+  } else if (reddito <= 50000) {
+    imposta = 28000 * 0.23 + (reddito - 28000) * 0.33;
+  } else {
+    imposta = 28000 * 0.23 + 22000 * 0.33 + (reddito - 50000) * 0.43;
   }
-  if (reddito <= 50000) {
-    return 28000 * 0.23 + (reddito - 28000) * 0.35;
+  // Legge di Bilancio 2026: sopra 200.000 € il taglio del secondo scaglione
+  // (35% → 33%, max 440 €) è sterilizzato con una riduzione delle detrazioni.
+  if (reddito > 200000) {
+    imposta += 440;
   }
-  return 28000 * 0.23 + 22000 * 0.35 + (reddito - 50000) * 0.43;
+  return imposta;
 }
 
 export function calculateEmployeeDeduction(reddito) {

@@ -1049,8 +1049,8 @@ export class FinancialModel {
     }
 
     /**
-     * Calcola l'imposta sul reddito in base agli scaglioni progressivi IRPEF 2025.
-     * Aggiornato alla Legge 30 dicembre 2024, n. 207.
+     * Calcola l'imposta sul reddito in base agli scaglioni progressivi IRPEF 2026.
+     * Aggiornato alla Legge di Bilancio 2026 (secondo scaglione al 33%).
      * @param {number} reddito - Importo del reddito
      * @returns {number} Importo dell'imposta
      */
