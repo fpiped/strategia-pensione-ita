@@ -13,7 +13,7 @@ import {
 
 test('calcola imposta e detrazioni da lavoro dipendente', () => {
   assert.equal(calculateIncomeTax(28000), 6440);
-  assert.equal(calculateIncomeTax(50000), 14140);
+  assert.equal(calculateIncomeTax(50000), 13700);
   assert.equal(calculateEmployeeDeduction(12000), 1955);
   assert.equal(calculateEmployeeDeduction(15000), 1955);
 });

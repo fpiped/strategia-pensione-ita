@@ -127,12 +127,14 @@ test('applica anzianita pregressa FP alla tassazione in uscita', () => {
   assert.ok(conPregresso.results[0].exitFp > senzaPregresso.results[0].exitFp);
 });
 
-test('calcola gli scaglioni IRPEF 2025 aggiornati alla Legge 207/2024', () => {
+test('calcola gli scaglioni IRPEF 2026 aggiornati alla Legge di Bilancio 2026', () => {
   const model = new FinancialModel();
 
   assert.equal(model.calcolaImposta(28000), 6440);
-  assert.equal(model.calcolaImposta(50000), 14140);
-  assert.equal(model.calcolaImposta(60000), 18440);
+  assert.equal(model.calcolaImposta(50000), 13700);
+  assert.equal(model.calcolaImposta(60000), 18000);
+  // sopra 200.000 € il beneficio del taglio (440 €) è sterilizzato
+  assert.equal(model.calcolaImposta(250000), 100140);
 });
 
 test('calcola la detrazione minima lavoro dipendente 2025 aggiornata alla Legge 207/2024', () => {
@@ -288,8 +290,8 @@ test('la quota FP in busta incide sul bonus cuneo, quella via bonifico no', () =
 
   assert.equal(model._calculateBonusCuneoFiscale(40700), 0);
   assert.equal(model._calculateBonusCuneoFiscale(39700), 37.5);
-  assert.equal(Math.round(model._calculateTaxSavings(...args, 'tuttoBonifico')), 350);
-  assert.equal(Math.round(model._calculateTaxSavings(...args, 'tuttoBusta')), 474);
+  assert.equal(Math.round(model._calculateTaxSavings(...args, 'tuttoBonifico')), 330);
+  assert.equal(Math.round(model._calculateTaxSavings(...args, 'tuttoBusta')), 454);
 });
 
 test('calcola ex Bonus Renzi con soglie e capienza', () => {
