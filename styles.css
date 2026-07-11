@@ -4015,11 +4015,6 @@ td {
     border-radius: var(--radius-lg);
 }
 
-.year-answer-card.main {
-    background: var(--ds-surface-selected);
-    border-color: rgb(65 224 180 / 0.55);
-}
-
 .year-answer-card span,
 .annual-input span,
 .step-meta,
