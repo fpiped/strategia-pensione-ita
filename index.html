@@ -752,6 +752,7 @@
                                         <div class="step-row"><div><span>Limite ordinario</span><b>Art. 8 D.Lgs. 252/2005</b></div><strong id="annual-limit-ordinary-value">-</strong></div>
                                         <div class="step-row"><div><span>Dedotto vs limite</span><b>Quota aderente + datore</b></div><strong id="annual-limit-used-value">-</strong></div>
                                         <div class="step-row"><div><span>Capienza residua</span><b>Margine deducibile non usato</b></div><strong id="annual-limit-headroom-value">-</strong></div>
+                                        <div class="step-row"><div><span>Oltre il limite → PAC</span><b>Eccedenza non deducibile investita nel PAC</b></div><strong id="annual-over-limit-value">-</strong></div>
                                     </div>
                                 </div>
                             </section>
@@ -761,6 +762,8 @@
                                     <p>Il modello calcola quota minima, quota datore e quota FP consigliata.</p>
                                     <div class="step-formula" id="annual-fp-formula">-</div>
                                     <div class="step-rows">
+                                        <div class="step-row"><div><span>Vincolata alla minima</span><b>Serve ad agganciare il contributo datore</b></div><strong id="annual-within-min-value">-</strong></div>
+                                        <div class="step-row"><div><span>Libera oltre la minima</span><b>Contesa tra FP e PAC dall'ottimizzatore</b></div><strong id="annual-above-min-value">-</strong></div>
                                         <div class="step-row"><div><span>Quota datore</span><b>Incentivo riconosciuto nell'anno</b></div><strong id="annual-employer-value">-</strong></div>
                                         <div class="step-row"><div><span>Deduzione usata</span><b>Quota FP nel perimetro deducibile</b></div><strong id="annual-deducted-value">-</strong></div>
                                     </div>
@@ -774,6 +777,7 @@
                                     <div class="step-rows">
                                         <div class="step-row"><div><span>In busta</span><b>Quota indicata in payroll</b></div><strong id="annual-payroll-value">-</strong></div>
                                         <div class="step-row"><div><span>Via bonifico</span><b>Extra fuori payroll</b></div><strong id="annual-transfer-value">-</strong></div>
+                                        <div class="step-row"><div><span>Extra busta vs bonifico</span><b>Positivo: conviene l'extra in busta</b></div><strong id="annual-split-diff-value">-</strong></div>
                                     </div>
                                 </div>
                             </section>
@@ -1846,11 +1850,6 @@ perché sono già stati tassati ogni anno (12.5-20%).</pre>
 
     <footer class="footer">
         <p>© 2026 Strategia Pensione | I calcoli sono stime, non consulenza finanziaria.</p>
-        <p class="footer-visits">
-            <span id="visit-counter" hidden>
-                Visite: <span id="visit-count">-</span>
-            </span>
-        </p>
         <p class="github-link">
             <a href="https://github.com/fpiped/strategia-pensione-ita" target="_blank" rel="noopener">
                 Ti è utile? Lascia una <span data-lucide="star" class="icon icon-star" aria-hidden="true"></span> su GitHub!
