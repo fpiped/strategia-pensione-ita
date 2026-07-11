@@ -1921,10 +1921,6 @@ td.best-value {
     margin-top: 0.75rem;
 }
 
-.footer .footer-visits {
-    margin-top: 0.35rem;
-}
-
 .footer .github-link a {
     color: var(--color-text-muted);
     text-decoration: none;
@@ -6581,28 +6577,7 @@ html[data-theme="dark"] .theme-toggle:focus-visible {
     border-color: var(--ds-border-soft);
 }
 
-/* Guide page: nested content blocks share one surface in both themes.
-   Disclaimer and footer stay transparent so the page bottom has no extra band. */
-.docs-comparison-card,
-.docs-info-card,
-.docs-scenario-card,
-.docs-fund-card,
-.docs-source-item,
-.docs-definition-list > div,
-.docs-section pre,
-.docs-section .highlight,
-html[data-theme="dark"] .docs-comparison-card,
-html[data-theme="dark"] .docs-info-card,
-html[data-theme="dark"] .docs-scenario-card,
-html[data-theme="dark"] .docs-fund-card,
-html[data-theme="dark"] .docs-source-item,
-html[data-theme="dark"] .docs-definition-list > div,
-html[data-theme="dark"] .docs-section pre,
-html[data-theme="dark"] .docs-section .highlight {
-    background: var(--ds-surface-panel);
-    border-color: var(--ds-border-soft);
-}
-
+/* Guide page: disclaimer and footer stay transparent so the page bottom has no extra band. */
 .docs-section .disclaimer,
 html[data-theme="dark"] .docs-section .disclaimer {
     background: transparent;
@@ -7416,6 +7391,18 @@ a.logo:hover h1 {
 .docs-section pre {
     color: var(--ds-text);
     font-weight: 500;
+    background: var(--ds-page);
+    border-color: var(--ds-border-soft);
+}
+
+/* Stesso scavo neutro per le card annidate della pagina informazioni. */
+.docs-section .highlight,
+.docs-comparison-card,
+.docs-info-card,
+.docs-scenario-card,
+.docs-source-item,
+.docs-fund-card,
+.docs-definition-list > div {
     background: var(--ds-page);
     border-color: var(--ds-border-soft);
 }
