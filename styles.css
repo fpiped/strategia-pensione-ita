@@ -4012,8 +4012,8 @@ td {
 }
 
 .year-answer-card.main {
-    background: var(--ds-surface-panel);
-    border-color: #A5C3B4;
+    background: var(--ds-surface-selected);
+    border-color: rgb(65 224 180 / 0.55);
 }
 
 .year-answer-card span,
@@ -5444,7 +5444,7 @@ html[data-active-tab="documentation"] .tab[data-tab="documentation"] {
     --ds-surface-raised: #FFFFFF;
     --ds-surface-panel: #EAF1EE;
     --ds-surface-muted: #EAF1EE;
-    --ds-surface-selected: #DFEAE6;
+    --ds-surface-selected: #E4FAF3;
     --ds-surface-warning: #FFF7ED;
     --ds-theme-toggle-hover: #EAF1EE;
     --ds-overlay: rgb(22 33 27 / 0.46);
@@ -5482,7 +5482,7 @@ html[data-active-tab="documentation"] .tab[data-tab="documentation"] {
     --ds-metric-fp-text: #24489C;
     --ds-metric-pac: #C77414;
     --ds-metric-pac-text: #8F5407;
-    --ds-metric-mix: #1D5C4D;
+    --ds-metric-mix: #41E0B4;
     --ds-metric-mix-text: #1D5C4D;
     --ds-metric-extra: #5F6E65;
 
@@ -5564,7 +5564,7 @@ html[data-theme="dark"] {
     --ds-surface-raised: #171D1A;
     --ds-surface-panel: #1D2622;
     --ds-surface-muted: #1D2622;
-    --ds-surface-selected: #263129;
+    --ds-surface-selected: #1D372E;
     --ds-surface-warning: #2A2013;
     --ds-theme-toggle-hover: #243029;
     --ds-overlay: rgb(2 6 5 / 0.72);
@@ -5596,8 +5596,8 @@ html[data-theme="dark"] {
     --ds-metric-fp-text: #7C9FF2;
     --ds-metric-pac: #E5A44C;
     --ds-metric-pac-text: #E5A44C;
-    --ds-metric-mix: #4FB99F;
-    --ds-metric-mix-text: #4FB99F;
+    --ds-metric-mix: #41E0B4;
+    --ds-metric-mix-text: #41E0B4;
     --ds-metric-extra: #8FA095;
 
     --ds-hero: var(--ds-surface);
@@ -6582,12 +6582,6 @@ html[data-theme="dark"] .theme-toggle:focus-visible {
     border-color: var(--ds-border-soft);
 }
 
-.year-answer-card.main,
-html[data-theme="dark"] .year-answer-card.main {
-    background: var(--ds-surface-raised);
-    border-color: var(--ds-border-soft);
-}
-
 /* Guide page: nested content blocks share one surface in both themes.
    Disclaimer and footer stay transparent so the page bottom has no extra band. */
 .docs-comparison-card,
@@ -7384,8 +7378,8 @@ body {
 }
 
 .year-answer-card.main {
-    background: var(--ds-surface-panel);
-    border-color: #A5C3B4;
+    background: var(--ds-surface-selected);
+    border-color: rgb(65 224 180 / 0.55);
 }
 
 a.logo {
