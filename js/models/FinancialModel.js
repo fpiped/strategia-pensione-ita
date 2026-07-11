@@ -97,7 +97,7 @@ export class FinancialModel {
         contributiInps: Math.max(redditoFiscaleAnno - imponibileIrpef, 0),
         irpefLorda,
         addizionali,
-        aliquotaMarginale: imponibileIrpef <= 28000 ? 23 : imponibileIrpef <= 50000 ? 35 : 43,
+        aliquotaMarginale: imponibileIrpef <= 28000 ? 23 : imponibileIrpef <= 50000 ? 33 : 43,
         impostaAnnoLorda: irpefLorda + addizionali,
         limiteAnno,
         deduzioneUsata,
