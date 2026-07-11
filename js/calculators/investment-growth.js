@@ -24,6 +24,7 @@ export function calculateEffectiveTaxRate(quotaAgevolataPerc = 0, aliquotaAgevol
 export function calculateNetAnnualReturn(rendimento, {
   mode = 'netto',
   costiAnnui = 0,
+  costoFissoAnnuo = 0,
   taxRate = 0,
   taxTiming = 'none'
 } = {}) {
@@ -44,7 +45,9 @@ export function applyFpAnnualGrowth(montante, contributo, rendimento, options = 
     ...options,
     taxTiming: options.mode === 'lordo' ? 'annual' : 'none'
   });
-  return Math.max((montante * (1 + netReturn)) + contributo, 0);
+  const fixedCost = options.mode === 'lordo' && (montante > 0 || contributo > 0)
+    ? Math.max(options.costoFissoAnnuo || 0, 0) : 0;
+  return Math.max((montante * (1 + netReturn)) + contributo - fixedCost, 0);
 }
 
 export function applyPacAnnualGrowth(montante, contributo, rendimento, options = {}) {
@@ -52,7 +55,9 @@ export function applyPacAnnualGrowth(montante, contributo, rendimento, options =
     ...options,
     taxTiming: 'exit'
   });
-  return Math.max((montante * (1 + netReturnBeforeExitTax)) + contributo, 0);
+  const fixedCost = options.mode === 'lordo' && (montante > 0 || contributo > 0)
+    ? Math.max(options.costoFissoAnnuo || 0, 0) : 0;
+  return Math.max((montante * (1 + netReturnBeforeExitTax)) + contributo - fixedCost, 0);
 }
 
 export function projectFpContribution(contributo, rendimento, anni, options = {}) {
@@ -113,6 +118,7 @@ export function calculatePacExit(montante, investimentoTotale, { mode = 'netto',
 export function createGrowthOptions({
   mode = 'netto',
   costiAnnui = 0,
+  costoFissoAnnuo = 0,
   quotaAgevolataPerc = 0,
   aliquotaAgevolata = 0.125,
   aliquotaOrdinaria = 0.26
@@ -121,6 +127,7 @@ export function createGrowthOptions({
   return {
     mode,
     costiAnnui: Math.min(Math.max(costiAnnui, 0), 1),
+    costoFissoAnnuo: Math.max(costoFissoAnnuo, 0),
     quotaAgevolataPerc: Math.min(Math.max(quotaAgevolataPerc, 0), 1),
     taxRate
   };

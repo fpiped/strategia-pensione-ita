@@ -444,7 +444,6 @@ export class FinancialView {
       yearSelect.value = String(safeYear);
 
       const row = results.find((item) => item.anno === safeYear) || results[0];
-      const previousRow = results.find((item) => item.anno === safeYear - 1);
       const setText = (id, value) => {
         const element = document.getElementById(id);
         if (element) element.textContent = value;
@@ -472,8 +471,6 @@ export class FinancialView {
       const exitMix = row.exitMix || 0;
       const exitFp = row.exitFp || 0;
       const exitPac = row.exitPac || 0;
-      const deltaFp = exitMix - exitFp;
-      const deltaPac = exitMix - exitPac;
 
       setText('annual-exit-value', money(exitMix));
       setText('annual-choice-value', this.formatChoiceLabel(row.scelta || '-'));
@@ -496,54 +493,76 @@ export class FinancialView {
       setText('annual-net-tax-value', money(e.impostaNetta));
       setText('annual-bonuses-value', `+${money(e.trattamentoIntegrativo + e.bonusCuneo)}`);
 
-      // Step 2 - Capienza e limite deduzione
-      const notaUtile = e.deduzioneUtile >= e.limiteAnno
-        ? "L'imposta netta copre tutto il limite: ogni euro dedotto genera risparmio."
-        : e.deduzioneUtile <= 0
-          ? 'Le detrazioni azzerano già l\'imposta: nessuna deduzione produce risparmio quest\'anno.'
-          : `Le detrazioni riducono la deduzione utile a ~${money(e.deduzioneUtile)}: oltre, il risparmio si ferma.`;
+      // Step 2 - Limite di deduzione: nessuna stima di capienza fiscale;
+      // qui si mostra solo il limite normativo esatto e come viene occupato.
       setText('annual-limit-step-value', moneyExact(e.limiteAnno));
-      setText('annual-limit-formula', `Limite anno = ${moneyExact(e.limiteAnno)} ordinario; dedotti ${money(e.deduzioneUsata)} (aderente + datore). ${notaUtile}`);
+      setText('annual-limit-formula', `${moneyExact(e.limiteAnno)} limite - ${money(datore)} datore = ${money(e.limiteDisponibileAderente)} massimo disponibile per te. Usati: ${money(quotaFp)} tuoi + ${money(datore)} datore = ${money(e.deduzioneUsata)}.`);
       setText('annual-limit-ordinary-value', moneyExact(e.limiteAnno));
-      setText('annual-useful-deduction-value', e.deduzioneUtile >= e.limiteAnno ? money(e.limiteAnno) : `~${money(e.deduzioneUtile)}`);
+      setText('annual-employer-limit-value', money(datore));
+      setText('annual-available-limit-value', money(e.limiteDisponibileAderente));
       setText('annual-limit-used-value', `${money(e.deduzioneUsata)} / ${moneyExact(e.limiteAnno)}`);
       setText('annual-limit-headroom-value', money(e.capienzaResidua));
       setText('annual-over-limit-value', money(e.quotaExtraDeduzione));
 
+      // Step 3 - Allocazione e motivazione leggibile.
+      const yearsLeft = Math.max((config.durata || safeYear) - safeYear + 1, 1);
+      const choice = row.scelta || '-';
+      const employerReason = datore > 0
+        ? `${money(e.quotaMinimaStimata)} nel FP sbloccano ${money(datore)} del datore. `
+        : '';
+      const allocationReason = choice === 'FP'
+        ? `Il modello assegna al FP tutta la quota disponibile confrontandone il valore netto a scadenza con il PAC.`
+        : choice === 'PAC'
+          ? `Il modello assegna il budget al PAC perché produce il valore netto prospettico più alto con queste ipotesi.`
+          : `Dopo la quota minima, il modello divide il resto tra FP e PAC scegliendo euro per euro il valore netto più alto a scadenza.`;
       setText('annual-fp-step-value', money(quotaFp));
-      setText('annual-fp-formula', `${money(e.fpBase)} base quota aderente x ${percent((config.quotaMinAderentePerc || 0) * 100)} = ${money(e.quotaMinimaStimata)} quota minima; quota FP scelta = ${money(quotaFp)}.`);
+      setText('annual-fp-formula', `${employerReason}${allocationReason} Orizzonte: ${yearsLeft} anni; rendimenti netti FP/PAC: ${percent((config.rendimentoNettoFpEffettivo || 0) * 100)} / ${percent((config.rendimentoNettoPacEffettivo || 0) * 100)}.`);
       setText('annual-within-min-value', money(e.quotaEntroMinima));
       setText('annual-above-min-value', money(e.quotaExtraMinima));
       setText('annual-employer-value', money(datore));
       setText('annual-deducted-value', money(dedotto));
+      setText('annual-years-left-value', `${yearsLeft} ${yearsLeft === 1 ? 'anno' : 'anni'}`);
+
+      // Step 4 - Busta e bonifico con i due benefici confrontati.
       setText('annual-payroll-step-value', money(quotaBusta + quotaBonifico));
       setText('annual-payroll-formula', `${money(quotaFp)} FP = ${money(quotaBusta)} in busta + ${money(quotaBonifico)} via bonifico.`);
       setText('annual-payroll-value', money(quotaBusta));
       setText('annual-transfer-value', money(quotaBonifico));
+      setText('annual-baseline-saving-value', money(e.risparmioBaselineBusta));
+      setText('annual-all-payroll-saving-value', money(e.risparmioTuttoBusta));
       setText('annual-split-diff-value', signedMoney(e.diffBustaBonifico));
+
+      // Step 5 - Confronto fiscale esatto usato dal modello.
       setText('annual-tax-saving-value', money(risparmio));
-      const notaCapienza = e.impostaNetta <= 0
-        ? ' Capienza esaurita: le detrazioni azzerano già l\'imposta, la deduzione non genera risparmio.'
-        : '';
+      const beforeTax = e.taxComparison?.before || {};
+      const afterTax = e.taxComparison?.after || {};
+      const beforeBonuses = (beforeTax.supplementaryTreatment || 0) + (beforeTax.taxWedgeBonus || 0);
+      const afterBonuses = (afterTax.supplementaryTreatment || 0) + (afterTax.taxWedgeBonus || 0);
       setText('annual-tax-formula', quotaFp > 0
-        ? `${money(quotaFp)} dedotti x ${percent(e.aliquotaEffettiva)} aliquota effettiva = ${money(risparmio)} risparmio (IRPEF + addizionali + detrazioni).${notaCapienza}`
-        : `Nessuna quota FP dedotta quest'anno: risparmio fiscale 0 €.${notaCapienza}`);
+        ? `${money(beforeTax.fiscalCost)} costo fiscale senza FP - (${money(afterTax.fiscalCost)} con FP) = ${money(risparmio)} beneficio effettivo.`
+        : `Nessuna quota FP dedotta: il costo fiscale non cambia e il beneficio è 0 €.`);
+      setText('annual-taxable-before-after-value', `${money(beforeTax.taxableIncome)} → ${money(afterTax.taxableIncome)}`);
+      setText('annual-gross-tax-before-after-value', `${money((beforeTax.grossIncomeTax || 0) + (beforeTax.localTaxes || 0))} → ${money((afterTax.grossIncomeTax || 0) + (afterTax.localTaxes || 0))}`);
+      setText('annual-deduction-before-after-value', `${money(beforeTax.employeeDeduction)} → ${money(afterTax.employeeDeduction)}`);
+      setText('annual-bonus-before-after-value', `${money(beforeBonuses)} → ${money(afterBonuses)}`);
+      setText('annual-fiscal-cost-before-after-value', `${money(beforeTax.fiscalCost)} → ${money(afterTax.fiscalCost)}`);
       setText('annual-effective-rate-value', quotaFp > 0 ? percent(e.aliquotaEffettiva) : '-');
-      setText('annual-tax-before-after-value', `${money(e.impostaAnnoLorda)} → ${money(e.impostaAnnoLorda - risparmio)}`);
-      setText('annual-capienza-cap-value', money(e.impostaNetta));
+
+      // Step 6 - Riconciliazione completa dell'exit.
       setText('annual-exit-step-value', money(exitMix));
-      setText('annual-exit-formula', previousRow
-        ? `Da ${money(previousRow.exitMix || 0)} a ${money(exitMix)}; delta vs FP ${signedMoney(deltaFp)}, delta vs PAC ${signedMoney(deltaPac)}.`
-        : `Primo anno: exit ottimale ${money(exitMix)}; delta vs FP ${signedMoney(deltaFp)}, delta vs PAC ${signedMoney(deltaPac)}.`);
-      setText('annual-exit-contrib-fp-value', money(e.versatoFp));
-      setText('annual-exit-contrib-pac-value', money(e.versatoPac));
+      setText('annual-exit-formula', `${money(e.montanteFp)} FP + ${money(e.montantePac)} PAC - ${money(e.impostaUscitaFp)} imposta FP - ${money(e.impostaUscitaPac)} imposta PAC + ${money(e.risparmioInExit)} beneficio fiscale = ${money(exitMix)} netto.`);
+      setText('annual-montante-fp-value', `${money(e.montanteFp)} (${money(e.versatoFp)} versati)`);
+      setText('annual-montante-pac-value', `${money(e.montantePac)} (${money(e.versatoPac)} versati)`);
+      setText('annual-growth-value', `+${money((e.rendimentoFpAnno || 0) + (e.rendimentoPacAnno || 0))}`);
+      setText('annual-fixed-costs-value', `-${money((e.costoFissoFpAnno || 0) + (e.costoFissoPacAnno || 0))} (FP ${money(e.costoFissoFpAnno || 0)} · PAC ${money(e.costoFissoPacAnno || 0)})`);
       setText('annual-exit-fp-tax-label', config.riscattoAnticipato
         ? 'Riscatto anticipato: aliquota fissa'
         : `15% → 9%: ${e.anniPartecipazione} anni di partecipazione`);
       setText('annual-exit-fp-tax-value', `${percent(e.tassoUscitaFp * 100)} ≈ -${money(e.impostaUscitaFp)}`);
       setText('annual-exit-pac-tax-value', e.pacTassatoInUscita
-        ? `${percent(e.aliquotaPacUscita)} sul gain`
-        : 'Già inclusa nel rendimento netto');
+        ? `${percent(e.aliquotaPacUscita)} sul gain ≈ -${money(e.impostaUscitaPac)}`
+        : `${money(0)} · già inclusa nel rendimento netto`);
+      setText('annual-saving-in-exit-value', `+${money(e.risparmioInExit)}`);
       setText('annual-exit-fp-value', money(exitFp));
       setText('annual-exit-pac-value', money(exitPac));
     }

@@ -10,6 +10,7 @@
  * Con una sola fonte di verità non serve più copiare i valori campo per
  * campo tra pannello e guidata: scrivere nello store aggiorna entrambi.
  */
+import { CURRENT_FISCAL_RULES } from './constants/fiscal-rules.js';
 
 const MONEY_MAX = 1000000;
 
@@ -61,6 +62,8 @@ export const FIELDS = [
   { key: 'rendimentoPacMode', type: 'select', panel: 'rendimentoPacMode', guided: 'guided-rendimento-pac-mode' },
   { key: 'costiAnnuiFpPerc', type: 'number', panel: 'costiAnnuiFpPerc', guided: 'guided-costi-fp', min: 0, max: 5 },
   { key: 'costiAnnuiPacPerc', type: 'number', panel: 'costiAnnuiPacPerc', guided: 'guided-costi-pac', min: 0, max: 5 },
+  { key: 'costiFissiFp', type: 'number', panel: 'costiFissiFp', guided: 'guided-costi-fissi-fp', min: 0, max: 10000 },
+  { key: 'costiFissiPac', type: 'number', panel: 'costiFissiPac', guided: 'guided-costi-fissi-pac', min: 0, max: 10000 },
   { key: 'quotaAgevolataFpPerc', type: 'number', panel: 'quotaAgevolataFpPerc', guided: 'guided-quota-agevolata-fp', min: 0, max: 100 },
   { key: 'quotaAgevolataPacPerc', type: 'number', panel: 'quotaAgevolataPacPerc', guided: 'guided-quota-agevolata-pac', min: 0, max: 100 },
 
@@ -71,12 +74,12 @@ export const FIELDS = [
   { key: 'comuneAddizionali', type: 'hidden-text', panel: 'comuneAddizionali', guided: 'guided-comune-addizionali' },
   { key: 'comuneAddizionaliSearch', type: 'text', panel: 'comuneAddizionaliSearch', guided: 'guided-comune-addizionali-search' },
 
-  // Parametri fissi presenti solo come input hidden del pannello: letti una
-  // volta al load, non hanno controparte visibile da tenere allineata.
+  // Parametri fissi non visibili: i default arrivano dalle regole fiscali
+  // dell'anno corrente, senza duplicarli nell'HTML.
   { key: 'contributoDatoreFisso', type: 'hidden-number', panel: 'contributoDatoreFisso', fallback: 0 },
-  { key: 'massimaleContributivoInps', type: 'hidden-number', panel: 'massimaleContributivoInps', fallback: 120607 },
-  { key: 'sogliaIvsAggiuntivo', type: 'hidden-number', panel: 'sogliaIvsAggiuntivo', fallback: 55448 },
-  { key: 'aliquotaIvsAggiuntivaPerc', type: 'hidden-number', panel: 'aliquotaIvsAggiuntivaPerc', fallback: 1 }
+  { key: 'massimaleContributivoInps', type: 'hidden-number', panel: 'massimaleContributivoInps', fallback: CURRENT_FISCAL_RULES.inps.contributionCeiling },
+  { key: 'sogliaIvsAggiuntivo', type: 'hidden-number', panel: 'sogliaIvsAggiuntivo', fallback: CURRENT_FISCAL_RULES.inps.additionalIvsThreshold },
+  { key: 'aliquotaIvsAggiuntivaPerc', type: 'hidden-number', panel: 'aliquotaIvsAggiuntivaPerc', fallback: CURRENT_FISCAL_RULES.inps.additionalIvsRate * 100 }
 ];
 
 const resolveBound = (bound, state) => (typeof bound === 'function' ? bound(state) : bound);

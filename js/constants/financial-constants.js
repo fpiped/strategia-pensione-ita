@@ -1,24 +1,28 @@
+import { CURRENT_FISCAL_RULES } from './fiscal-rules.js';
+
+const rules = CURRENT_FISCAL_RULES;
+
 export const FINANCIAL_CONSTANTS = {
-  LIMITE_DEDUZIONE_FP: 5300,
-  CONTRIBUTI_INPS_DEFAULT: 0.0919,
-  MASSIMALE_CONTRIBUTIVO_INPS: 120607,
-  SOGLIA_IVS_AGGIUNTIVO: 55448,
-  ALIQUOTA_IVS_AGGIUNTIVO: 0.01,
-  TRATTAMENTO_INTEGRATIVO_IMPORTO: 1200,
-  TRATTAMENTO_INTEGRATIVO_SOGLIA_PIENA: 15000,
-  TRATTAMENTO_INTEGRATIVO_SOGLIA_MAX: 28000,
-  BONUS_CUNEO_SOGLIA_1: 8500,
-  BONUS_CUNEO_SOGLIA_2: 15000,
-  BONUS_CUNEO_SOGLIA_3: 20000,
-  BONUS_CUNEO_SOGLIA_4: 32000,
-  BONUS_CUNEO_SOGLIA_5: 40000,
-  BONUS_CUNEO_ALIQUOTA_1: 0.071,
-  BONUS_CUNEO_ALIQUOTA_2: 0.053,
-  BONUS_CUNEO_ALIQUOTA_3: 0.048,
-  BONUS_CUNEO_DETRAZIONE_PIENA: 1000,
-  TASSAZIONE_RENDIMENTI_AGEVOLATA: 0.125,
-  TASSAZIONE_RENDIMENTI_FP_ORDINARIA: 0.20,
-  TASSAZIONE_RENDIMENTI_PAC_ORDINARIA: 0.26
+  LIMITE_DEDUZIONE_FP: rules.pensionFund.deductionLimit,
+  CONTRIBUTI_INPS_DEFAULT: rules.inps.employeeRate,
+  MASSIMALE_CONTRIBUTIVO_INPS: rules.inps.contributionCeiling,
+  SOGLIA_IVS_AGGIUNTIVO: rules.inps.additionalIvsThreshold,
+  ALIQUOTA_IVS_AGGIUNTIVO: rules.inps.additionalIvsRate,
+  TRATTAMENTO_INTEGRATIVO_IMPORTO: rules.supplementaryTreatment.amount,
+  TRATTAMENTO_INTEGRATIVO_SOGLIA_PIENA: rules.supplementaryTreatment.fullThreshold,
+  TRATTAMENTO_INTEGRATIVO_SOGLIA_MAX: rules.supplementaryTreatment.maximumThreshold,
+  BONUS_CUNEO_SOGLIA_1: rules.taxWedgeBonus.thresholds[0],
+  BONUS_CUNEO_SOGLIA_2: rules.taxWedgeBonus.thresholds[1],
+  BONUS_CUNEO_SOGLIA_3: rules.taxWedgeBonus.thresholds[2],
+  BONUS_CUNEO_SOGLIA_4: rules.taxWedgeBonus.thresholds[3],
+  BONUS_CUNEO_SOGLIA_5: rules.taxWedgeBonus.thresholds[4],
+  BONUS_CUNEO_ALIQUOTA_1: rules.taxWedgeBonus.rates[0],
+  BONUS_CUNEO_ALIQUOTA_2: rules.taxWedgeBonus.rates[1],
+  BONUS_CUNEO_ALIQUOTA_3: rules.taxWedgeBonus.rates[2],
+  BONUS_CUNEO_DETRAZIONE_PIENA: rules.taxWedgeBonus.fullDeduction,
+  TASSAZIONE_RENDIMENTI_AGEVOLATA: rules.investmentTax.governmentBondsRate,
+  TASSAZIONE_RENDIMENTI_FP_ORDINARIA: rules.investmentTax.pensionFundOrdinaryRate,
+  TASSAZIONE_RENDIMENTI_PAC_ORDINARIA: rules.investmentTax.pacOrdinaryRate
 };
 
 /**

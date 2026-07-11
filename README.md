@@ -80,7 +80,9 @@ npm run test:e2e
 
 Il progetto e una single-page app statica in HTML, CSS e JavaScript vanilla.
 
-Chart.js e i font (Inter per l'interfaccia, IBM Plex Mono per i numeri) sono vendorizzati in `vendor/`; le icone sono un sottoinsieme di Lucide reso inline nel modulo `js/icons.js`; la mascotte (`vendor/img/mascotte.svg`, nel verde acqua brand identico nei due temi) è l'unica fonte del disegno: compare nel masthead e, resa in PNG su fondo scuro, fa da immagine social (`vendor/img/og.png`). La pagina non fa richieste a CDN esterne (l'unica chiamata a terzi e il contatore visite di counterapi.dev). Le aliquote regionali e comunali sono incluse come dataset locale normalizzato; le comunali (`js/constants/local-tax-data.js`, ~700 KB) si caricano con `import()` dinamico solo quando serve la modalità "Da località". Il repository non contiene una pipeline di import o scraping dei dati sorgente.
+Chart.js e i font (Inter per l'interfaccia, IBM Plex Mono per i numeri) sono vendorizzati in `vendor/`; le icone sono un sottoinsieme di Lucide reso inline nel modulo `js/icons.js`; l'illustrazione vettoriale del masthead (`vendor/img/mascotte.svg`) usa colori con contrasto stabile nei due temi. La pagina non fa richieste a servizi o CDN esterni. Le aliquote regionali e comunali sono incluse come dataset locale normalizzato; le comunali (`js/constants/local-tax-data.js`, ~700 KB) si caricano con `import()` dinamico solo quando serve la modalità "Da località". Il repository non contiene una pipeline di import o scraping dei dati sorgente.
+
+Le regole fiscali nazionali sono centralizzate e versionate per anno in `js/constants/fiscal-rules.js`. La stessa configurazione alimenta formule, valori predefiniti e l'elenco delle fonti nella pagina Informazioni, evitando duplicazioni tra modello e documentazione.
 
 ## Design system
 

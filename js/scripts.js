@@ -4,21 +4,12 @@
  */
 import { renderSiteIcons } from './icons.js';
 import { HELP_CONTENT } from './constants/help-content.js';
+import { renderFiscalRulesDocumentation } from './views/fiscal-rules-view.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     setupSiteIcons();
     setupThemeToggle();
-
-    // Contatore visite (counterapi.dev): un incremento per caricamento;
-    // se il servizio non risponde, il chip resta nascosto.
-    fetch('https://api.counterapi.dev/v1/strategia-pensione-fpiped/homepage/up')
-        .then(function(response) { return response.json(); })
-        .then(function(data) {
-            if (!data || !Number.isFinite(data.count)) return;
-            document.getElementById('visit-count').textContent = data.count.toLocaleString('it-IT');
-            document.getElementById('visit-counter').hidden = false;
-        })
-        .catch(function() { /* offline o servizio non disponibile */ });
+    renderFiscalRulesDocumentation();
 
     // Inizializza la navigazione a tab
     setupTabs();
