@@ -7410,6 +7410,16 @@ a.logo:hover h1 {
     }
 }
 
+/* Riquadri formula (esploratore) ed esempi (informazioni): scavo a tinta
+   pagina invece del verdino salvia, testo inchiostro a peso pieno. */
+.step-formula,
+.docs-section pre {
+    color: var(--ds-text);
+    font-weight: 500;
+    background: var(--ds-page);
+    border-color: var(--ds-border-soft);
+}
+
 /* Masthead mobile: compatto — titolo ridotto, CTA a tutta larghezza,
    secondari affiancati. */
 @media (max-width: 768px) {
