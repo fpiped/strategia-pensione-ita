@@ -17,11 +17,9 @@ import {
   applyPeriodicVariation,
   calculateEmployerContribution,
   getAvailableDeductionLimit,
-  getInitialEmployerContribution,
   getTotalDeductionLimit,
   resolveContributionBase,
-  resolveEmployerContributionBase,
-  splitBudget
+  resolveEmployerContributionBase
 } from '../calculators/pension-contributions.js';
 import {
   applyYearGrowth,
@@ -43,13 +41,13 @@ import { calculateStrategyIrr } from '../calculators/cash-flow-return.js';
  */
 export class FinancialModel {
     /**
-     * Calcola tutti gli scenari finanziari basati sui parametri di input,
-     * usando come input l'investimento personale lordo.
+     * Calcola il piano finanziario ottimale usando come input il sacrificio
+     * netto personale annuo.
      * @param {Object} config - Oggetto di configurazione con tutti i parametri
-     * @returns {Object} Risultati e informazioni sul mix
+     * @returns {Object} Risultati annuali del piano ottimizzato
      */
     calculateResults(config) {
-      return this._simulateStrategies(this._normalizeConfig(config));
+      return this._simulateOptimizedPlan(this._normalizeConfig(config));
     }
 
     /**
@@ -66,7 +64,10 @@ export class FinancialModel {
         applyPeriodicVariation(base || 0, annoRif, tipo, freq || 0, val || 0);
 
       const redditoAnno = varia(config.reddito, config.variazioneRedditoTipo, config.variazioneRedditoFrequenza, config.variazioneRedditoValore);
-      const investimentoAnno = varia(config.investimento, config.variazioneInvestimentoTipo, config.variazioneInvestimentoFrequenza, config.variazioneInvestimentoValore);
+      const investimentoPrevistoAnno = varia(config.investimento, config.variazioneInvestimentoTipo, config.variazioneInvestimentoFrequenza, config.variazioneInvestimentoValore);
+      const investimentoAnno = config.modalitaCumulativa === false && annoRif > 1
+        ? 0
+        : investimentoPrevistoAnno;
       const premiAnno = varia(config.premiStraordinari, config.variazionePremiTipo, config.variazionePremiFrequenza, config.variazionePremiValore);
       const altriRedditiAnno = varia(config.altriRedditi, config.variazioneAltriRedditiTipo, config.variazioneAltriRedditiFrequenza, config.variazioneAltriRedditiValore);
       const fpBase = config.baseContributivaFpTipo === 'ral' || (config.baseContributivaFp || 0) <= 0
@@ -123,7 +124,7 @@ export class FinancialModel {
       const includeTaxSavingsInExit = false;
       const growthOptions = this._createGrowthOptions(config);
       const previousState = results.find((item) => item.anno === annoRif - 1)?._state;
-      const annualState = row._state ? { ...row._state } : this._createStrategyState();
+      const annualState = row._state ? { ...row._state } : this._createPlanState();
       let openingFp = previousState?.montanteFP || 0;
       let openingPac = previousState?.montantePAC || 0;
 
@@ -220,8 +221,8 @@ export class FinancialModel {
         quotaPacOltreLimite: row.quotaPacOltreLimite || 0,
         diffBustaBonifico: row.diffBustaBonifico || 0,
         aliquotaEffettiva: quotaFp > 0 ? (risparmio / quotaFp) * 100 : 0,
-        investimentoPersonaleAnno: quotaFp + (row.quotaPacConsigliata || 0),
-        spesaEffettivaAnno: Math.max(quotaFp + (row.quotaPacConsigliata || 0) - risparmio, 0),
+        investimentoPersonaleAnno: row.investimentoLordo ?? (quotaFp + (row.quotaPacConsigliata || 0)),
+        spesaEffettivaAnno: row.investimentoNetto ?? Math.max(quotaFp + (row.quotaPacConsigliata || 0) - risparmio, 0),
         beneficioInvestitoAnno: risparmio,
         totaleMessoAlLavoroAnno: quotaFp + (row.quotaPacConsigliata || 0) + datore,
         taxComparison,
@@ -260,10 +261,7 @@ export class FinancialModel {
       };
     }
 
-    /**
-     * Applica i default a tutti i parametri: un'unica definizione per
-     * la modalità a investimento personale lordo.
-     */
+    /** Applica i default alla modalità unica a investimento netto. */
     _normalizeConfig(config) {
       const {
         durata, reddito, premiStraordinari = 0, altriRedditi = 0, investimento,
@@ -275,7 +273,7 @@ export class FinancialModel {
         variazioneAltriRedditiValore = 0,
         quotaDatoreFpPerc, contributoDatoreFisso = 0, quotaMinAderentePerc,
         rendimentoAnnualeFpPerc, rendimentoAnnualePacPerc,
-        reinvestiRisparmio, modalitaCumulativa, riscattoAnticipato,
+        modalitaCumulativa, riscattoAnticipato,
         anzianitaPregressaFp = 0,
         contributiInpsPerc = FINANCIAL_CONSTANTS.CONTRIBUTI_INPS_DEFAULT,
         massimaleContributivoInps = FINANCIAL_CONSTANTS.MASSIMALE_CONTRIBUTIVO_INPS,
@@ -312,7 +310,7 @@ export class FinancialModel {
         variazioneAltriRedditiTipo, variazioneAltriRedditiFrequenza, variazioneAltriRedditiValore,
         quotaDatoreFpPerc, contributoDatoreFisso, quotaMinAderentePerc,
         rendimentoAnnualeFpPerc, rendimentoAnnualePacPerc,
-        reinvestiRisparmio, modalitaCumulativa, riscattoAnticipato,
+        modalitaCumulativa, riscattoAnticipato,
         anzianitaPregressaFp,
         contributiInpsPerc, massimaleContributivoInps,
         sogliaIvsAggiuntivo, aliquotaIvsAggiuntivaPerc,
@@ -390,7 +388,7 @@ export class FinancialModel {
         redditoFiscaleAnno: redditoAnno + premiAnno + altriRedditiAnno,
         quotaMinAderente: baseContributivaAnno * cfg.quotaMinAderentePerc,
         quotaDatorePotenziale: this._calculateEmployerContribution(baseDatoreAnno, cfg.quotaDatoreFpPerc, cfg.contributoDatoreFisso),
-        grossInvestmentTarget: cfg.modalitaCumulativa || anno === 1 ? investimentoAnno : 0,
+        netInvestmentTarget: cfg.modalitaCumulativa || anno === 1 ? investimentoAnno : 0,
         // Aliquota "se esci a fine di quest'anno": è quella giusta per le
         // colonne exit della tabella, non per le scelte di allocazione.
         tassazioneFP: this.calcolaTassazioneFp(cfg.anzianitaPregressaFp + anno - 1, cfg.riscattoAnticipato),
@@ -399,23 +397,21 @@ export class FinancialModel {
     }
 
     /**
-     * Loop annuale con vincolo sull'investimento personale lordo:
-     * quota FP personale + quota PAC deve coincidere con l'input.
+     * Loop annuale con un solo piano ottimizzato. L'input è il sacrificio
+     * netto personale e il beneficio fiscale finanzia versamenti aggiuntivi
+     * nello stesso anno:
+     * quota FP personale + quota PAC - beneficio = investimento netto.
      */
-    _simulateStrategies(cfg) {
+    _simulateOptimizedPlan(cfg) {
       const reinvestiRisparmio = false;
       const includeTaxSavingsInExit = false;
 
       const optimizedResults = [];
-      const fpStrategyResults = [];
-      const pacStrategyResults = [];
       const rFP = cfg.rendimentoAnnualeFpPerc;
       const rPAC = cfg.rendimentoAnnualePacPerc;
       const growthOptions = this._createGrowthOptions(cfg);
 
-      const fpPlan = this._createStrategyState();
-      const pacPlan = this._createStrategyState();
-      const recommendedPlan = this._createStrategyState();
+      const recommendedPlan = this._createPlanState();
 
       // L'ottimizzatore valuta ogni contributo a fine piano: l'imposta di
       // uscita va quindi presa all'orizzonte, con l'anzianità completa,
@@ -457,64 +453,15 @@ export class FinancialModel {
           pacAlreadyActive: recommendedPlan.montantePAC > 0
         };
 
-        const recommendedAllocation = this._allocateGrossInvestment(
-          ctx.grossInvestmentTarget,
+        const recommendedAllocation = this._allocateNetInvestment(
+          ctx.netInvestmentTarget,
           optimizerInputs
         );
-
-        // Tutti i benchmark versano lo stesso investimento lordo indicato;
-        // il beneficio fiscale resta in tasca e riduce l'investimento netto.
-        const fpFirst = this._resolveAllFpAllocation({
-          ...optimizerInputs,
-          grossInvestmentTarget: ctx.grossInvestmentTarget,
-          fpAlreadyActive: fpPlan.montanteFP > 0,
-          pacAlreadyActive: fpPlan.montantePAC > 0
-        });
-        const fpAllocation = {
-          quotaDeducibile: fpFirst.quotaFp,
-          quotaFpDeducibile: fpFirst.quotaFpDeducibile,
-          quotaFpNonDeducibile: fpFirst.quotaFpNonDeducibile,
-          quotaExtraPac: fpFirst.quotaPac,
-          quotaDatore: fpFirst.quotaDatore,
-          contributoFpDeducibile: fpFirst.contributoFpDeducibile
-        };
-        const fpPaymentSplit = fpFirst;
-
-        const risparmioFpAnnoEffettivo = fpPaymentSplit.risparmio;
-        const pacContributoAnno = ctx.grossInvestmentTarget;
-        const mixQuote = {
+        const allocationQuote = {
           quotaEntroDedAnno: recommendedAllocation.quotaFpDeducibile,
           quotaExtraDedAnno: recommendedAllocation.quotaPac,
           aderenteAnno: recommendedAllocation.quotaFp + recommendedAllocation.quotaPac
         };
-        const pacQuote = {
-          quotaEntroDedAnno: 0,
-          quotaExtraDedAnno: pacContributoAnno,
-          aderenteAnno: pacContributoAnno
-        };
-
-        this._applyYearGrowth(fpPlan, {
-          fpContributo: fpAllocation.quotaDeducibile + fpAllocation.quotaDatore,
-          fpContributoDeducibile: fpAllocation.contributoFpDeducibile,
-          pacContributo: fpAllocation.quotaExtraPac,
-          risparmioAnno: risparmioFpAnnoEffettivo,
-          rFP,
-          rPAC,
-          fpGrowthOptions: growthOptions.fp,
-          pacGrowthOptions: growthOptions.pac,
-          reinvestiRisparmio
-        });
-        this._applyYearGrowth(pacPlan, {
-          fpContributo: 0,
-          fpContributoDeducibile: 0,
-          pacContributo: pacContributoAnno,
-          risparmioAnno: 0,
-          rFP,
-          rPAC,
-          fpGrowthOptions: growthOptions.fp,
-          pacGrowthOptions: growthOptions.pac,
-          reinvestiRisparmio
-        });
         this._applyYearGrowth(recommendedPlan, {
           fpContributo: recommendedAllocation.quotaFp + recommendedAllocation.quotaDatore,
           fpContributoDeducibile: recommendedAllocation.contributoFpDeducibile,
@@ -526,16 +473,14 @@ export class FinancialModel {
           pacGrowthOptions: growthOptions.pac,
           reinvestiRisparmio
         });
-        const exitFP = this._calculateStrategyExit(fpPlan, ctx.tassazioneFP, reinvestiRisparmio, includeTaxSavingsInExit, growthOptions.pac);
-        const exitPAC = this._calculateStrategyExit(pacPlan, ctx.tassazioneFP, reinvestiRisparmio, includeTaxSavingsInExit, growthOptions.pac);
         const exitRecommended = this._calculateStrategyExit(recommendedPlan, ctx.tassazioneFP, reinvestiRisparmio, includeTaxSavingsInExit, growthOptions.pac);
 
         optimizedResults.push(this._createResultRow({
           anno,
           ...minSplit(recommendedAllocation.quotaFp),
-          quotaEntroDedAnno: mixQuote.quotaEntroDedAnno,
-          quotaExtraDedAnno: mixQuote.quotaExtraDedAnno,
-          aderenteAnno: mixQuote.aderenteAnno,
+          quotaEntroDedAnno: allocationQuote.quotaEntroDedAnno,
+          quotaExtraDedAnno: allocationQuote.quotaExtraDedAnno,
+          aderenteAnno: allocationQuote.aderenteAnno,
           datoreAnno: recommendedAllocation.quotaDatore,
           risparmioAnnoEffettivo: recommendedAllocation.risparmio,
           quotaFpConsigliataAnno: recommendedAllocation.quotaFp,
@@ -548,99 +493,27 @@ export class FinancialModel {
           quotaBonificoAnno: recommendedAllocation.quotaBonifico,
           risparmioOttimizzazioneBustaAnno: recommendedAllocation.extraRisparmioVersamento,
           sceltaAnno: recommendedAllocation.scelta,
-          exitFP,
-          exitPAC,
-          exitMix: exitRecommended,
-          strategyState: recommendedPlan
-        }));
-
-        fpStrategyResults.push(this._createResultRow({
-          anno,
-          ...minSplit(fpAllocation.quotaDeducibile),
-          quotaEntroDedAnno: fpAllocation.quotaFpDeducibile,
-          quotaExtraDedAnno: fpAllocation.quotaExtraPac,
-          aderenteAnno: fpAllocation.quotaDeducibile + fpAllocation.quotaExtraPac,
-          datoreAnno: fpAllocation.quotaDatore,
-          risparmioAnnoEffettivo: risparmioFpAnnoEffettivo,
-          quotaFpConsigliataAnno: fpAllocation.quotaDeducibile,
-          quotaFpDeducibileAnno: fpAllocation.quotaFpDeducibile,
-          quotaFpNonDeducibileAnno: fpAllocation.quotaFpNonDeducibile,
-          quotaDatoreDeducibileAnno: fpFirst.quotaDatoreDeducibile,
-          quotaPacConsigliataAnno: fpAllocation.quotaExtraPac,
-          quotaPacOltreLimiteAnno: fpFirst.quotaPacOltreLimite,
-          quotaBustaAnno: fpPaymentSplit.quotaBusta,
-          quotaBonificoAnno: fpPaymentSplit.quotaBonifico,
-          risparmioOttimizzazioneBustaAnno: fpPaymentSplit.extraRisparmioVersamento,
-          sceltaAnno: 'FP',
-          exitFP,
-          exitPAC,
-          exitMix: exitFP,
-          strategyState: fpPlan
-        }));
-
-        pacStrategyResults.push(this._createResultRow({
-          anno,
-          ...minSplit(pacQuote.quotaEntroDedAnno),
-          quotaEntroDedAnno: pacQuote.quotaEntroDedAnno,
-          quotaExtraDedAnno: pacQuote.quotaExtraDedAnno,
-          aderenteAnno: pacQuote.aderenteAnno,
-          datoreAnno: 0,
-          risparmioAnnoEffettivo: 0,
-          quotaFpConsigliataAnno: 0,
-          quotaFpDeducibileAnno: 0,
-          quotaFpNonDeducibileAnno: 0,
-          quotaDatoreDeducibileAnno: 0,
-          quotaPacConsigliataAnno: pacContributoAnno,
-          quotaPacOltreLimiteAnno: Math.max(pacContributoAnno - this._getTotalDeductionLimit(), 0),
-          quotaBustaAnno: 0,
-          quotaBonificoAnno: 0,
-          risparmioOttimizzazioneBustaAnno: 0,
-          sceltaAnno: 'PAC',
-          exitFP,
-          exitPAC,
-          exitMix: exitPAC,
-          strategyState: pacPlan
+          investimentoNettoAnno: ctx.netInvestmentTarget,
+          exitOttimale: exitRecommended,
+          planState: recommendedPlan
         }));
       }
 
-      // La serie principale è l'allocazione ottimizzata a parità di
-      // investimento personale lordo.
-      const finalOptimized = optimizedResults.at(-1).exitMix;
-      const selectedStrategy = { results: optimizedResults, plan: recommendedPlan, exit: finalOptimized };
-      const results = selectedStrategy.results;
+      const finalOptimized = optimizedResults.at(-1).exitOttimale;
+      const optimizedPlan = { results: optimizedResults, plan: recommendedPlan, exit: finalOptimized };
+      const results = optimizedPlan.results;
 
       return {
         results,
-        // Serie complete per vista tabella/esploratore per strategia.
-        strategies: {
-          mix: results,
-          fp: fpStrategyResults,
-          pac: pacStrategyResults
-        },
         tir: {
-          // Il TIR "ottimale" viene dalla serie effettivamente selezionata:
-          // serie, exit e TIR devono raccontare lo stesso scenario.
-          mix: calculateStrategyIrr(results),
-          fp: calculateStrategyIrr(fpStrategyResults),
-          pac: calculateStrategyIrr(pacStrategyResults)
+          optimal: calculateStrategyIrr(results)
         },
-        breakeven: this._calculateFirstFullFpYear(results),
-        risparmioImposta: Math.round(selectedStrategy.plan.risparmioAccumulato),
-        quotaDatoreFp: this._getInitialEmployerContribution({
-          reddito: cfg.reddito,
-          investimento: cfg.investimento,
-          quotaDatoreFpPerc: cfg.quotaDatoreFpPerc,
-          contributoDatoreFisso: cfg.contributoDatoreFisso,
-          quotaMinAderentePerc: cfg.quotaMinAderentePerc,
-          baseContributivaFpTipo: cfg.baseContributivaFpTipo,
-          baseContributivaFp: cfg.baseContributivaFp,
-          baseDatoreFpTipo: cfg.baseDatoreFpTipo,
-          baseDatoreFp: cfg.baseDatoreFp
-        })
+        risparmioImposta: Math.round(optimizedPlan.plan.risparmioAccumulato),
+        quotaDatoreFp: results[0]?.quotaDatore || 0
       };
     }
 
-    _createStrategyState() {
+    _createPlanState() {
       return {
         montanteFP: 0,
         contributiFP: 0,
@@ -699,30 +572,6 @@ export class FinancialModel {
       });
     }
 
-    _getInitialEmployerContribution({
-      reddito,
-      investimento,
-      quotaDatoreFpPerc,
-      contributoDatoreFisso = 0,
-      quotaMinAderentePerc,
-      baseContributivaFpTipo = 'ral',
-      baseContributivaFp = 0,
-      baseDatoreFpTipo = 'same',
-      baseDatoreFp = 0
-    }) {
-      return getInitialEmployerContribution({
-        reddito,
-        investimento,
-        quotaDatoreFpPerc,
-        contributoDatoreFisso,
-        quotaMinAderentePerc,
-        baseContributivaFpTipo,
-        baseContributivaFp,
-        baseDatoreFpTipo,
-        baseDatoreFp
-      });
-    }
-
     _calculateEmployerContribution(baseContributiva, quotaDatoreFpPerc, contributoDatoreFisso = 0) {
       return calculateEmployerContribution(baseContributiva, quotaDatoreFpPerc, contributoDatoreFisso);
     }
@@ -735,16 +584,13 @@ export class FinancialModel {
       return getAvailableDeductionLimit(quotaDatore);
     }
 
-    _splitBudget(budget, quotaMinAderente, quotaDatorePotenziale) {
-      return splitBudget(budget, quotaMinAderente, quotaDatorePotenziale);
-    }
-
     /**
-     * Cerca la quota FP euro per euro, imponendo il vincolo:
-     * quota FP personale + quota PAC = investimento lordo indicato.
+     * Cerca la quota FP euro per euro. Per ogni candidato ricalcola il
+     * beneficio fiscale e investe nel PAC la capacità netta residua:
+     * quota FP personale + quota PAC - beneficio = investimento netto.
      */
     _optimizeAllocation({
-      grossInvestmentTarget,
+      netInvestmentTarget,
       quotaMinAderente,
       quotaDatorePotenziale,
       reddito,
@@ -766,7 +612,7 @@ export class FinancialModel {
       fpAlreadyActive = false,
       pacAlreadyActive = false
     }) {
-      if (!Number.isFinite(grossInvestmentTarget) || grossInvestmentTarget <= 0) {
+      if (!Number.isFinite(netInvestmentTarget) || netInvestmentTarget <= 0) {
         return {
           quotaFp: 0,
           quotaFpDeducibile: 0,
@@ -780,7 +626,7 @@ export class FinancialModel {
           risparmio: 0,
           quotaBusta: 0,
           quotaBonifico: 0,
-          scelta: 'PAC'
+          scelta: 'NESSUNO'
         };
       }
 
@@ -844,22 +690,28 @@ export class FinancialModel {
           limiteDeduzioneTotale
         });
         const risparmio = paymentSplit.risparmio;
-        if (quotaFp > grossInvestmentTarget + 0.005) continue;
-        const surplus = Math.max(grossInvestmentTarget - quotaFp, 0);
+        const grossInvestmentAvailable = netInvestmentTarget + risparmio;
+        // Il candidato è sostenibile solo se il suo costo netto non supera
+        // il budget. Il PAC assorbe l'eventuale capacità residua.
+        if (quotaFp > grossInvestmentAvailable + 0.005) continue;
+        const surplus = Math.max(grossInvestmentAvailable - quotaFp, 0);
         // L'eccedenza oltre la quota FP dedotta va allo strumento che rende
         // di più per euro versato: PAC (tassato sul gain all'exit) oppure
         // FP non dedotto (rendimento del fondo, esente in uscita). Così
         // l'ottimale può degenerare in "tutto FP" quando conviene davvero.
         const pacPerEuro = this._calculatePacExit(pacFactor, 1, pacExitOptions);
         const surplusToFp = surplus > 0 && fpFactor > pacPerEuro + 1e-9;
-        const quotaPac = surplusToFp ? 0 : surplus;
-        const quotaFpExtra = surplusToFp ? surplus : 0;
+        // Anche l'eventuale FP non dedotto resta sulla griglia da 1 euro.
+        // I centesimi residui rimangono nel PAC, che garantisce sempre la
+        // riconciliazione esatta del budget netto.
+        const quotaFpExtra = surplusToFp ? Math.floor(surplus) : 0;
+        const quotaPac = surplus - quotaFpExtra;
         const quotaFpTotale = quotaFp + quotaFpExtra;
         const quotaFpNonDeducibileTotale = quotaFpNonDeducibile + quotaFpExtra;
         const quotaPacOltreLimite = Math.max((quotaFpTotale + quotaPac) - massimoFpAmmesso, 0);
         const fpContributo = quotaFpTotale + quotaDatore;
-        // Il beneficio fiscale è già capacità di investimento nello stesso
-        // anno: non va sommato una seconda volta al valore di uscita.
+        // Il beneficio fiscale è già confluito in quota FP + quota PAC:
+        // non va sommato una seconda volta al valore di uscita.
         const fpFixedDrag = !fpAlreadyActive && fpContributo > 0
           ? this._projectFixedCostDrag(fpGrowthOptions, rFP, anniResidui, true) : 0;
         const pacFixedDrag = !pacAlreadyActive && quotaPac > 0
@@ -872,9 +724,7 @@ export class FinancialModel {
         ) * tassazioneFpScadenza);
         const pacNetto = this._calculatePacExit(Math.max((quotaPac * pacFactor) - pacFixedDrag, 0), quotaPac, pacExitOptions);
         const totaleNetto = fpNetto + pacNetto;
-        // A parità di investimento lordo la spesa varia col beneficio: si
-        // massimizza exit meno spesa, cioè valore netto + risparmio fiscale.
-        const valore = totaleNetto + risparmio;
+        const valore = totaleNetto;
 
         if (!best || valore > best.valore) {
           best = {
@@ -899,7 +749,7 @@ export class FinancialModel {
       }
 
       if (!best) {
-        const fallbackPac = grossInvestmentTarget;
+        const fallbackPac = netInvestmentTarget;
         best = {
           quotaFp: 0,
           quotaFpDeducibile: 0,
@@ -928,87 +778,12 @@ export class FinancialModel {
     }
 
     /**
-     * Costruisce il benchmark "FP a deduzione + PAC": versa l'investimento
-     * lordo indicato, riempie il FP fino al plafond e destina il resto al PAC.
+     * Il target netto è sempre raggiungibile perché il PAC assorbe il
+     * residuo di ogni quota FP sostenibile, anche in presenza di cliff.
      */
-    _resolveAllFpAllocation({
-      grossInvestmentTarget,
-      quotaMinAderente,
-      quotaDatorePotenziale,
-      reddito,
-      altriRedditi = 0,
-      contributiInpsPerc,
-      massimaleContributivoInps,
-      sogliaIvsAggiuntivo,
-      aliquotaIvsAggiuntivaPerc,
-      addizionaliPerc,
-      ulterioriDetrazioni,
-      modalitaVersamentoFp
-    }) {
-      const limiteDeduzioneTotale = this._getTotalDeductionLimit();
-
-      const evaluate = (amount) => {
-        const quotaFp = Math.max(amount, 0);
-        const quotaDatore = quotaFp >= quotaMinAderente ? quotaDatorePotenziale : 0;
-        const limitePersonale = this._getAvailableDeductionLimit(quotaDatore);
-        const quotaFpDeducibile = Math.min(quotaFp, limitePersonale);
-        const quotaFpNonDeducibile = Math.max(quotaFp - quotaFpDeducibile, 0);
-        const quotaDatoreDeducibile = Math.min(quotaDatore, limiteDeduzioneTotale);
-        const quotaDatoreNonDeducibile = Math.max(quotaDatore - quotaDatoreDeducibile, 0);
-        const contributoFpDeducibile = Math.min(
-          quotaFpDeducibile + quotaDatoreDeducibile,
-          limiteDeduzioneTotale
-        );
-        const paymentSplit = this._chooseBestPaymentSplit({
-          quotaFp,
-          quotaDatore,
-          quotaMinAderente,
-          modalitaVersamentoFp,
-          reddito,
-          altriRedditi,
-          contributiInpsPerc,
-          massimaleContributivoInps,
-          sogliaIvsAggiuntivo,
-          aliquotaIvsAggiuntivaPerc,
-          addizionaliPerc,
-          ulterioriDetrazioni,
-          limiteDeduzioneTotale
-        });
-        return {
-          quotaFp,
-          quotaFpDeducibile,
-          quotaFpNonDeducibile,
-          quotaPac: 0,
-          quotaPacOltreLimite: 0,
-          quotaDatore,
-          quotaDatoreDeducibile,
-          quotaDatoreNonDeducibile,
-          contributoFpDeducibile,
-          ...paymentSplit,
-          costoEffettivo: quotaFp - paymentSplit.risparmio
-        };
-      };
-
-      const threshold = Math.max(quotaMinAderente, 0);
-      const capSenzaDatore = this._getAvailableDeductionLimit(0);
-      const capConDatore = Math.max(this._getAvailableDeductionLimit(quotaDatorePotenziale), threshold);
-
-      const target = Math.max(grossInvestmentTarget, 0);
-      const cap = target >= threshold ? capConDatore : capSenzaDatore;
-      const result = evaluate(Math.min(target, cap));
-      return { ...result, quotaPac: Math.max(target - result.quotaFp, 0), scelta: 'FP' };
-    }
-
-    /**
-     * Con input "Investimento" il vincolo sull'importo personale viene
-     * imposto direttamente dentro l'ottimizzatore (grossInvestmentTarget):
-     * il target è rispettato esattamente anche in presenza di cliff
-     * fiscali che rendono il beneficio discontinuo. La spesa netta è
-     * derivata a valle: investimento − beneficio.
-     */
-    _allocateGrossInvestment(targetInvestment, optimizerInputs) {
+    _allocateNetInvestment(targetInvestment, optimizerInputs) {
       const target = Math.max(targetInvestment, 0);
-      return this._optimizeAllocation({ ...optimizerInputs, grossInvestmentTarget: target });
+      return this._optimizeAllocation({ ...optimizerInputs, netInvestmentTarget: target });
     }
 
     _applyYearGrowth(state, {
@@ -1121,13 +896,15 @@ export class FinancialModel {
       quotaBonificoAnno,
       risparmioOttimizzazioneBustaAnno = 0,
       sceltaAnno,
-      exitFP,
-      exitPAC,
-      exitMix,
-      strategyState = null
+      investimentoNettoAnno,
+      exitOttimale,
+      planState = null
     }) {
+      const investimentoLordoAnno = quotaFpConsigliataAnno + quotaPacConsigliataAnno;
       const row = {
         anno,
+        investimentoNetto: Math.round(investimentoNettoAnno),
+        investimentoLordo: Math.round(investimentoLordoAnno),
         quotaEntroMinima: Math.round(quotaEntroMinAnno),
         quotaExtraMinima: Math.round(quotaExtraMinAnno),
         quotaEntroDeduzione: Math.round(quotaEntroDedAnno),
@@ -1145,34 +922,17 @@ export class FinancialModel {
         quotaFpBonifico: Math.round(quotaBonificoAnno),
         diffBustaBonifico: Math.round(risparmioOttimizzazioneBustaAnno),
         scelta: sceltaAnno,
-        exitFp: Math.round(exitFP),
-        exitPac: Math.round(exitPAC),
-        exitMix: Math.round(exitMix)
+        exitOttimale: Math.round(exitOttimale)
       };
       // Dettaglio numerico esatto per l'esploratore. Non è enumerabile:
       // CSV, link condivisi e contratto pubblico delle righe restano invariati.
-      if (strategyState) {
+      if (planState) {
         Object.defineProperty(row, '_state', {
-          value: { ...strategyState },
+          value: { ...planState },
           enumerable: false
         });
       }
       return row;
-    }
-
-    /**
-     * Calcola il primo anno in cui tutta la quota deducibile va nel FP.
-     * Prima di questo anno il mix puo comunque usare uno split FP/PAC.
-     * @param {Array} results - Risultati dei calcoli
-     * @returns {number|null} Primo anno FP pieno o null se non avviene
-     */
-    _calculateFirstFullFpYear(results) {
-      for (let i = 0; i < results.length; i++) {
-        if (results[i].scelta === 'FP' || (results[i].quotaFpConsigliata > 0 && results[i].quotaPacConsigliata < 1)) {
-          return results[i].anno;
-        }
-      }
-      return null;
     }
 
     /**
@@ -1438,9 +1198,9 @@ export class FinancialModel {
         ['quotaFpBonifico', 'FP Bonifico'],
         ['diffBustaBonifico', 'Diff Busta'],
         ['scelta', 'Scelta'],
-        ['exitFp', 'Exit FP'],
-        ['exitPac', 'Exit PAC'],
-        ['exitMix', 'Exit Mix']
+        ['investimentoNetto', 'Investimento Netto'],
+        ['investimentoLordo', 'Investimento Lordo'],
+        ['exitOttimale', 'Exit Ottimale']
       ];
 
       const header = columns.map(([, label]) => label).join(',');
