@@ -35,6 +35,11 @@ import {
 } from '../calculators/investment-growth.js';
 import { calculateStrategyIrr } from '../calculators/cash-flow-return.js';
 
+// Un residuo PAC fino a 1 € nasce dalla griglia intera della quota FP e
+// serve soltanto a riconciliare esattamente il budget netto. Resta nei
+// calcoli, ma non trasforma una allocazione sostanzialmente FP in un MIX.
+const TECHNICAL_PAC_RESIDUAL_MAX = 1 + 1e-9;
+
 /**
  * FinancialModel - Contiene tutta la logica di business e i calcoli
  * Calcola l'evoluzione di un singolo investimento nel tempo
@@ -770,7 +775,7 @@ export class FinancialModel {
 
       const scelta = best.quotaFp < 0.5
         ? 'PAC'
-        : best.quotaPac < 0.5
+        : best.quotaPac <= TECHNICAL_PAC_RESIDUAL_MAX
           ? 'FP'
           : 'MIX';
 
@@ -924,6 +929,20 @@ export class FinancialModel {
         scelta: sceltaAnno,
         exitOttimale: Math.round(exitOttimale)
       };
+      // Mantiene le quote non arrotondate per distinguere un vero PAC da un
+      // residuo tecnico. La proprietà non entra in CSV, link o Object.keys.
+      Object.defineProperty(row, '_allocation', {
+        value: {
+          quotaFp: quotaFpConsigliataAnno,
+          quotaPac: quotaPacConsigliataAnno,
+          investimentoLordo: investimentoLordoAnno,
+          beneficioFiscale: risparmioAnnoEffettivo,
+          pacResidualTechnical: quotaFpConsigliataAnno > 0
+            && quotaPacConsigliataAnno > 0
+            && quotaPacConsigliataAnno <= TECHNICAL_PAC_RESIDUAL_MAX
+        },
+        enumerable: false
+      });
       // Dettaglio numerico esatto per l'esploratore. Non è enumerabile:
       // CSV, link condivisi e contratto pubblico delle righe restano invariati.
       if (planState) {

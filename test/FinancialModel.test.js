@@ -42,6 +42,9 @@ test('calcola lo scenario cumulativo predefinito', () => {
   assert.equal(last.quotaPacConsigliata, 1);
   assert.equal(last.risparmioFiscale, 932);
   assert.equal(last.exitOttimale, 263714);
+  assert.equal(last.scelta, 'FP');
+  assert.equal(last._allocation.pacResidualTechnical, true);
+  assert.ok(last._allocation.quotaPac <= 1);
 });
 
 test('ottimizza solo il versamento dell anno 1 e poi ne segue la crescita', () => {
@@ -729,7 +732,7 @@ test('converte i risultati in CSV con intestazione coerente', () => {
   assert.equal(
     model.convertToCSV(result.results),
     'Anno,Entro Min,Extra Min,Entro Ded,Extra Ded,Aderente,Datore,Risparmio,FP Cons,FP Deducibile,FP Non Deducibile,Datore Deducibile,PAC Cons,PAC Oltre Limite,FP Busta,FP Bonifico,Diff Busta,Scelta,Investimento Netto,Investimento Lordo,Exit Ottimale\r\n' +
-      '1,300,3631,3931,1,3932,450,932,3931,3931,0,450,1,0,300,3631,267,MIX,3000,3932,3724\r\n'
+      '1,300,3631,3931,1,3932,450,932,3931,3931,0,450,1,0,300,3631,267,FP,3000,3932,3724\r\n'
   );
 });
 
