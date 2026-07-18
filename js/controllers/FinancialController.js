@@ -478,7 +478,6 @@ export class FinancialController {
         variazioneAltriRedditiFrequenza: variation('variazioneAltriRedditiAndamento', 'variazioneAltriRedditiFrequenza'),
         variazioneAltriRedditiValore: variation('variazioneAltriRedditiAndamento', 'variazioneAltriRedditiValore'),
         investimento: state.investimento,
-        modalitaConfronto: state.modalitaConfronto,
         variazioneRedditoTipo: state.variazioneRedditoTipo,
         variazioneRedditoFrequenza: variation('variazioneRedditoAndamento', 'variazioneRedditoFrequenza'),
         variazioneRedditoValore: variation('variazioneRedditoAndamento', 'variazioneRedditoValore'),
@@ -897,10 +896,6 @@ export class FinancialController {
       setText(['investment-year1-equivalent-display', 'guided-investment-year1-equivalent-display'], formatMoney(investimentoEffettivo));
       setText(['investment-mode-explanation', 'guided-investment-mode-explanation'], `Quanto esce di tasca dopo ${formatMoney(risparmioFiscale)} di beneficio fiscale.`);
       setText(['investment-year1-equivalent-copy', 'guided-investment-year1-equivalent-copy'], `${formatMoney(firstYear.quotaFpConsigliata || 0)} FP + ${formatMoney(firstYear.quotaPacConsigliata || 0)} PAC.`);
-
-      if (config.modalitaConfronto === 'sacrificioNetto') {
-        return;
-      }
 
     }
 

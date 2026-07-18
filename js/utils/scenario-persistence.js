@@ -20,8 +20,7 @@ const STORAGE_KEY = 'strategia-pensione-scenario-v2';
 // fragment non viene inviato al server, quindi i parametri (es. reddito)
 // non finiscono nei log di chi serve la pagina.
 const SHARE_PREFIX = '#s=';
-// v2 cambia la semantica delle modalità investimento: i vecchi scenari non
-// devono essere reinterpretati silenziosamente con un diverso budget netto.
+// v2 identifica gli scenari basati sull'investimento personale lordo.
 const PAYLOAD_VERSION = 2;
 const MAX_TEXT_LENGTH = 200;
 

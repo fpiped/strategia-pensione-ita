@@ -177,20 +177,7 @@
                                     <div class="control-subgroup">
                                         <div class="form-row">
                                             <div class="form-group">
-                                                <label for="modalitaConfronto"><span class="help-trigger" data-help="modalitaConfronto">Che cifra vuoi inserire?</span></label>
-                                                <select id="modalitaConfronto" class="form-control native-select">
-                                                    <option value="budgetLordo" selected>Spesa</option>
-                                                    <option value="sacrificioNetto">Investimento</option>
-                                                </select>
-                                                <div class="segmented-control" data-select-group="modalitaConfronto">
-                                                    <button type="button" class="active" data-select-target="modalitaConfronto" data-select-value="budgetLordo" aria-pressed="true">Spesa</button>
-                                                    <button type="button" data-select-target="modalitaConfronto" data-select-value="sacrificioNetto" aria-pressed="false">Investimento</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="form-row">
-                                            <div class="form-group">
-                                                <label for="investimento"><span class="help-trigger" data-help="investimento" id="investment-amount-label">Valore annuo</span></label>
+                                                <label for="investimento"><span class="help-trigger" data-help="investimento" id="investment-amount-label">Investimento lordo annuo</span></label>
                                                 <div class="control-field"><input type="number" id="investimento" class="form-control" value="3000" min="0" step="100"><span class="unit">EUR</span></div>
                                             </div>
                                             <div class="form-group">
@@ -731,7 +718,7 @@
                         <div class="annual-inputs" aria-label="Input annualizzati">
                             <div class="annual-input"><span>RAL usata</span><strong id="annual-income-value">-</strong><p>Retribuzione annua lorda ordinaria.</p></div>
                             <div class="annual-input"><span>Imponibili accessori</span><strong id="annual-extra-income-value">-</strong><p>Premi e altri redditi inclusi nella fiscalità.</p></div>
-                            <div class="annual-input"><span id="annual-budget-label">Spesa annua indicata</span><strong id="annual-budget-value">-</strong><p id="annual-budget-copy">Quanto vuoi spendere realmente nell'anno.</p></div>
+                            <div class="annual-input"><span id="annual-budget-label">Investimento lordo indicato</span><strong id="annual-budget-value">-</strong><p id="annual-budget-copy">Totale personale da allocare tra FP e PAC.</p></div>
                             <div class="annual-input"><span>Rendimenti netti</span><strong id="annual-returns-value">-</strong><p>FP e PAC dopo costi e imposte.</p></div>
                         </div>
                         <div class="calc-flow" aria-label="Passaggi di calcolo anno selezionato">
@@ -955,20 +942,7 @@
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="guided-modalita-confronto">Che cifra vuoi inserire?</label>
-                                    <select id="guided-modalita-confronto" class="form-control native-select">
-                                        <option value="budgetLordo" selected>Spesa</option>
-                                        <option value="sacrificioNetto">Investimento</option>
-                                    </select>
-                                    <div class="segmented-control" data-select-group="guided-modalita-confronto">
-                                        <button type="button" class="active" data-select-target="guided-modalita-confronto" data-select-value="budgetLordo" aria-pressed="true">Spesa</button>
-                                        <button type="button" data-select-target="guided-modalita-confronto" data-select-value="sacrificioNetto" aria-pressed="false">Investimento</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="guided-investimento" id="guided-investment-amount-label">Valore annuo</label>
+                                    <label for="guided-investimento" id="guided-investment-amount-label">Investimento lordo annuo</label>
                                     <div class="control-field"><input type="number" id="guided-investimento" class="form-control" min="0" step="100"><span class="unit">EUR</span></div>
                                 </div>
                                 <div class="form-group">
@@ -1012,7 +986,7 @@
                                     <p id="guided-investment-year1-equivalent-copy">Alternativa con lo stesso costo effettivo.</p>
                                 </div>
                             </div>
-                            <div class="guided-note" data-help-note="modalitaConfronto investimento variazioneInvestimento"></div>
+                            <div class="guided-note" data-help-note="investimento variazioneInvestimento"></div>
                         </section>
                         <section class="guided-step" data-guided-step="4">
                             <div class="guided-step-head">
@@ -1397,7 +1371,7 @@
                         <a href="#problema">Il problema</a>
                         <a href="#vantaggi">Il metodo</a>
                         <a href="#simulazione">Calcolo annuale</a>
-                        <a href="#opzioni">Spesa e investimento</a>
+                        <a href="#opzioni">Investimento lordo</a>
                         <a href="#risultati">Risultati</a>
                         <a href="#fonti">Ipotesi e fonti</a>
                     </nav>
@@ -1537,48 +1511,23 @@ Imposta netta − sostegni riconosciuti
                     </section>
 
                     <section class="docs-collapsible" id="opzioni">
-                    <h2 class="docs-collapsible-title">4. Spesa e Investimento: le due modalità</h2>
+                    <h2 class="docs-collapsible-title">4. Investimento lordo e spesa effettiva</h2>
                     <div class="docs-collapsible-content">
-                        <p>Le due modalità non cambiano la strategia economica: cambiano soltanto <strong>quale cifra conosci e vuoi inserire</strong>. Il PAC è il caso più semplice, perché un euro speso corrisponde a un euro investito. Nel FP il beneficio fiscale può far divergere i due valori.</p>
+                        <p>L’importo inserito è sempre l’<strong>investimento personale lordo</strong> che vuoi allocare ogni anno tra fondo pensione e PAC. Il beneficio fiscale non aumenta questo importo: riduce quanto esce effettivamente dalle tue tasche.</p>
 
                         <div class="highlight">
                             <strong>Le tre grandezze da non confondere</strong>
-                            <pre>Spesa effettiva + beneficio fiscale = investimento personale
+                            <pre>Investimento personale = quota FP personale + quota PAC
+Investimento personale − beneficio fiscale = spesa effettiva
 Investimento personale + contributo datore = totale messo al lavoro</pre>
                             <p>Il contributo datoriale non è una spesa personale e non fa parte dell’investimento personale: è capitale aggiuntivo che entra nel FP.</p>
                         </div>
 
-                        <div class="docs-comparison-grid">
-                            <article class="docs-comparison-card">
-                                <h3>Modalità Spesa</h3>
-                                <p>Usala quando sai quanto vuoi far uscire realmente di tasca nell’anno.</p>
-                                <pre>Inserisci: spesa effettiva
-Calcolatore: trova l’investimento finanziabile</pre>
-                                <p>Se indichi 3.000 €, il modello cerca la combinazione FP/PAC che costa esattamente 3.000 €. Grazie al beneficio fiscale, l’investimento personale può essere superiore.</p>
-                            </article>
-                            <article class="docs-comparison-card">
-                                <h3>Modalità Investimento</h3>
-                                <p>Usala quando sai quanto vuoi far arrivare complessivamente in FP e PAC.</p>
-                                <pre>Inserisci: investimento personale
-Calcolatore: trova la spesa necessaria</pre>
-                                <p>Se indichi 3.000 €, FP più PAC devono sommare a 3.000 €. Se il FP genera un beneficio, la spesa effettiva sarà inferiore.</p>
-                            </article>
-                        </div>
-
-                        <h3>Un esempio seguito nelle due direzioni</h3>
-                        <p>Supponiamo che una certa allocazione produca 1.000 € di beneficio fiscale.</p>
-                        <pre>Modalità Spesa
-3.000 € di spesa + 1.000 € di beneficio = 4.000 € investiti
-
-Modalità Investimento
-3.000 € investiti − 1.000 € di beneficio = 2.000 € di spesa</pre>
-                        <p>I valori reali non vengono ottenuti con una sottrazione fissa: il beneficio viene ricalcolato sull’effettiva quota FP e può cambiare mentre cambia l’allocazione.</p>
-
-                        <h3>Quando il beneficio finanzia altro FP</h3>
-                        <p>Se una parte del beneficio viene destinata al FP, può generare ulteriore deduzione. Il modello ricalcola l’intera fiscalità sulla nuova quota, senza creare un ciclo infinito: il processo converge grazie al limite deducibile e al beneficio marginale decrescente, che può arrivare a zero quando non resta imposta da ridurre.</p>
+                        <h3>Esempio</h3>
+                        <p>Se inserisci 5.000 € e l’allocazione scelta è 3.000 € nel FP e 2.000 € nel PAC, nei due strumenti finiscono esattamente 5.000 €. Con un beneficio fiscale di 900 €, la spesa effettiva è 4.100 €. L’eventuale contributo del datore si aggiunge separatamente e non riduce l’investimento personale richiesto.</p>
 
                         <h3>“Nello stesso anno” è una convenzione economica</h3>
-                        <p>Il modello considera il beneficio disponibile nello stesso anno per confrontare correttamente spesa e investimento. Nella realtà il momento in cui lo percepisci dipende da busta paga, conguaglio e dichiarazione dei redditi. La simulazione rappresenta l’equivalenza economica annuale, non la data bancaria del rimborso.</p>
+                        <p>Il modello attribuisce il beneficio allo stesso anno dell’investimento. Nella realtà il momento in cui lo percepisci dipende da busta paga, conguaglio e dichiarazione dei redditi. La simulazione rappresenta l’equivalenza economica annuale, non la data bancaria del rimborso.</p>
                     </div>
                     </section>
 

@@ -101,11 +101,10 @@ try {
 
   await setNumber(pageA, 'durata', 42);
   await setNumber(pageA, 'investimento', 8000);
-  await setSelect(pageA, 'modalitaConfronto', 'sacrificioNetto');
   await pageA.waitForFunction(() => localStorage.getItem('strategia-pensione-scenario-v2') !== null);
 
   const saved = JSON.parse(await storedScenario(pageA));
-  check('salvataggio: diff in localStorage', saved?.durata === 42 && saved?.investimento === 8000 && saved?.modalitaConfronto === 'sacrificioNetto', JSON.stringify(saved));
+  check('salvataggio: diff in localStorage', saved?.durata === 42 && saved?.investimento === 8000, JSON.stringify(saved));
   check('salvataggio: solo le chiavi modificate', saved && !('reddito' in saved));
 
   // --- 2. Rendering: tabella, esploratore e interazione ---
@@ -142,7 +141,6 @@ try {
   await pageA.reload();
   await waitBoot(pageA);
   check('reload: durata ripristinata', (await fieldValue(pageA, 'durata')) === '42');
-  check('reload: select ripristinata', (await fieldValue(pageA, 'modalitaConfronto')) === 'sacrificioNetto');
   check('reload: campo guidata allineato', (await fieldValue(pageA, 'guided-durata')) === '42');
 
   // --- 4. Condivisione: copia link ---
@@ -159,7 +157,6 @@ try {
   await pageB.goto(shareUrl);
   await waitBoot(pageB);
   check('link: durata dal link condiviso', (await fieldValue(pageB, 'durata')) === '42');
-  check('link: select dal link condiviso', (await fieldValue(pageB, 'modalitaConfronto')) === 'sacrificioNetto');
   check('link: URL ripulito dal fragment', (await pageB.evaluate(() => window.location.hash + window.location.search)) === '');
   check('link: scenario adottato in localStorage', JSON.parse(await storedScenario(pageB))?.durata === 42);
   const metricFp = await pageB.evaluate(() => document.getElementById('metric-fp-value').textContent);
