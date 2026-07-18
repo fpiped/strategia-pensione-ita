@@ -890,8 +890,8 @@ export class FinancialController {
       const equivalentCard = byId('investment-year1-equivalent-card');
       if (equivalentCard) equivalentCard.hidden = false;
       setText('investment-year1-gross-display', formatMoney(investimentoAnno));
-      setText(['investment-year1-fp-label', 'guided-investment-year1-fp-label'], 'Spesa effettiva · anno 1');
-      setText(['investment-year1-equivalent-label', 'guided-investment-year1-equivalent-label'], 'Investimento · anno 1');
+      setText(['investment-year1-fp-label', 'guided-investment-year1-fp-label'], 'Investimento netto · anno 1');
+      setText(['investment-year1-equivalent-label', 'guided-investment-year1-equivalent-label'], 'Investimento lordo · anno 1');
       setText(['investment-year1-tax-saving-display', 'guided-investment-year1-tax-saving-display'], formatMoney(spesaEffettiva));
       setText(['investment-year1-equivalent-display', 'guided-investment-year1-equivalent-display'], formatMoney(investimentoEffettivo));
       setText(['investment-mode-explanation', 'guided-investment-mode-explanation'], `Quanto esce di tasca dopo ${formatMoney(risparmioFiscale)} di beneficio fiscale.`);

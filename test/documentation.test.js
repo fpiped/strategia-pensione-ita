@@ -9,7 +9,7 @@ test('la guida segue il percorso concettuale e non replica il catalogo controlli
     'Il problema',
     'Il metodo',
     'Il calcolo annuale',
-    'Investimento lordo e spesa effettiva',
+    'Investimento lordo e investimento netto',
     'Come leggere i risultati',
     'Assunzioni, semplificazioni e fonti'
   ];
@@ -18,8 +18,8 @@ test('la guida segue il percorso concettuale e non replica il catalogo controlli
 });
 
 test('rende espliciti investimento lordo, timing e destinazione oltre deduzione', () => {
-  assert.ok(html.includes('Investimento personale = quota FP personale + quota PAC'));
-  assert.ok(html.includes('Investimento personale − beneficio fiscale = spesa effettiva'));
+  assert.ok(html.includes('Investimento lordo = quota FP personale + quota PAC'));
+  assert.ok(html.includes('Investimento netto = investimento lordo − beneficio fiscale'));
   assert.ok(html.includes('capitalizzazione posticipata'));
   assert.ok(html.includes('Extra volontario → PAC o FP non dedotto'));
   assert.ok(html.includes('quota minima indispensabile per ottenere il datore'));
