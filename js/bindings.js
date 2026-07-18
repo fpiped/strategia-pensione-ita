@@ -44,7 +44,6 @@ export const FIELDS = [
   ...variationGroup('variazionePremi', 'guided-variazione-premi'),
   ...variationGroup('variazioneAltriRedditi', 'guided-variazione-altri-redditi'),
 
-  { key: 'modalitaConfronto', type: 'select', panel: 'modalitaConfronto', guided: 'guided-modalita-confronto' },
   { key: 'baseContributivaFpTipo', type: 'select', panel: 'baseContributivaFpTipo', guided: 'guided-base-tipo' },
   { key: 'baseDatoreFpTipo', type: 'select', panel: 'baseDatoreFpTipo', guided: 'guided-base-datore-tipo' },
   { key: 'modalitaVersamentoFp', type: 'select', panel: 'modalitaVersamentoFp', guided: 'guided-modalita-versamento' },

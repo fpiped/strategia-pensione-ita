@@ -48,21 +48,15 @@ export const HELP_CONTENT = {
         },
         investimento: {
             title: 'Investimento annuo',
-            dove: 'Il tuo budget: l\'importo che vuoi allocare ogni anno tra fondo pensione e PAC, TFR escluso.',
+            dove: 'L\'importo personale lordo che vuoi allocare ogni anno tra fondo pensione e PAC, TFR escluso.',
             come: 'La quota oltre il limite deducibile di 5.300 €/anno (incluso contributo datore, escluso TFR) viene considerata sempre PAC.',
-            effetto: 'Budget più alti saturano prima la deduzione: l\'eccedenza lavora nel PAC.'
+            effetto: 'Importi più alti saturano prima la deduzione; il beneficio fiscale riduce la spesa effettiva ma non aumenta l’investimento indicato.'
         },
         variazioneInvestimento: {
             title: 'Aumento investimento',
             dove: 'Ipotesi tua su quanto potrai aumentare il risparmio annuo nel tempo.',
             come: 'Puoi usare una percentuale o un importo fisso in euro: ogni 3 anni e aumento 10% significa aumento dell\'investimento ogni 3 anni.',
             effetto: 'Un budget crescente sposta più capitale negli anni finali, dove il confronto FP/PAC può cambiare.'
-        },
-        modalitaConfronto: {
-            title: 'Che cifra vuoi inserire?',
-            dove: 'Scegli Spesa se sai quanto vuoi far uscire di tasca ogni anno. Scegli Investimento se sai quanto vuoi investire complessivamente tra FP e PAC.',
-            come: 'Spesa: l’importo inserito resta fisso e il beneficio fiscale può aumentare l’investimento complessivo. Investimento: resta fisso il totale personale allocato tra FP e PAC e il modello calcola quanto costa realmente dopo il beneficio fiscale.',
-            effetto: 'Le due modalità descrivono lo stesso confronto da due punti di vista e devono produrre risultati inversi coerenti. L’investimento mostrato è personale: il contributo del datore è indicato separatamente.'
         },
         baseContributivaFpTipo: {
             title: 'Base quota aderente',

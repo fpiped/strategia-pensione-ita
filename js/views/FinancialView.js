@@ -493,11 +493,8 @@ export class FinancialView {
       setText('annual-income-value', money(e.redditoAnno));
       setText('annual-extra-income-value', money(e.premiAnno + e.altriRedditiAnno));
       setText('annual-budget-value', money(e.investimentoAnno));
-      const nominalInput = config.modalitaConfronto === 'sacrificioNetto';
-      setText('annual-budget-label', nominalInput ? 'Investimento indicato' : 'Spesa annua indicata');
-      setText('annual-budget-copy', nominalInput
-        ? 'Totale personale da allocare tra FP e PAC.'
-        : 'Quanto vuoi spendere realmente nell\'anno.');
+      setText('annual-budget-label', 'Investimento lordo indicato');
+      setText('annual-budget-copy', 'Totale personale da allocare tra FP e PAC.');
       setText('annual-returns-value', `${percent((config.rendimentoNettoFpEffettivo || 0) * 100)} / ${percent((config.rendimentoNettoPacEffettivo || 0) * 100)}`);
       // Step 1 - Imponibile e IRPEF
       setText('annual-taxable-step-value', money(e.imponibileIrpef));

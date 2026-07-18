@@ -44,7 +44,7 @@ import { calculateStrategyIrr } from '../calculators/cash-flow-return.js';
 export class FinancialModel {
     /**
      * Calcola tutti gli scenari finanziari basati sui parametri di input,
-     * in entrambe le modalità di input (spesa e investimento).
+     * usando come input l'investimento personale lordo.
      * @param {Object} config - Oggetto di configurazione con tutti i parametri
      * @returns {Object} Risultati e informazioni sul mix
      */
@@ -262,7 +262,7 @@ export class FinancialModel {
 
     /**
      * Applica i default a tutti i parametri: un'unica definizione per
-     * entrambe le modalità di confronto.
+     * la modalità a investimento personale lordo.
      */
     _normalizeConfig(config) {
       const {
@@ -282,7 +282,6 @@ export class FinancialModel {
         sogliaIvsAggiuntivo = FINANCIAL_CONSTANTS.SOGLIA_IVS_AGGIUNTIVO,
         aliquotaIvsAggiuntivaPerc = FINANCIAL_CONSTANTS.ALIQUOTA_IVS_AGGIUNTIVO,
         addizionaliPerc = 0, ulterioriDetrazioni = 0,
-        modalitaConfronto = 'budgetLordo',
         variazioneRedditoTipo = 'percentuale',
         variazioneRedditoFrequenza = 0,
         variazioneRedditoValore = 0,
@@ -318,7 +317,6 @@ export class FinancialModel {
         contributiInpsPerc, massimaleContributivoInps,
         sogliaIvsAggiuntivo, aliquotaIvsAggiuntivaPerc,
         addizionaliPerc, ulterioriDetrazioni,
-        modalitaConfronto,
         variazioneRedditoTipo, variazioneRedditoFrequenza, variazioneRedditoValore,
         variazioneInvestimentoTipo, variazioneInvestimentoFrequenza, variazioneInvestimentoValore,
         baseContributivaFpTipo, baseContributivaFp,
@@ -392,7 +390,7 @@ export class FinancialModel {
         redditoFiscaleAnno: redditoAnno + premiAnno + altriRedditiAnno,
         quotaMinAderente: baseContributivaAnno * cfg.quotaMinAderentePerc,
         quotaDatorePotenziale: this._calculateEmployerContribution(baseDatoreAnno, cfg.quotaDatoreFpPerc, cfg.contributoDatoreFisso),
-        budgetBase: cfg.modalitaCumulativa || anno === 1 ? investimentoAnno : 0,
+        grossInvestmentTarget: cfg.modalitaCumulativa || anno === 1 ? investimentoAnno : 0,
         // Aliquota "se esci a fine di quest'anno": è quella giusta per le
         // colonne exit della tabella, non per le scelte di allocazione.
         tassazioneFP: this.calcolaTassazioneFp(cfg.anzianitaPregressaFp + anno - 1, cfg.riscattoAnticipato),
@@ -401,15 +399,10 @@ export class FinancialModel {
     }
 
     /**
-     * Loop annuale unico per entrambe le modalità di confronto.
-     *
-     * Le due modalità cambiano soltanto come si ricava il budget netto:
-     *  - budgetLordo: l'input è la spesa personale effettiva.
-     *  - sacrificioNetto: l'input è l'investimento personale complessivo;
-     *    il modello ricava la spesa che lo finanzia con l'allocazione ottima.
+     * Loop annuale con vincolo sull'investimento personale lordo:
+     * quota FP personale + quota PAC deve coincidere con l'input.
      */
     _simulateStrategies(cfg) {
-      const isInvestmentTarget = cfg.modalitaConfronto === 'sacrificioNetto';
       const reinvestiRisparmio = false;
       const includeTaxSavingsInExit = false;
 
@@ -464,23 +457,16 @@ export class FinancialModel {
           pacAlreadyActive: recommendedPlan.montantePAC > 0
         };
 
-        const resolved = isInvestmentTarget
-          ? this._resolveInvestmentTarget(ctx.budgetBase, optimizerInputs)
-          : {
-              netBudget: ctx.budgetBase,
-              allocation: this._optimizeAllocation({ ...optimizerInputs, netBudget: ctx.budgetBase })
-            };
-        const commonNetBudget = resolved.netBudget;
-        const recommendedAllocation = resolved.allocation;
+        const recommendedAllocation = this._allocateGrossInvestment(
+          ctx.grossInvestmentTarget,
+          optimizerInputs
+        );
 
-        // Benchmark: in modalità Spesa confrontano a parità di sacrificio
-        // (stessa spesa netta dell'ottimale); in modalità Investimento a
-        // parità di versamento (tutti versano il target, il beneficio
-        // fiscale resta in tasca).
+        // Tutti i benchmark versano lo stesso investimento lordo indicato;
+        // il beneficio fiscale resta in tasca e riduce la spesa effettiva.
         const fpFirst = this._resolveAllFpAllocation({
           ...optimizerInputs,
-          netBudget: commonNetBudget,
-          investmentTarget: isInvestmentTarget ? ctx.budgetBase : null,
+          grossInvestmentTarget: ctx.grossInvestmentTarget,
           fpAlreadyActive: fpPlan.montanteFP > 0,
           pacAlreadyActive: fpPlan.montantePAC > 0
         });
@@ -495,7 +481,7 @@ export class FinancialModel {
         const fpPaymentSplit = fpFirst;
 
         const risparmioFpAnnoEffettivo = fpPaymentSplit.risparmio;
-        const pacContributoAnno = isInvestmentTarget ? ctx.budgetBase : commonNetBudget;
+        const pacContributoAnno = ctx.grossInvestmentTarget;
         const mixQuote = {
           quotaEntroDedAnno: recommendedAllocation.quotaFpDeducibile,
           quotaExtraDedAnno: recommendedAllocation.quotaPac,
@@ -617,21 +603,10 @@ export class FinancialModel {
         }));
       }
 
-      // In modalità Spesa tutte le serie condividono lo stesso sacrificio:
-      // se un benchmark batte l'ottimizzatore all'ultimo anno diventa la
-      // serie principale. In modalità Investimento i benchmark non
-      // rispettano il vincolo dell'utente (investono la spesa, non il
-      // target): la serie principale resta quella dell'ottimizzatore.
+      // La serie principale è l'allocazione ottimizzata a parità di
+      // investimento personale lordo.
       const finalOptimized = optimizedResults.at(-1).exitMix;
-      const finalFp = optimizedResults.at(-1).exitFp;
-      const finalPac = optimizedResults.at(-1).exitPac;
-      const selectedStrategy = isInvestmentTarget
-        ? { results: optimizedResults, plan: recommendedPlan, exit: finalOptimized }
-        : [
-            { results: optimizedResults, plan: recommendedPlan, exit: finalOptimized },
-            { results: fpStrategyResults, plan: fpPlan, exit: finalFp },
-            { results: pacStrategyResults, plan: pacPlan, exit: finalPac }
-          ].reduce((best, current) => current.exit > best.exit ? current : best);
+      const selectedStrategy = { results: optimizedResults, plan: recommendedPlan, exit: finalOptimized };
       const results = selectedStrategy.results;
 
       return {
@@ -765,14 +740,11 @@ export class FinancialModel {
     }
 
     /**
-     * Cerca la quota FP, euro per euro fino al limite deducibile, rispettando
-     * il vincolo: quota FP - beneficio fiscale + quota PAC = budget netto.
-     * Massimizza il valore netto finale entro le regole della strategia
-     * ottimale: la quota volontaria non deducibile resta destinata al PAC.
+     * Cerca la quota FP euro per euro, imponendo il vincolo:
+     * quota FP personale + quota PAC = investimento lordo indicato.
      */
     _optimizeAllocation({
-      netBudget,
-      investmentTarget = null,
+      grossInvestmentTarget,
       quotaMinAderente,
       quotaDatorePotenziale,
       reddito,
@@ -794,12 +766,7 @@ export class FinancialModel {
       fpAlreadyActive = false,
       pacAlreadyActive = false
     }) {
-      // Con investmentTarget il vincolo è sull'investimento personale
-      // (quota FP + quota PAC = target): il risparmio dipende solo dalla
-      // quota FP, quindi il target si impone esattamente senza iterazioni,
-      // anche dove i cliff fiscali rendono il beneficio discontinuo.
-      const isTargetMode = Number.isFinite(investmentTarget);
-      if (isTargetMode ? investmentTarget <= 0 : netBudget <= 0) {
+      if (!Number.isFinite(grossInvestmentTarget) || grossInvestmentTarget <= 0) {
         return {
           quotaFp: 0,
           quotaFpDeducibile: 0,
@@ -877,15 +844,8 @@ export class FinancialModel {
           limiteDeduzioneTotale
         });
         const risparmio = paymentSplit.risparmio;
-        let surplus;
-        if (isTargetMode) {
-          if (quotaFp > investmentTarget + 0.005) continue;
-          surplus = Math.max(investmentTarget - quotaFp, 0);
-        } else {
-          const surplusGrezzo = netBudget - quotaFp + risparmio;
-          if (surplusGrezzo < -0.01) continue;
-          surplus = Math.max(surplusGrezzo, 0);
-        }
+        if (quotaFp > grossInvestmentTarget + 0.005) continue;
+        const surplus = Math.max(grossInvestmentTarget - quotaFp, 0);
         // L'eccedenza oltre la quota FP dedotta va allo strumento che rende
         // di più per euro versato: PAC (tassato sul gain all'exit) oppure
         // FP non dedotto (rendimento del fondo, esente in uscita). Così
@@ -912,9 +872,9 @@ export class FinancialModel {
         ) * tassazioneFpScadenza);
         const pacNetto = this._calculatePacExit(Math.max((quotaPac * pacFactor) - pacFixedDrag, 0), quotaPac, pacExitOptions);
         const totaleNetto = fpNetto + pacNetto;
-        // A parità di investimento (target mode) la spesa varia col
-        // beneficio: si massimizza exit meno spesa, cioè netto + risparmio.
-        const valore = isTargetMode ? totaleNetto + risparmio : totaleNetto;
+        // A parità di investimento lordo la spesa varia col beneficio: si
+        // massimizza exit meno spesa, cioè valore netto + risparmio fiscale.
+        const valore = totaleNetto + risparmio;
 
         if (!best || valore > best.valore) {
           best = {
@@ -939,7 +899,7 @@ export class FinancialModel {
       }
 
       if (!best) {
-        const fallbackPac = isTargetMode ? investmentTarget : netBudget;
+        const fallbackPac = grossInvestmentTarget;
         best = {
           quotaFp: 0,
           quotaFpDeducibile: 0,
@@ -968,15 +928,11 @@ export class FinancialModel {
     }
 
     /**
-     * Costruisce il benchmark "FP a deduzione + PAC": riempie il FP fino al
-     * plafond deducibile sostenibile (risolvendo quota - beneficio = budget)
-     * e destina il resto al PAC. In modalità Investimento versa il target a
-     * parità di versamento. Unico FP non dedotto ammesso: la quota minima
-     * quando serve a ottenere il datore.
+     * Costruisce il benchmark "FP a deduzione + PAC": versa l'investimento
+     * lordo indicato, riempie il FP fino al plafond e destina il resto al PAC.
      */
     _resolveAllFpAllocation({
-      netBudget,
-      investmentTarget = null,
+      grossInvestmentTarget,
       quotaMinAderente,
       quotaDatorePotenziale,
       reddito,
@@ -989,7 +945,6 @@ export class FinancialModel {
       ulterioriDetrazioni,
       modalitaVersamentoFp
     }) {
-      const budget = Math.max(netBudget, 0);
       const limiteDeduzioneTotale = this._getTotalDeductionLimit();
 
       const evaluate = (amount) => {
@@ -1038,77 +993,22 @@ export class FinancialModel {
       const capSenzaDatore = this._getAvailableDeductionLimit(0);
       const capConDatore = Math.max(this._getAvailableDeductionLimit(quotaDatorePotenziale), threshold);
 
-      // In modalità Investimento il benchmark versa il target: FP dedotto
-      // fino al plafond, il resto a PAC. Il beneficio resta in tasca.
-      if (Number.isFinite(investmentTarget)) {
-        const target = Math.max(investmentTarget, 0);
-        const cap = target >= threshold ? capConDatore : capSenzaDatore;
-        const result = evaluate(Math.min(target, cap));
-        return { ...result, quotaPac: Math.max(target - result.quotaFp, 0), scelta: 'FP' };
-      }
-
-      if (budget <= 0) return { ...evaluate(0), scelta: 'FP' };
-
-      // Il contributo datoriale crea una possibile discontinuita in
-      // corrispondenza della quota minima: cerchiamo la radice separatamente
-      // prima e dopo quella soglia, senza mai superare il plafond deducibile.
-      const ranges = threshold > 0
-        ? [[0, Math.min(Math.max(threshold - 0.001, 0), capSenzaDatore)], [threshold, capConDatore]]
-        : [[0, capSenzaDatore]];
-      // Gli estremi dei range vengono aggiunti dal loop: qui bastano i
-      // candidati sempre validi (zero e quota minima).
-      const candidates = [evaluate(0), evaluate(threshold)];
-
-      for (const [start, end] of ranges) {
-        let low = start;
-        let high = Math.max(end, start);
-        let lowResult = evaluate(low);
-        let highResult = evaluate(high);
-        // Gli estremi del range restano candidati anche senza bisezione:
-        // servono quando l'intero range è sotto (o sopra) il budget.
-        candidates.push(lowResult, highResult);
-        if (lowResult.costoEffettivo > budget || highResult.costoEffettivo < budget) continue;
-
-        for (let iteration = 0; iteration < 50; iteration++) {
-          const mid = (low + high) / 2;
-          const result = evaluate(mid);
-          if (result.costoEffettivo < budget) {
-            low = mid;
-            lowResult = result;
-          } else {
-            high = mid;
-            highResult = result;
-          }
-        }
-        candidates.push(lowResult, highResult);
-      }
-
-      // Mai sforare la spesa richiesta: tra i candidati sostenibili vince la
-      // quota FP massima. Dove il beneficio è discontinuo (cliff di
-      // trattamento integrativo/bonus) la spesa in solo FP può saltare: il
-      // residuo non assorbibile va a PAC, così il benchmark resta un
-      // confronto a parità di spesa.
-      const sostenibili = candidates.filter((candidate) => candidate.costoEffettivo <= budget + 0.01);
-      const pool = sostenibili.length ? sostenibili : [candidates[0]];
-      const best = pool.reduce((current, candidate) => (
-        candidate.quotaFp > current.quotaFp ? candidate : current
-      ));
-      const quotaPacResidua = Math.max(budget - best.costoEffettivo, 0);
-      return { ...best, quotaPac: quotaPacResidua, scelta: 'FP' };
+      const target = Math.max(grossInvestmentTarget, 0);
+      const cap = target >= threshold ? capConDatore : capSenzaDatore;
+      const result = evaluate(Math.min(target, cap));
+      return { ...result, quotaPac: Math.max(target - result.quotaFp, 0), scelta: 'FP' };
     }
 
     /**
      * Con input "Investimento" il vincolo sull'importo personale viene
-     * imposto direttamente dentro l'ottimizzatore (investmentTarget):
+     * imposto direttamente dentro l'ottimizzatore (grossInvestmentTarget):
      * il target è rispettato esattamente anche in presenza di cliff
      * fiscali che rendono il beneficio discontinuo. La spesa netta è
      * derivata a valle: investimento − beneficio.
      */
-    _resolveInvestmentTarget(targetInvestment, optimizerInputs) {
+    _allocateGrossInvestment(targetInvestment, optimizerInputs) {
       const target = Math.max(targetInvestment, 0);
-      const allocation = this._optimizeAllocation({ ...optimizerInputs, investmentTarget: target });
-      const netBudget = Math.max(allocation.quotaFp + allocation.quotaPac - allocation.risparmio, 0);
-      return { netBudget, allocation };
+      return this._optimizeAllocation({ ...optimizerInputs, grossInvestmentTarget: target });
     }
 
     _applyYearGrowth(state, {
