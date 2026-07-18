@@ -47,16 +47,16 @@ export const HELP_CONTENT = {
             effetto: 'Più è lunga, più pesano interesse composto e riduzione della tassazione FP in uscita (dal 15% verso il 9% dopo 15 anni di partecipazione).'
         },
         investimento: {
-            title: 'Investimento annuo',
-            dove: 'L\'importo personale lordo che vuoi allocare ogni anno tra fondo pensione e PAC, TFR escluso.',
-            come: 'La quota oltre il limite deducibile di 5.300 €/anno (incluso contributo datore, escluso TFR) viene considerata sempre PAC.',
-            effetto: 'Importi più alti saturano prima la deduzione; il beneficio fiscale riduce l’investimento netto ma non aumenta l’investimento lordo indicato.'
+            title: 'Investimento netto',
+            dove: 'Quanto vuoi che la strategia ti costi realmente per ciascun versamento, dopo il beneficio fiscale e con TFR e contributo datore esclusi.',
+            come: 'Per ogni quota FP il modello ricalcola il beneficio e investe nel PAC la capacità residua: FP personale + PAC − beneficio = investimento netto.',
+            effetto: 'Con Ogni anno il budget viene ripetuto per tutta la durata; con Solo anno 1 viene ottimizzato una volta e poi seguito nel tempo. Il beneficio fiscale aumenta il lordo senza essere contato due volte.'
         },
         variazioneInvestimento: {
             title: 'Aumento investimento',
             dove: 'Ipotesi tua su quanto potrai aumentare il risparmio annuo nel tempo.',
             come: 'Puoi usare una percentuale o un importo fisso in euro: ogni 3 anni e aumento 10% significa aumento dell\'investimento ogni 3 anni.',
-            effetto: 'Un budget crescente sposta più capitale negli anni finali, dove il confronto FP/PAC può cambiare.'
+            effetto: 'Un budget netto crescente aumenta la capacità lorda finanziata anche dal beneficio fiscale negli anni successivi.'
         },
         baseContributivaFpTipo: {
             title: 'Base quota aderente',

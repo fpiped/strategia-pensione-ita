@@ -9,7 +9,9 @@ export class FinancialView {
     }
 
     formatChoiceLabel(choice) {
-      return choice === 'MIX' ? 'Split' : choice;
+      if (choice === 'MIX') return 'FP + PAC';
+      if (choice === 'NESSUNO') return 'Nessun versamento';
+      return choice;
     }
 
     /**
@@ -18,98 +20,39 @@ export class FinancialView {
      */
     updateMetricsDashboard(results, tir = {}) {
       if (!results.length) return;
-
-      // Ottieni l'ultima riga (risultati dell'anno finale)
-      const lastResult = results[results.length - 1];
-
-      // Estrai i valori di exit
-      const exitFP = lastResult.exitFp || 0;
-      const exitPAC = lastResult.exitPac || 0;
-
-      // Aggiorna le card delle metriche
-      document.getElementById('metric-fp-value').textContent = this.formatMoney(exitFP);
-      document.getElementById('metric-pac-value').textContent = this.formatMoney(exitPAC);
       const formatTir = (value) => Number.isFinite(value)
         ? `${(value * 100).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`
         : 'n.d.';
-      const tirElements = {
-        mix: document.getElementById('metric-mix-tir'),
-        fp: document.getElementById('metric-fp-tir'),
-        pac: document.getElementById('metric-pac-tir')
-      };
-      Object.entries(tirElements).forEach(([strategy, element]) => {
-        if (element) element.textContent = formatTir(tir[strategy]);
-      });
-
-      // Evidenzia il migliore tra i benchmark puri; l'allocazione ottimale sta nel pannello decisionale.
-      const values = [
-        { id: 'fp', value: exitFP, card: document.querySelector('.metric-card.metric-fp') },
-        { id: 'pac', value: exitPAC, card: document.querySelector('.metric-card.metric-pac') }
-      ];
-
-      // Rimuovi la classe 'best' da tutte le card
-      values.forEach(v => {
-        if (v.card) v.card.classList.remove('best');
-      });
-
-      const best = values.reduce((a, b) => a.value > b.value ? a : b);
-      if (best.card) {
-        best.card.classList.add('best');
-      }
+      const element = document.getElementById('metric-optimal-tir');
+      if (element) element.textContent = formatTir(tir.optimal);
     }
 
     /**
      * Crea una tabella dei risultati e la renderizza
      * @param {Array} results - Risultati dei calcoli
-     * @param {string} tableView - Vista tabella: fp, pac, mix o comparison
      */
-    createTable(results, tableView = 'mix', exitLabel = 'Exit ottimale') {
+    createTable(results) {
       if (!results.length) return;
 
-      const columnsByView = {
-        fp: [
-          { key: 'anno', label: 'Anno' },
-          { key: 'quotaEntroDeduzione', label: 'Quota FP' },
-          { key: 'quotaFpNonDeducibile', label: 'FP non deducibile' },
-          { key: 'quotaExtraDeduzione', label: 'Quota PAC extra' },
-          { key: 'quotaFpBusta', label: 'FP busta' },
-          { key: 'quotaFpBonifico', label: 'FP bonifico' },
-          { key: 'quotaDatore', label: 'Datore' },
-          { key: 'risparmioFiscale', label: 'Risparmio fiscale' },
-          { key: 'exitFp', label: 'Exit FP' }
-        ],
-        pac: [
-          { key: 'anno', label: 'Anno' },
-          { key: 'quotaAderente', label: 'Quota PAC' },
-          { key: 'exitPac', label: 'Exit PAC' }
-        ],
-        mix: [
-          { key: 'anno', label: 'Anno' },
-          { key: 'scelta', label: 'Scelta' },
-          { key: 'quotaFpConsigliata', label: 'Quota FP' },
-          { key: 'quotaFpNonDeducibile', label: 'FP non deducibile' },
-          { key: 'quotaPacConsigliata', label: 'Quota PAC' },
-          { key: 'quotaFpBusta', label: 'FP busta' },
-          { key: 'quotaFpBonifico', label: 'FP bonifico' },
-          { key: 'quotaDatore', label: 'Datore' },
-          { key: 'risparmioFiscale', label: 'Risparmio fiscale' },
-          { key: 'exitMix', label: exitLabel }
-        ],
-        comparison: [
-          { key: 'anno', label: 'Anno' },
-          { key: 'exitFp', label: 'FP a deduzione + PAC' },
-          { key: 'exitPac', label: 'Tutto PAC' },
-          { key: 'exitMix', label: 'Allocazione ottimale' }
-        ]
-      };
-      const columns = columnsByView[tableView] || columnsByView.mix;
+      const columns = [
+        { key: 'anno', label: 'Anno' },
+        { key: 'investimentoNetto', label: 'Investimento netto' },
+        { key: 'investimentoLordo', label: 'Investimento lordo' },
+        { key: 'scelta', label: 'Allocazione' },
+        { key: 'quotaFpConsigliata', label: 'Quota FP' },
+        { key: 'quotaFpNonDeducibile', label: 'FP non deducibile' },
+        { key: 'quotaPacConsigliata', label: 'Quota PAC' },
+        { key: 'quotaDatore', label: 'Datore' },
+        { key: 'risparmioFiscale', label: 'Beneficio fiscale' },
+        { key: 'exitOttimale', label: 'Exit netta' }
+      ];
 
       const rows = results.map(result => {
         const row = {};
         columns.forEach(({ key, label }) => {
           let value = result[key];
           if (key === 'scelta') {
-            value = this.formatChoiceLabel(value);
+            value = value === 'NESSUNO' ? 'N/A' : this.formatChoiceLabel(value);
           }
           if (key !== 'anno' && typeof value === 'number') {
             value = this.formatMoney(value);
@@ -121,7 +64,7 @@ export class FinancialView {
 
       const table = document.createElement('table');
       table.id = 'output-table';
-      table.className = `table-${tableView}`;
+      table.className = 'table-optimal';
 
       // Crea l'header della tabella
       const thead = document.createElement('thead');
@@ -207,7 +150,7 @@ export class FinancialView {
     }
 
     /**
-     * Timeline della strategia: una barra segmentata, un segmento per
+     * Timeline dell'allocazione: una barra segmentata, un segmento per
      * intervallo di scelta, larghezza proporzionale agli anni coperti.
      * È la traduzione grafica di "1-23: Split · 24-30: FP"; il testo
      * accanto resta come versione leggibile/accessibile.
@@ -275,26 +218,13 @@ export class FinancialView {
       if (!summary || !primaryGrid || !secondaryGrid || !results.length) return;
 
       const sum = (key) => results.reduce((total, row) => total + (row[key] || 0), 0);
-      const formatSignedMoney = (value) => `${value >= 0 ? '+' : '-'}${this.formatMoney(Math.abs(Math.round(value)))}`;
       const formatPercent = (value) => `${value.toLocaleString('it-IT', {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
       })}%`;
 
       const lastResult = results[results.length - 1];
-      const exitFP = lastResult.exitFp || 0;
-      const exitPAC = lastResult.exitPac || 0;
-      const optimalExit = lastResult.exitMix || 0;
-      const pureBenchmarks = [
-        { key: 'FP', label: 'FP a deduzione + PAC', value: exitFP },
-        { key: 'PAC', label: 'Tutto PAC', value: exitPAC }
-      ].sort((a, b) => b.value - a.value);
-      const bestPure = pureBenchmarks[0];
-      const worstPure = pureBenchmarks[1];
-      const optimalVsBestPure = optimalExit - bestPure.value;
-      const optimalVsWorstPure = optimalExit - worstPure.value;
-      const optimalVsFp = optimalExit - exitFP;
-      const optimalVsPac = optimalExit - exitPAC;
+      const optimalExit = lastResult.exitOttimale || 0;
       const firstRow = results[0];
       const lastChoice = lastResult.scelta || 'MIX';
 
@@ -307,13 +237,13 @@ export class FinancialView {
         fpBusta: sum('quotaFpBusta'),
         fpBonifico: sum('quotaFpBonifico'),
         deducibile: sum('quotaEntroDeduzione'),
-        extraPac: sum('quotaExtraDeduzione')
+        netto: sum('investimentoNetto'),
+        lordo: sum('investimentoLordo')
       };
       const totalInvested = totals.fp + totals.pac;
       const fpShare = totalInvested > 0 ? (totals.fp / totalInvested) * 100 : 0;
       const pacShare = totalInvested > 0 ? (totals.pac / totalInvested) * 100 : 0;
       const usedEmployerYears = results.filter(row => (row.quotaDatore || 0) > 0).length;
-      const payrollShare = totals.fp > 0 ? (totals.fpBusta / totals.fp) * 100 : 0;
 
       const yearsByChoice = results.reduce((acc, row) => {
         const choice = row.scelta || 'MIX';
@@ -329,64 +259,47 @@ export class FinancialView {
       const firstSplitDetail = firstRow
         ? `Anno 1: ${this.formatMoney(firstRow.quotaFpConsigliata || 0)} FP e ${this.formatMoney(firstRow.quotaPacConsigliata || 0)} PAC`
         : 'Nessuna quota allocata';
-      const bustaDetail = totals.fp > 0
-        ? `${this.formatMoney(Math.round(totals.fpBusta))} busta, ${this.formatMoney(Math.round(totals.fpBonifico))} bonifico`
-        : 'Nessun versamento FP nell\'allocazione ottimale';
-      const optimizationDetail = totals.differenzaBustaBonifico > 0
-        ? `${formatSignedMoney(totals.differenzaBustaBonifico)} rispetto a quota minima in busta + extra via bonifico: portare l'extra in busta aumenta il beneficio fiscale.`
-        : totals.differenzaBustaBonifico < 0
-          ? `${formatSignedMoney(totals.differenzaBustaBonifico)} rispetto a quota minima in busta + extra via bonifico: l'extra in busta peggiora il beneficio fiscale nello scenario impostato.`
-          : 'Nessuna differenza fiscale netta tra extra in busta ed extra via bonifico nello scenario impostato.';
-      const optimizationDetailText = `Rispetto a FP: ${formatSignedMoney(optimalVsFp)} · rispetto a PAC: ${formatSignedMoney(optimalVsPac)}`;
       const timingDetail = lastChoice === 'FP'
-        ? 'Negli ultimi anni pesa di più il vantaggio fiscale immediato del FP.'
+        ? 'Negli ultimi anni l’allocazione privilegia il FP.'
         : lastChoice === 'PAC'
-          ? 'Anche verso fine periodo il rendimento PAC resta sufficiente nello scenario impostato.'
-          : 'Lo split resta utile quando conviene prendere incentivi FP senza rinunciare del tutto al PAC.';
+          ? 'Negli ultimi anni l’allocazione privilegia il PAC.'
+          : lastChoice === 'NESSUNO'
+            ? 'Dopo l’anno 1 il capitale cresce senza nuovi versamenti.'
+            : 'Negli ultimi anni resta conveniente una ripartizione tra FP e PAC.';
 
-      summary.textContent = optimalVsBestPure > 0
-        ? `L'allocazione ottimale chiude a ${this.formatMoney(Math.round(optimalExit))}, circa ${this.formatMoney(Math.round(optimalVsBestPure))} sopra ${bestPure.label}. ${timingDetail}`
-        : `L'allocazione ottimale coincide sostanzialmente con ${bestPure.label} nello scenario impostato. ${timingDetail}`;
+      summary.textContent = `Con il budget netto indicato, il piano ottimizzato chiude a ${this.formatMoney(Math.round(optimalExit))}. ${timingDetail}`;
 
       if (bestValue) this.animateBestValue(bestValue, Math.round(optimalExit));
       if (bestDelta) {
-        bestDelta.textContent = optimalVsBestPure > 0
-          ? `${this.formatMoney(Math.round(optimalVsBestPure))} sopra ${bestPure.label}; ${this.formatMoney(Math.round(optimalVsWorstPure))} sopra ${worstPure.label}.`
-          : `Sostanzialmente allineata a ${bestPure.label}; ${this.formatMoney(Math.round(optimalVsWorstPure))} sopra ${worstPure.label}.`;
+        bestDelta.textContent = firstRow
+          ? `Anno 1: ${this.formatMoney(firstRow.investimentoNetto || 0)} netti finanziano ${this.formatMoney(firstRow.investimentoLordo || 0)} di versamenti personali.`
+          : '';
       }
 
       const primaryCards = [
         {
-          icon: 'scale',
-          label: 'Vantaggio finale',
-          value: optimalVsBestPure > 0 ? formatSignedMoney(optimalVsBestPure) : 'Quasi pari',
-          detail: optimizationDetailText
+          icon: 'wallet-cards',
+          label: 'Budget netto complessivo',
+          value: this.formatMoney(Math.round(totals.netto)),
+          detail: 'Somma dei sacrifici netti annuali usati come vincolo dell’ottimizzazione.'
         },
         {
           icon: 'pie-chart',
           label: 'Dove vanno i versamenti',
           value: `${formatPercent(fpShare)} FP · ${formatPercent(pacShare)} PAC`,
-          detail: `${firstSplitDetail}. Extra oltre deduzione nel PAC: ${this.formatMoney(Math.round(totals.extraPac))}`
+          detail: firstSplitDetail
         },
         {
           icon: 'hand-coins',
-          label: 'Incentivi agganciati al FP',
-          value: this.formatMoney(Math.round(totals.datore + totals.risparmio)),
-          detail: `${this.formatMoney(Math.round(totals.datore))} datore + ${this.formatMoney(Math.round(totals.risparmio))} beneficio fiscale. Datore preso per ${usedEmployerYears}/${results.length} anni`
+          label: 'Capitale aggiuntivo',
+          value: this.formatMoney(Math.round(totals.risparmio + totals.datore)),
+          detail: `${this.formatMoney(Math.round(totals.risparmio))} di beneficio reinvestito + ${this.formatMoney(Math.round(totals.datore))} del datore.`
         },
         {
-          icon: 'file-text',
-          label: 'Busta vs bonifico',
-          value: totals.fp > 0
-            ? formatSignedMoney(totals.differenzaBustaBonifico)
-            : 'Nessun FP',
-          detail: totals.fp <= 0
-            ? 'Nessun versamento FP.'
-            : totals.differenzaBustaBonifico > 0
-              ? "Conviene versare l'extra in busta."
-              : totals.differenzaBustaBonifico < 0
-                ? "Conviene versare l'extra via bonifico."
-                : 'Nessuna differenza con questi input.'
+          icon: 'trending-up',
+          label: 'Investimento lordo personale',
+          value: this.formatMoney(Math.round(totals.lordo)),
+          detail: 'Quota FP personale + quota PAC, incluso il beneficio fiscale reinvestito.'
         }
       ];
 
@@ -395,13 +308,13 @@ export class FinancialView {
           icon: 'filter',
           label: 'Limite deducibile',
           value: this.formatMoney(Math.round(totals.deducibile)),
-          detail: 'Quota trattata dentro il perimetro deducibile; la parte fuori deduzione viene indirizzata al PAC.'
+          detail: 'Quota personale trattata nel perimetro deducibile del piano ottimizzato.'
         },
         {
           icon: 'calendar-check',
           label: 'Scelte annuali',
           value: choiceSummary || 'Nessuna scelta',
-          detail: timingDetail
+          detail: `${timingDetail} Contributo datore ottenuto per ${usedEmployerYears}/${results.length} anni.`
         }
       ];
 
@@ -482,19 +395,20 @@ export class FinancialView {
       const quotaBonifico = row.quotaFpBonifico || 0;
       const datore = row.quotaDatore || 0;
       const risparmio = row.risparmioFiscale || 0;
-      const exitMix = row.exitMix || 0;
-      const exitFp = row.exitFp || 0;
-      const exitPac = row.exitPac || 0;
+      const exitOttimale = row.exitOttimale || 0;
 
-      setText('annual-exit-value', money(exitMix));
+      setText('annual-exit-value', money(exitOttimale));
       setText('annual-choice-value', this.formatChoiceLabel(row.scelta || '-'));
       setText('annual-fp-value', money(quotaFp));
       setText('annual-pac-value', money(quotaPac));
       setText('annual-income-value', money(e.redditoAnno));
       setText('annual-extra-income-value', money(e.premiAnno + e.altriRedditiAnno));
       setText('annual-budget-value', money(e.investimentoAnno));
-      setText('annual-budget-label', 'Investimento lordo indicato');
-      setText('annual-budget-copy', 'Totale personale da allocare tra FP e PAC.');
+      const noNewPayment = row.scelta === 'NESSUNO';
+      setText('annual-budget-label', noNewPayment ? 'Nuovo investimento netto' : 'Investimento netto indicato');
+      setText('annual-budget-copy', noNewPayment
+        ? 'Nessun nuovo versamento: continua a crescere il capitale dell’anno 1.'
+        : 'Quanto vuoi che la strategia costi realmente nell’anno.');
       setText('annual-returns-value', `${percent((config.rendimentoNettoFpEffettivo || 0) * 100)} / ${percent((config.rendimentoNettoPacEffettivo || 0) * 100)}`);
       // Step 1 - Imponibile e IRPEF
       setText('annual-taxable-step-value', money(e.imponibileIrpef));
@@ -534,7 +448,9 @@ export class FinancialView {
         ? `Il modello assegna al FP tutta la quota disponibile confrontandone il valore netto a scadenza con il PAC.`
         : choice === 'PAC'
           ? `Il modello assegna il budget al PAC perché produce il valore netto prospettico più alto con queste ipotesi.`
-          : `Dopo la quota minima, il modello divide il resto tra FP e PAC scegliendo euro per euro il valore netto più alto a scadenza.`;
+          : choice === 'NESSUNO'
+            ? `Non viene aggiunto nuovo capitale: questo anno mostra soltanto l’evoluzione del versamento effettuato nell’anno 1.`
+            : `Dopo la quota minima, il modello divide il resto tra FP e PAC scegliendo euro per euro il valore netto più alto a scadenza.`;
       setText('annual-fp-step-value', money(quotaFp));
       setText('annual-fp-formula', `${money(e.spesaEffettivaAnno)} spesa + ${money(e.beneficioInvestitoAnno)} beneficio = ${money(e.investimentoPersonaleAnno)} investiti = ${money(quotaFp)} FP + ${money(quotaPac)} PAC. ${employerReason}${allocationReason} Orizzonte: ${yearsLeft} anni; rendimenti netti FP/PAC: ${percent((config.rendimentoNettoFpEffettivo || 0) * 100)} / ${percent((config.rendimentoNettoPacEffettivo || 0) * 100)}.`);
       setText('annual-within-min-value', money(e.quotaEntroMinima));
@@ -575,8 +491,8 @@ export class FinancialView {
       setText('annual-effective-rate-value', quotaFp > 0 ? percent(e.aliquotaEffettiva) : '-');
 
       // Step 6 - Riconciliazione completa dell'exit.
-      setText('annual-exit-step-value', money(exitMix));
-      setText('annual-exit-formula', `${money(e.montanteFp)} FP + ${money(e.montantePac)} PAC - ${money(e.impostaUscitaFp)} imposta FP - ${money(e.impostaUscitaPac)} imposta PAC = ${money(exitMix)} netto. Il beneficio fiscale ha già finanziato i versamenti dell'anno.`);
+      setText('annual-exit-step-value', money(exitOttimale));
+      setText('annual-exit-formula', `${money(e.montanteFp)} FP + ${money(e.montantePac)} PAC - ${money(e.impostaUscitaFp)} imposta FP - ${money(e.impostaUscitaPac)} imposta PAC = ${money(exitOttimale)} netto. Il beneficio fiscale ha già finanziato i versamenti dell'anno.`);
       setText('annual-montante-fp-value', `${money(e.montanteFp)} (${money(e.versatoFp)} versati)`);
       setText('annual-fp-deductible-total-value', money(e.versatoFpDeducibile));
       setText('annual-fp-nondeductible-total-value', money(e.versatoFpNonDeducibile));
@@ -591,8 +507,6 @@ export class FinancialView {
         ? `${percent(e.aliquotaPacUscita)} sul gain ≈ -${money(e.impostaUscitaPac)}`
         : `${money(0)} · già inclusa nel rendimento netto`);
       setText('annual-saving-in-exit-value', `${money(risparmio)} · già incluso`);
-      setText('annual-exit-fp-value', money(exitFp));
-      setText('annual-exit-pac-value', money(exitPac));
     }
 
     updateInputWarnings(warnings) {
@@ -630,8 +544,8 @@ export class FinancialView {
     }
 
     /**
-     * Aggiorna il grafico con i dati dei risultati: barre coi colori
-     * delle strategie e griglia solo orizzontale.
+     * Aggiorna il grafico con l'exit dell'allocazione ottimale e griglia
+     * solo orizzontale.
      * @param {Array} results - Risultati dei calcoli
      */
     updateChart(results) {
@@ -641,9 +555,7 @@ export class FinancialView {
       if (!ctx) return;
 
       const labels = results.map(r => `Anno ${r.anno}`);
-      const exitFP = results.map(r => r.exitFp || 0);
-      const exitPAC = results.map(r => r.exitPac || 0);
-      const exitMix = results.map(r => r.exitMix || 0);
+      const exitOttimale = results.map(r => r.exitOttimale || 0);
 
       const styles = getComputedStyle(document.documentElement);
       const textColor = styles.getPropertyValue('--color-text-secondary').trim() || '#4b5563';
@@ -651,11 +563,7 @@ export class FinancialView {
       const fontSans = styles.getPropertyValue('--font-sans').trim() || 'Inter, sans-serif';
       const fontMono = styles.getPropertyValue('--font-mono').trim() || 'monospace';
 
-      const colors = {
-        fp: styles.getPropertyValue('--color-metric-fp').trim() || '#2E5FD0',
-        pac: styles.getPropertyValue('--color-metric-pac').trim() || '#d97706',
-        mix: styles.getPropertyValue('--color-metric-mix').trim() || '#0E7C6B'
-      };
+      const optimalColor = styles.getPropertyValue('--color-metric-mix').trim() || '#0E7C6B';
       const formatMoney = (value) => this.formatMoney(value);
       const withAlpha = (hex, alpha) => {
         const value = hex.replace('#', '');
@@ -674,21 +582,9 @@ export class FinancialView {
           labels: labels,
           datasets: [
             {
-              label: 'FP a deduzione + PAC',
-              data: exitFP,
-              backgroundColor: colors.fp,
-              maxBarThickness: 24
-            },
-            {
-              label: 'Tutto PAC',
-              data: exitPAC,
-              backgroundColor: colors.pac,
-              maxBarThickness: 24
-            },
-            {
               label: 'Allocazione ottimale',
-              data: exitMix,
-              backgroundColor: colors.mix,
+              data: exitOttimale,
+              backgroundColor: optimalColor,
               maxBarThickness: 24
             }
           ]

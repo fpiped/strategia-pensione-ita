@@ -15,13 +15,13 @@
 
 import { FIELDS, clampNumber } from '../bindings.js';
 
-const STORAGE_KEY = 'strategia-pensione-scenario-v2';
+const STORAGE_KEY = 'strategia-pensione-scenario-v3';
 // Lo scenario viaggia nel fragment (#s=...), non nella query string: il
 // fragment non viene inviato al server, quindi i parametri (es. reddito)
 // non finiscono nei log di chi serve la pagina.
 const SHARE_PREFIX = '#s=';
-// v2 identifica gli scenari basati sull'investimento personale lordo.
-const PAYLOAD_VERSION = 2;
+// v3 identifica gli scenari basati sull'investimento personale netto.
+const PAYLOAD_VERSION = 3;
 const MAX_TEXT_LENGTH = 200;
 
 const EXTRA_KEYS = ['localTaxMode', 'municipalityLabel'];
