@@ -6810,6 +6810,10 @@ gerarchia radius outer>mid>control.
     background: var(--ds-metric-pac);
 }
 
+.decision-timeline-seg[data-choice="nessuno"] {
+    background: var(--ds-border);
+}
+
 /* Un'unica didascalia sotto la barra: il sottotitolo ripeteva l'ovvio. */
 .result-decision-panel .result-sequence-value {
     font-size: 0.8rem;
@@ -7376,9 +7380,97 @@ a.logo:hover h1 {
     margin-top: 0;
 }
 
+.investment-frequency-control {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    grid-column: 1 / -1;
+    padding: 0.85rem 1rem;
+    background: transparent;
+    border: 1px solid var(--ds-border);
+    border-radius: var(--radius-md);
+}
+
+.investment-frequency-copy {
+    flex: 1 1 24rem;
+    min-width: 0;
+}
+
+.investment-frequency-label {
+    display: block;
+    color: var(--ds-text);
+    font-size: 0.9rem;
+    font-weight: 750;
+}
+
+.investment-frequency-copy p {
+    margin: 0.2rem 0 0;
+    color: var(--ds-text-muted);
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.investment-frequency-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    flex: 0 0 auto;
+    min-height: 2.75rem;
+    padding: 0.18rem;
+    background: var(--ds-surface-panel);
+    border: 1px solid var(--ds-border);
+    border-radius: var(--radius-sm);
+}
+
+.investment-frequency-control .native-select {
+    display: none;
+}
+
+.investment-frequency-buttons button {
+    appearance: none;
+    display: grid;
+    place-items: center;
+    min-width: 7.5rem;
+    min-height: 2rem;
+    margin: 0;
+    padding: 0 0.75rem;
+    color: var(--ds-text-soft);
+    background: transparent;
+    border: 0;
+    border-radius: calc(var(--radius-sm) - 2px);
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.investment-frequency-buttons button.active {
+    color: var(--ds-text-on-brand);
+    background: var(--ds-brand);
+}
+
 @media (max-width: 768px) {
     .intro-section.actions-only {
         padding-right: 1.15rem;
+    }
+
+    .investment-frequency-control {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 0.7rem;
+    }
+
+    .investment-frequency-copy {
+        flex-basis: auto;
+    }
+
+    .investment-frequency-buttons {
+        width: 100%;
+    }
+
+    .investment-frequency-buttons button {
+        min-width: 0;
     }
 }
 

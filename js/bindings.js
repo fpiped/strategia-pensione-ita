@@ -30,6 +30,7 @@ const variationGroup = (panelBase, guidedBase) => [
 ];
 
 export const FIELDS = [
+  { key: 'frequenzaInvestimento', type: 'select', panel: 'frequenzaInvestimento' },
   { key: 'durata', type: 'number', panel: 'durata', guided: 'guided-durata', min: 1, max: 100 },
   { key: 'reddito', type: 'number', panel: 'reddito', guided: 'guided-reddito', min: 0, max: MONEY_MAX },
   { key: 'premiStraordinari', type: 'number', panel: 'premiStraordinari', guided: 'guided-premi', min: 0, max: MONEY_MAX },

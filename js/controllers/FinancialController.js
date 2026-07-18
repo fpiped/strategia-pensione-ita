@@ -77,9 +77,6 @@ export class FinancialController {
     constructor() {
         this.model = new FinancialModel();
         this.view = new FinancialView();
-        this.tableView = 'mix';
-        // Strategia mostrata in tabella ed esploratore: mix | fp | pac.
-        this.strategyView = 'mix';
         this.latestResults = null;
         this.guidedStep = 0;
         this.annualExplorerYear = 1;
@@ -243,32 +240,6 @@ export class FinancialController {
         }
       });
 
-      document.querySelectorAll('[data-strategy-select]').forEach((button) => {
-        button.addEventListener('click', () => this.setStrategyView(button.dataset.strategySelect));
-      });
-      document.querySelectorAll('[data-strategy]').forEach((card) => {
-        const select = () => this.setStrategyView(card.dataset.strategy);
-        card.addEventListener('click', select);
-        card.addEventListener('keydown', (event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            select();
-          }
-        });
-      });
-      this.syncStrategyCards();
-      document.querySelectorAll('[data-table-view]').forEach((button) => {
-        button.addEventListener('click', () => {
-          this.tableView = button.dataset.tableView;
-          document.querySelectorAll('[data-table-view]').forEach((item) => {
-            item.classList.toggle('active', item === button);
-          });
-          if (this.latestResults) {
-            this.view.createTable(this.getStrategyRows(), this.tableView, this.getStrategyExitLabel());
-            this.view.highlightTableYear(this.annualExplorerYear);
-          }
-        });
-      });
     }
 
     static VARIATION_CONTROLS = [
@@ -304,6 +275,7 @@ export class FinancialController {
       if (this.applyLocalTaxAutoRate(state)) return;
       this.syncSegmentedControls();
       this.syncVariationFields();
+      this.updateInvestmentFrequencyUi(state);
       this.updateContributionBaseFields(state);
       this.updateReturnFields(state);
       this.updateLocalTaxUi(state);
@@ -334,6 +306,25 @@ export class FinancialController {
       });
     }
 
+    updateInvestmentFrequencyUi(state) {
+      const singlePayment = state.frequenzaInvestimento === 'singolo';
+      setText('investment-frequency-description', singlePayment
+        ? 'Ottimizza soltanto il versamento dell’anno 1 e segue quel capitale fino alla fine.'
+        : 'Ripete ogni anno il budget netto indicato e ottimizza ciascun nuovo versamento.');
+      setText(['investment-amount-label', 'guided-investment-amount-label'], singlePayment
+        ? 'Investimento netto · anno 1'
+        : 'Investimento netto annuo');
+      setText('guided-investment-step-title', singlePayment ? 'Investimento anno 1' : 'Investimento annuo');
+
+      document.querySelectorAll('select[data-variation-fields]').forEach((select) => {
+        const control = select.closest('.form-group');
+        if (control) control.hidden = singlePayment;
+
+        const fields = byId(select.dataset.variationFields);
+        if (fields) fields.hidden = singlePayment || select.value !== 'crescente';
+      });
+    }
+
     /**
      * Rende l'esploratore annuale: i dati fiscali arrivano dal model,
      * la view formatta soltanto.
@@ -341,42 +332,13 @@ export class FinancialController {
     renderAnnualExplorer(year = this.annualExplorerYear) {
       const config = this.latestResults?.config;
       if (!config) return;
-      const rows = this.getStrategyRows();
+      const rows = this.getResultRows();
       const explorer = this.model.buildAnnualExplorerData(config, rows, year);
       this.view.updateAnnualExplorer(rows, config, year, explorer);
     }
 
-    getStrategyRows() {
-      const strategies = this.latestResults?.strategies;
-      return (strategies && strategies[this.strategyView]) || this.latestResults?.results || [];
-    }
-
-    getStrategyExitLabel() {
-      return { mix: 'Exit ottimale', fp: 'Exit FP', pac: 'Exit PAC' }[this.strategyView] || 'Exit';
-    }
-
-    setStrategyView(strategy) {
-      if (!['mix', 'fp', 'pac'].includes(strategy) || strategy === this.strategyView) return;
-      this.strategyView = strategy;
-      this.syncStrategyCards();
-      if (!this.latestResults) return;
-      this.view.createTable(this.getStrategyRows(), this.tableView, this.getStrategyExitLabel());
-      this.view.highlightTableYear(this.annualExplorerYear);
-      if (this.latestResults.config) {
-        this.renderAnnualExplorer();
-        this.updateFpSplitCards(this.latestResults.results, this.latestResults.config);
-      }
-    }
-
-    syncStrategyCards() {
-      document.querySelectorAll('[data-strategy]').forEach((card) => {
-        card.classList.toggle('strategy-active', card.dataset.strategy === this.strategyView);
-      });
-      document.querySelectorAll('[data-strategy-select]').forEach((button) => {
-        const active = button.dataset.strategySelect === this.strategyView;
-        button.classList.toggle('active', active);
-        button.setAttribute('aria-pressed', String(active));
-      });
+    getResultRows() {
+      return this.latestResults?.results || [];
     }
 
     scheduleResultsUpdate(delay = 200) {
@@ -520,8 +482,7 @@ export class FinancialController {
         rendimentoNettoPacEffettivo: this.calculateComparableNetReturn('pac') / 100,
 
         // Assunzioni fisse del modello
-        reinvestiRisparmio: true,
-        modalitaCumulativa: true,
+        modalitaCumulativa: state.frequenzaInvestimento !== 'singolo',
         riscattoAnticipato: state.riscattoAnticipato,
         anzianitaPregressaFp: state.anzianitaPregressaFp
       };
@@ -531,7 +492,7 @@ export class FinancialController {
       this.latestResults = { ...results, config };
 
       // Aggiorna la view
-      this.view.createTable(this.getStrategyRows(), this.tableView, this.getStrategyExitLabel());
+      this.view.createTable(this.getResultRows());
       this.view.highlightTableYear(this.annualExplorerYear);
       this.view.updateMetricsDashboard(results.results, results.tir);
       this.view.updateChoiceSequence(results.results);
@@ -540,7 +501,7 @@ export class FinancialController {
       this.view.updateInputWarnings(buildInputWarnings(config));
       this.view.updateChart(results.results);
 
-      this.updateInvestmentModeSummary(config, results.strategies);
+      this.updateInvestmentModeSummary(config, results.results);
       this.updateFpSplitCards(results.results, config);
 
       // Aggiorna il contenuto CSV per il download
@@ -833,12 +794,12 @@ export class FinancialController {
     }
 
     /**
-     * Card di quote, quota extra e busta/bonifico (anno 1), calcolate sulla
-     * strategia FP e mostrate identiche nel pannello e nella guidata.
+     * Card di quote, quota extra e busta/bonifico (anno 1), calcolate sul
+     * piano ottimizzato e mostrate identiche nel pannello e nella guidata.
      */
     updateFpSplitCards(results, config) {
-      // Stessa strategia mostrata in tabella ed esploratore: un'unica storia.
-      const row = this.getStrategyRows()?.[0] || results?.[0];
+      // Stesso piano mostrato in tabella ed esploratore: un'unica storia.
+      const row = this.getResultRows()?.[0] || results?.[0];
       if (!row) return;
 
       const money = (value) => `${Math.round(value).toLocaleString('it-IT')} €`;
@@ -871,8 +832,8 @@ export class FinancialController {
       setText(['fp-split-diff-note', 'guided-fp-split-diff-note'], note);
     }
 
-    updateInvestmentModeSummary(config, strategies = {}) {
-      const firstYear = strategies.mix?.[0];
+    updateInvestmentModeSummary(config, results = []) {
+      const firstYear = results[0];
       if (!firstYear) return;
 
       const formatMoney = (value) => `${Math.round(Math.max(value, 0)).toLocaleString('it-IT')} €`;
@@ -884,17 +845,17 @@ export class FinancialController {
         config.variazioneInvestimentoValore
       );
       const risparmioFiscale = firstYear.risparmioFiscale || 0;
-      const investimentoEffettivo = (firstYear.quotaFpConsigliata || 0) + (firstYear.quotaPacConsigliata || 0);
-      const spesaEffettiva = Math.max(investimentoEffettivo - risparmioFiscale, 0);
+      const investimentoLordo = firstYear.investimentoLordo
+        || ((firstYear.quotaFpConsigliata || 0) + (firstYear.quotaPacConsigliata || 0));
 
       const equivalentCard = byId('investment-year1-equivalent-card');
       if (equivalentCard) equivalentCard.hidden = false;
-      setText('investment-year1-gross-display', formatMoney(investimentoAnno));
+      setText('investment-year1-gross-display', formatMoney(investimentoLordo));
       setText(['investment-year1-fp-label', 'guided-investment-year1-fp-label'], 'Investimento netto · anno 1');
       setText(['investment-year1-equivalent-label', 'guided-investment-year1-equivalent-label'], 'Investimento lordo · anno 1');
-      setText(['investment-year1-tax-saving-display', 'guided-investment-year1-tax-saving-display'], formatMoney(spesaEffettiva));
-      setText(['investment-year1-equivalent-display', 'guided-investment-year1-equivalent-display'], formatMoney(investimentoEffettivo));
-      setText(['investment-mode-explanation', 'guided-investment-mode-explanation'], `Quanto esce di tasca dopo ${formatMoney(risparmioFiscale)} di beneficio fiscale.`);
+      setText(['investment-year1-tax-saving-display', 'guided-investment-year1-tax-saving-display'], formatMoney(investimentoAnno));
+      setText(['investment-year1-equivalent-display', 'guided-investment-year1-equivalent-display'], formatMoney(investimentoLordo));
+      setText(['investment-mode-explanation', 'guided-investment-mode-explanation'], `Quanto esce realmente di tasca; il beneficio di ${formatMoney(risparmioFiscale)} viene reinvestito.`);
       setText(['investment-year1-equivalent-copy', 'guided-investment-year1-equivalent-copy'], `${formatMoney(firstYear.quotaFpConsigliata || 0)} FP + ${formatMoney(firstYear.quotaPacConsigliata || 0)} PAC.`);
 
     }

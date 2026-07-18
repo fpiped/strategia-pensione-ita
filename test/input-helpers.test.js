@@ -75,7 +75,7 @@ test('segnala rendimento netto PAC inferiore al netto FP calcolato', () => {
   ]);
 });
 
-test('segnala quota minima datore non raggiunta', () => {
+test('non confronta direttamente budget netto e quota minima lorda', () => {
   const warnings = buildInputWarnings({
     reddito: 30000,
     investimento: 100,
@@ -87,7 +87,5 @@ test('segnala quota minima datore non raggiunta', () => {
     ulterioriDetrazioni: 0
   });
 
-  assert.deepEqual(warnings, [
-    'Con questi input non raggiungi la quota minima per ottenere il contributo del datore.'
-  ]);
+  assert.deepEqual(warnings, []);
 });

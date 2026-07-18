@@ -7,7 +7,6 @@ export function buildInputWarnings(config) {
   const baseDatoreFp = config.baseDatoreFpTipo && config.baseDatoreFpTipo !== 'same' && config.baseDatoreFpTipo !== 'ral' && config.baseDatoreFp > 0
     ? config.baseDatoreFp
     : baseContributivaFp;
-  const investimentoMinimoDatore = baseContributivaFp * config.quotaMinAderentePerc;
 
   if (config.investimento > redditoTotale * 0.5 && redditoTotale > 0) {
     warnings.push('Investimento annuo molto alto rispetto al reddito: verifica che sia sostenibile e netto di altre esigenze.');
@@ -55,13 +54,6 @@ export function buildInputWarnings(config) {
 
   if (config.massimaleContributivoInps > 0 && config.sogliaIvsAggiuntivo > config.massimaleContributivoInps) {
     warnings.push('La soglia IVS aggiuntivo è superiore al massimale INPS: in questo scenario l’IVS aggiuntivo non verrà applicato.');
-  }
-
-  if (
-    config.investimento < investimentoMinimoDatore &&
-    (config.quotaDatoreFpPerc > 0 || config.contributoDatoreFisso > 0)
-  ) {
-    warnings.push('Con questi input non raggiungi la quota minima per ottenere il contributo del datore.');
   }
 
   if (baseDatoreFp !== baseContributivaFp && config.quotaDatoreFpPerc > 0) {

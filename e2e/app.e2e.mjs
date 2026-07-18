@@ -80,7 +80,7 @@ async function setSelect(page, id, value) {
 }
 
 const fieldValue = (page, id) => page.evaluate((id) => document.getElementById(id).value, id);
-const storedScenario = (page) => page.evaluate(() => localStorage.getItem('strategia-pensione-scenario-v2'));
+const storedScenario = (page) => page.evaluate(() => localStorage.getItem('strategia-pensione-scenario-v3'));
 
 const { server, base: BASE } = await startStaticServer();
 // channel 'chromium' usa il build completo installato da `playwright install
@@ -99,9 +99,39 @@ try {
 
   check('boot: nessuno scenario salvato al primo accesso', (await storedScenario(pageA)) === null);
 
+  const frequencyControl = await pageA.evaluate(() => {
+    const select = document.getElementById('frequenzaInvestimento');
+    const buttons = [...document.querySelectorAll('.investment-frequency-buttons button')];
+    const selectRect = select.getBoundingClientRect();
+    const activeStyle = getComputedStyle(buttons[0]);
+    const inactiveStyle = getComputedStyle(buttons[1]);
+    return {
+      selectWidth: selectRect.width,
+      selectHeight: selectRect.height,
+      selectDisplay: getComputedStyle(select).display,
+      buttonDisplay: getComputedStyle(buttons[0]).display,
+      activeBackground: activeStyle.backgroundColor,
+      inactiveBackground: inactiveStyle.backgroundColor,
+      controlRect: document.querySelector('.investment-frequency-control').getBoundingClientRect().toJSON(),
+      firstCardRect: document.querySelector('.params-grid > .param-card').getBoundingClientRect().toJSON(),
+      secondCardRect: document.querySelectorAll('.params-grid > .param-card')[1].getBoundingClientRect().toJSON(),
+      overflows: document.querySelector('.investment-frequency-control').scrollWidth
+        > document.querySelector('.investment-frequency-control').clientWidth
+    };
+  });
+  check('hero: select tecnico nascosto', frequencyControl.selectDisplay === 'none' && frequencyControl.selectWidth === 0 && frequencyControl.selectHeight === 0, JSON.stringify(frequencyControl));
+  check('hero: pulsanti modalità stilizzati', frequencyControl.buttonDisplay === 'grid' && frequencyControl.activeBackground !== frequencyControl.inactiveBackground, JSON.stringify(frequencyControl));
+  check('pannello: controllo modalità senza overflow', !frequencyControl.overflows, JSON.stringify(frequencyControl));
+  check('pannello: modalità prima delle sottosezioni e su entrambe le colonne',
+    frequencyControl.controlRect.bottom < frequencyControl.firstCardRect.top
+      && Math.abs(frequencyControl.controlRect.left - frequencyControl.firstCardRect.left) <= 1
+      && Math.abs(frequencyControl.controlRect.right - frequencyControl.secondCardRect.right) <= 1,
+    JSON.stringify(frequencyControl)
+  );
+
   await setNumber(pageA, 'durata', 42);
   await setNumber(pageA, 'investimento', 8000);
-  await pageA.waitForFunction(() => localStorage.getItem('strategia-pensione-scenario-v2') !== null);
+  await pageA.waitForFunction(() => localStorage.getItem('strategia-pensione-scenario-v3') !== null);
 
   const saved = JSON.parse(await storedScenario(pageA));
   check('salvataggio: diff in localStorage', saved?.durata === 42 && saved?.investimento === 8000, JSON.stringify(saved));
@@ -114,13 +144,35 @@ try {
       anni: rows.slice(0, 3).map((r) => r.dataset.anno),
       celle: [...rows[0].cells].map((c) => c.textContent),
       sequenza: document.getElementById('metric-sequence-value').textContent,
-      metricaFp: document.getElementById('metric-fp-value').textContent
+      valoreOttimale: document.getElementById('result-best-value').textContent
     };
   });
   check('tabella: righe con anno progressivo', table.anni.join(',') === '1,2,3', table.anni.join(','));
   check('tabella: celle valorizzate', table.celle.length > 3 && table.celle.every((c) => c !== '' && c !== 'undefined'), table.celle.join('|'));
   check('risultati: sequenza scelte presente', table.sequenza.length > 0, table.sequenza);
-  check('risultati: metrica FP monetaria', /€/.test(table.metricaFp), table.metricaFp);
+  check('risultati: valore ottimale monetario', /€/.test(table.valoreOttimale), table.valoreOttimale);
+
+  await pageA.click('[data-select-target="frequenzaInvestimento"][data-select-value="singolo"]');
+  await pageA.waitForFunction(() => document.querySelector('#output-table tbody tr:nth-child(2)')?.cells[1]?.textContent === '0 €');
+  const singlePayment = await pageA.evaluate(() => ({
+    description: document.getElementById('investment-frequency-description')?.textContent || '',
+    secondYear: [...document.querySelector('#output-table tbody tr:nth-child(2)').cells].map((cell) => cell.textContent),
+    label: document.getElementById('investment-amount-label')?.textContent || '',
+    variationControlsHidden: [...document.querySelectorAll('select[data-variation-fields]')]
+      .every((select) => select.closest('.form-group')?.hidden),
+    variationFieldsHidden: [...document.querySelectorAll('select[data-variation-fields]')]
+      .every((select) => document.getElementById(select.dataset.variationFields)?.hidden)
+  }));
+  check('solo anno 1: nessun nuovo investimento dal secondo anno', singlePayment.secondYear[1] === '0 €', singlePayment.secondYear.join('|'));
+  check('solo anno 1: allocazione compatta in tabella', singlePayment.secondYear.includes('N/A'), singlePayment.secondYear.join('|'));
+  check('solo anno 1: spiegazione e label coerenti', singlePayment.description.includes('soltanto il versamento') && singlePayment.label.includes('anno 1'));
+  check('solo anno 1: controlli andamento nascosti', singlePayment.variationControlsHidden && singlePayment.variationFieldsHidden, JSON.stringify(singlePayment));
+  await pageA.click('[data-select-target="frequenzaInvestimento"][data-select-value="annuale"]');
+  await pageA.waitForFunction(() => document.querySelector('#output-table tbody tr:nth-child(2)')?.cells[1]?.textContent === '8.000 €');
+  check('ogni anno: controlli andamento ripristinati', await pageA.evaluate(() =>
+    [...document.querySelectorAll('select[data-variation-fields]')]
+      .every((select) => !select.closest('.form-group')?.hidden)
+  ));
 
   await pageA.evaluate(() => document.querySelector('#output-table tbody tr:nth-child(5)').click());
   await pageA.waitForTimeout(200);
@@ -159,8 +211,8 @@ try {
   check('link: durata dal link condiviso', (await fieldValue(pageB, 'durata')) === '42');
   check('link: URL ripulito dal fragment', (await pageB.evaluate(() => window.location.hash + window.location.search)) === '');
   check('link: scenario adottato in localStorage', JSON.parse(await storedScenario(pageB))?.durata === 42);
-  const metricFp = await pageB.evaluate(() => document.getElementById('metric-fp-value').textContent);
-  check('link: risultati calcolati', /€/.test(metricFp) && metricFp.trim() !== '0 €', metricFp);
+  const optimalValue = await pageB.evaluate(() => document.getElementById('result-best-value').textContent);
+  check('link: risultati calcolati', /€/.test(optimalValue) && optimalValue.trim() !== '0 €', optimalValue);
 
   // --- 6. Link corrotto: fallback silenzioso ai predefiniti ---
   const ctxC = await browser.newContext();
@@ -259,7 +311,6 @@ try {
       ['guidata-chip', '.guided-dialog .mini-metric.output'],
       ['guidata-input', '.guided-dialog .control-field'],
       ['theme-toggle', '.theme-toggle'],
-      ['esploratore-attivo', '.explorer-strategy-select button.active'],
       ['nota-guida-help', '.guided-dialog .guided-note .help-entry'],
     ];
     const props = ['backgroundColor', 'color', 'borderTopColor'];

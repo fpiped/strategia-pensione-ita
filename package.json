@@ -1,7 +1,7 @@
 {
   "name": "strategia-pensione-ita",
   "version": "1.0.0",
-  "description": "Calcolatore per confrontare Fondo Pensione e PAC in ETF",
+  "description": "Calcolatore per ottimizzare un investimento netto tra fondo pensione e PAC in ETF",
   "type": "module",
   "scripts": {
     "start": "npx serve -l 9000",
