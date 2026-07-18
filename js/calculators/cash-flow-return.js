@@ -51,9 +51,9 @@ export function calculateStrategyIrr(results) {
   if (!results.length) return null;
   const events = results.map((row) => ({
     time: row.anno,
-    amount: -(row.quotaFpConsigliata + row.quotaPacConsigliata - row.risparmioFiscale)
+    amount: -(row.investimentoNetto ?? (row.quotaFpConsigliata + row.quotaPacConsigliata - row.risparmioFiscale))
   }));
   const last = results.at(-1);
-  events.push({ time: last.anno, amount: last.exitMix });
+  events.push({ time: last.anno, amount: last.exitOttimale });
   return calculateAnnualizedIrr(events);
 }

@@ -13,7 +13,6 @@ const baseConfig = {
   quotaMinAderentePerc: 0.01,
   rendimentoAnnualeFpPerc: 0.04,
   rendimentoAnnualePacPerc: 0.06,
-  reinvestiRisparmio: true,
   modalitaCumulativa: true,
   riscattoAnticipato: false
 };
@@ -23,60 +22,47 @@ test('calcola lo scenario cumulativo predefinito', () => {
   const result = model.calculateResults(baseConfig);
 
   assert.equal(result.results.length, 30);
-  assert.equal(result.breakeven, 25);
   assert.equal(result.quotaDatoreFp, 450);
-  assert.equal(result.risparmioImposta, 6620);
-  assert.ok(Number.isFinite(result.tir.mix));
-  assert.ok(Number.isFinite(result.tir.fp));
-  assert.ok(Math.abs(result.tir.pac - 0.06) < 0.0001);
+  assert.equal(result.risparmioImposta, 11245);
+  assert.equal('strategies' in result, false);
+  assert.ok(Number.isFinite(result.tir.optimal));
 
-  assert.deepEqual(result.results[0], {
-    anno: 1,
-    quotaEntroMinima: 300,
-    quotaExtraMinima: 0,
-    quotaEntroDeduzione: 300,
-    quotaExtraDeduzione: 2700,
-    quotaAderente: 3000,
-    quotaDatore: 450,
-    risparmioFiscale: 96,
-    quotaFpConsigliata: 300,
-    quotaFpDeducibile: 300,
-    quotaFpNonDeducibile: 0,
-    quotaDatoreDeducibile: 450,
-    quotaPacConsigliata: 2700,
-    quotaPacOltreLimite: 0,
-    quotaFpBusta: 300,
-    quotaFpBonifico: 0,
-    diffBustaBonifico: 0,
-    scelta: 'MIX',
-    exitFp: 2933,
-    exitPac: 3000,
-    exitMix: 3338
-  });
+  const first = result.results[0];
+  assert.equal(first.investimentoNetto, 3000);
+  assert.equal(first.investimentoLordo, 3096);
+  assert.equal(first.quotaFpConsigliata, 300);
+  assert.equal(first.quotaPacConsigliata, 2796);
+  assert.equal(first.risparmioFiscale, 96);
+  assert.equal(first.exitOttimale, 3434);
 
-  assert.deepEqual(result.results.at(-1), {
-    anno: 30,
-    quotaEntroMinima: 300,
-    quotaExtraMinima: 2700,
-    quotaEntroDeduzione: 3000,
-    quotaExtraDeduzione: 0,
-    quotaAderente: 3000,
-    quotaDatore: 450,
-    risparmioFiscale: 717,
-    quotaFpConsigliata: 3000,
-    quotaFpDeducibile: 3000,
-    quotaFpNonDeducibile: 0,
-    quotaDatoreDeducibile: 450,
-    quotaPacConsigliata: 0,
-    quotaPacOltreLimite: 0,
-    quotaFpBusta: 300,
-    quotaFpBonifico: 2700,
-    diffBustaBonifico: 182,
-    scelta: 'FP',
-    exitFp: 182626,
-    exitPac: 237175,
-    exitMix: 250533
-  });
+  const last = result.results.at(-1);
+  assert.equal(last.investimentoNetto, 3000);
+  assert.equal(last.investimentoLordo, 3932);
+  assert.equal(last.quotaFpConsigliata, 3931);
+  assert.equal(last.quotaPacConsigliata, 1);
+  assert.equal(last.risparmioFiscale, 932);
+  assert.equal(last.exitOttimale, 263714);
+});
+
+test('ottimizza solo il versamento dell anno 1 e poi ne segue la crescita', () => {
+  const model = new FinancialModel();
+  const config = { ...baseConfig, modalitaCumulativa: false };
+  const result = model.calculateResults(config);
+
+  assert.equal(result.results.length, 30);
+  assert.equal(result.results[0].investimentoNetto, 3000);
+  assert.equal(result.results[0].scelta, 'MIX');
+  assert.equal(result.results[1].investimentoNetto, 0);
+  assert.equal(result.results[1].investimentoLordo, 0);
+  assert.equal(result.results[1].scelta, 'NESSUNO');
+  assert.equal(result.results.at(-1).scelta, 'NESSUNO');
+  assert.equal(result.results.at(-1).exitOttimale, 17413);
+  assert.ok(result.results.at(-1).exitOttimale > result.results[0].exitOttimale);
+
+  const anno2 = model.buildAnnualExplorerData(config, result.results, 2);
+  assert.equal(anno2.investimentoAnno, 0);
+  assert.equal(anno2.spesaEffettivaAnno, 0);
+  assert.equal(anno2.investimentoPersonaleAnno, 0);
 });
 
 test('non riconosce contributo datore se la quota minima non e raggiunta', () => {
@@ -89,7 +75,13 @@ test('non riconosce contributo datore se la quota minima non e raggiunta', () =>
 
   assert.equal(result.quotaDatoreFp, 0);
   assert.equal(result.results[0].quotaDatore, 0);
-  assert.equal(result.results[0].quotaEntroMinima, 100);
+  assert.ok(result.results[0].quotaFpConsigliata < 300);
+  assert.ok(Math.abs(
+    result.results[0].quotaFpConsigliata
+      + result.results[0].quotaPacConsigliata
+      - result.results[0].risparmioFiscale
+      - 100
+  ) <= 1);
 });
 
 test('riconosce un contributo datore fisso annuo', () => {
@@ -134,13 +126,12 @@ test('applica e rende esplorabili i costi annui EUR di FP e PAC', () => {
     costiFissiPac: 40
   };
   const result = model.calculateResults(config);
-  const pacRows = result.strategies.pac;
-  const explorer = model.buildAnnualExplorerData(config, pacRows, 2);
+  const explorer = model.buildAnnualExplorerData(config, result.results, 2);
 
-  assert.equal(pacRows.at(-1).exitPac, 5920);
-  assert.equal(explorer.costoFissoFpAnno, 0);
+  assert.equal(result.results.at(-1).exitOttimale, 7405);
+  assert.equal(explorer.costoFissoFpAnno, 25);
   assert.equal(explorer.costoFissoPacAnno, 40);
-  assert.equal(explorer.montantePac, 5920);
+  assert.ok(explorer.montanteFp > 0);
 });
 
 test('applica il riscatto anticipato al 23%', () => {
@@ -158,7 +149,7 @@ test('applica il riscatto anticipato al 23%', () => {
 
   assert.equal(model.calcolaTassazioneFp(1, false), 0.15);
   assert.equal(model.calcolaTassazioneFp(1, true), 0.23);
-  assert.ok(earlyExit.results[0].exitFp < ordinary.results[0].exitFp);
+  assert.ok(earlyExit.results[0].exitOttimale < ordinary.results[0].exitOttimale);
 });
 
 test('applica anzianita pregressa FP alla tassazione in uscita', () => {
@@ -174,7 +165,7 @@ test('applica anzianita pregressa FP alla tassazione in uscita', () => {
   });
 
   assert.equal(model.calcolaTassazioneFp(20, false), 0.132);
-  assert.ok(conPregresso.results[0].exitFp > senzaPregresso.results[0].exitFp);
+  assert.ok(conPregresso.results[0].exitOttimale > senzaPregresso.results[0].exitOttimale);
 });
 
 test('gli altri redditi entrano nell IRPEF ma non nella base contributiva INPS', () => {
@@ -219,13 +210,12 @@ test('include addizionali stimate nel risparmio fiscale', () => {
     addizionaliPerc: 0.02
   });
 
-  assert.equal(result.results[0].risparmioFiscale, 777);
-  assert.equal(result.results[0].quotaFpConsigliata, 3000);
+  assert.equal(result.results[0].risparmioFiscale, 1036);
+  assert.equal(result.results[0].quotaFpConsigliata, 4036);
   assert.equal(result.results[0].quotaPacConsigliata, 0);
   assert.equal(result.results[0].quotaFpBusta, 300);
-  assert.equal(result.results[0].quotaFpBonifico, 2700);
-  assert.equal(result.results[0].exitFp, 2933);
-  assert.equal(result.results[0].exitMix, 2933);
+  assert.equal(result.results[0].quotaFpBonifico, 3736);
+  assert.equal(result.results[0].exitOttimale, 3814);
 });
 
 test('distingue beneficio fiscale tra versamento FP in busta e bonifico', () => {
@@ -409,14 +399,19 @@ test('usa il rendimento PAC come rendimento netto senza costi o tasse aggiuntive
     ...baseConfig,
     durata: 1,
     investimento: 3000,
+    quotaDatoreFpPerc: 0,
+    quotaMinAderentePerc: 0,
+    ulterioriDetrazioni: 100000,
+    rendimentoAnnualeFpPerc: 0,
     rendimentoAnnualePacPerc: 0.08
   });
 
-  assert.equal(result.results[0].exitPac, 3000);
-  assert.equal(result.results[0].exitPac, 3000);
+  assert.equal(result.results[0].quotaFpConsigliata, 0);
+  assert.equal(result.results[0].quotaPacConsigliata, 3000);
+  assert.equal(result.results[0].exitOttimale, 3000);
 });
 
-test('l investimento lordo confronta le strategie a parita di versamento', () => {
+test('il beneficio fiscale aumenta il lordo senza essere contato due volte', () => {
   const model = new FinancialModel();
   const result = model.calculateResults({
     ...baseConfig,
@@ -424,15 +419,17 @@ test('l investimento lordo confronta le strategie a parita di versamento', () =>
     addizionaliPerc: 0.02
   });
 
-  // Tutte le serie versano il target: il beneficio fiscale resta in tasca.
-  assert.equal(result.results[0].risparmioFiscale, 777);
-  assert.equal(result.results[0].quotaFpConsigliata, 3000);
+  // 3.000 € netti finanziano 4.036 € lordi, tutti nel FP. L'exit è il
+  // capitale FP + datore al netto dell'imposta, senza sommare ancora 1.036 €.
+  assert.equal(result.results[0].investimentoNetto, 3000);
+  assert.equal(result.results[0].risparmioFiscale, 1036);
+  assert.equal(result.results[0].investimentoLordo, 4036);
+  assert.equal(result.results[0].quotaFpConsigliata, 4036);
   assert.equal(result.results[0].quotaPacConsigliata, 0);
-  assert.equal(result.results[0].exitPac, 3000);
-  assert.equal(result.results[0].exitMix, 2933);
+  assert.equal(result.results[0].exitOttimale, 3814);
 });
 
-test('FP personale e PAC sommano sempre all investimento lordo indicato', () => {
+test('FP + PAC meno beneficio riconciliano sempre l investimento netto indicato', () => {
   const model = new FinancialModel();
   const result = model.calculateResults({
     ...baseConfig,
@@ -446,9 +443,10 @@ test('FP personale e PAC sommano sempre all investimento lordo indicato', () => 
 
   result.results.forEach((row, index) => {
     const target = 5000 + (Math.floor(index / 2) * 500);
-    const actual = row.quotaFpConsigliata + row.quotaPacConsigliata;
+    const actual = row.quotaFpConsigliata + row.quotaPacConsigliata - row.risparmioFiscale;
     assert.ok(Math.abs(actual - target) <= 1, `anno ${index + 1}: ${actual} != ${target}`);
-    assert.ok(Math.max(actual - row.risparmioFiscale, 0) <= actual);
+    assert.ok(Math.abs(row.investimentoLordo - (row.quotaFpConsigliata + row.quotaPacConsigliata)) <= 1);
+    assert.equal(row.investimentoNetto, target);
   });
 });
 
@@ -558,7 +556,7 @@ test('premi e bonus aumentano il reddito fiscale ma non la base FP su RAL', () =
   assert.ok(bonusResult.results[0].risparmioFiscale > baseResult.results[0].risparmioFiscale);
 });
 
-test('manda sempre nel PAC la quota oltre deduzione', () => {
+test('manda al PAC la quota oltre deduzione quando ha il valore marginale maggiore', () => {
   const model = new FinancialModel();
   const result = model.calculateResults({
     ...baseConfig,
@@ -568,13 +566,15 @@ test('manda sempre nel PAC la quota oltre deduzione', () => {
   });
 
   assert.equal(result.results[0].quotaEntroDeduzione, 4850);
-  assert.equal(result.results[0].quotaExtraDeduzione, 3150);
+  assert.equal(result.results[0].quotaExtraDeduzione, 4390);
   assert.equal(result.results[0].quotaFpConsigliata, 4850);
-  assert.equal(result.results[0].quotaPacConsigliata, 3150);
+  assert.equal(result.results[0].quotaPacConsigliata, 4390);
+  assert.equal(result.results[0].investimentoLordo, 9240);
+  assert.equal(result.results[0].risparmioFiscale, 1240);
   assert.equal(result.results[0].scelta, 'MIX');
 });
 
-test('ammette FP non deducibile solo per raggiungere la quota minima e ottenere il datore', () => {
+test('ammette FP non deducibile per raggiungere la quota minima e ottenere il datore', () => {
   const model = new FinancialModel();
   const result = model.calculateResults({
     ...baseConfig,
@@ -588,7 +588,7 @@ test('ammette FP non deducibile solo per raggiungere la quota minima e ottenere 
     rendimentoAnnualePacPerc: 0
   });
 
-  const row = result.strategies.mix[0];
+  const row = result.results[0];
   assert.equal(row.quotaFpConsigliata, 2000);
   assert.equal(row.quotaFpDeducibile, 1300);
   assert.equal(row.quotaFpNonDeducibile, 700);
@@ -597,28 +597,22 @@ test('ammette FP non deducibile solo per raggiungere la quota minima e ottenere 
   assert.equal(row.quotaPacConsigliata, 8000);
   assert.equal(row.quotaPacOltreLimite, 8000);
   assert.equal(row.risparmioFiscale, 0);
-  assert.equal(row.exitMix, 13205);
+  assert.equal(row.exitOttimale, 13205);
   assert.equal(row._state.contributiFP, 6000);
   assert.equal(row._state.contributiFpDeducibili, 5300);
   assert.equal(row._state.contributiFpNonDeducibili, 700);
 });
 
-test('il benchmark FP a deduzione + PAC riempie il plafond e destina il resto al PAC', () => {
+test('espone una sola strategia ottimizzata senza benchmark separati', () => {
   const model = new FinancialModel();
   const result = model.calculateResults({
     ...baseConfig,
     durata: 1,
     investimento: 8000
   });
-  const fpFirst = result.strategies.fp[0];
-
-  assert.equal(fpFirst.scelta, 'FP');
-  // FP dedotto al massimo consentito (5.300 − datore), niente non dedotto.
-  assert.equal(fpFirst.quotaFpNonDeducibile, 0);
-  assert.equal(fpFirst.quotaFpConsigliata, fpFirst.quotaFpDeducibile);
-  assert.ok(fpFirst.quotaPacConsigliata > 0);
-  // Parità di investimento lordo: FP personale + PAC = importo indicato.
-  assert.equal(fpFirst.quotaFpConsigliata + fpFirst.quotaPacConsigliata, 8000);
+  assert.equal('strategies' in result, false);
+  assert.deepEqual(Object.keys(result.tir), ['optimal']);
+  assert.equal('breakeven' in result, false);
 });
 
 test('l ottimale puo versare oltre il plafond come FP non dedotto quando rende piu del PAC', () => {
@@ -630,11 +624,11 @@ test('l ottimale puo versare oltre il plafond come FP non dedotto quando rende p
     rendimentoAnnualeFpPerc: 0.05,
     rendimentoAnnualePacPerc: 0.02
   });
-  const mix = result.strategies.mix[0];
+  const mix = result.results[0];
 
   // Con FP che rende più del PAC l'eccedenza va nel fondo, non dedotta.
   assert.ok(mix.quotaFpNonDeducibile > 0);
-  assert.equal(mix.quotaPacConsigliata, 0);
+  assert.ok(mix.quotaPacConsigliata <= 1);
   assert.equal(mix.quotaFpConsigliata, mix.quotaFpDeducibile + mix.quotaFpNonDeducibile);
 });
 
@@ -664,27 +658,24 @@ test('altri redditi e premi crescenti alzano il reddito fiscale e il risparmio',
   assert.ok(conPremiCrescenti.results[0].risparmioFiscale >= base.results[0].risparmioFiscale);
 });
 
-test('l allocazione ottimale puo dividere la quota deducibile prima del FP pieno', () => {
+test('l allocazione ottimale puo cambiare ripartizione con l orizzonte residuo', () => {
   const model = new FinancialModel();
   const result = model.calculateResults({
     ...baseConfig,
     addizionaliPerc: 0.02
   });
 
-  // Con l'aliquota di uscita valutata a scadenza il FP pieno arriva prima.
-  assert.equal(result.breakeven, 25);
   assert.equal(result.results[0].scelta, 'MIX');
-  assert.equal(result.results[17].scelta, 'MIX');
-  assert.equal(result.results[18].scelta, 'MIX');
-  assert.equal(result.results.at(-1).scelta, 'FP');
-  assert.ok(result.results.at(-1).exitMix > result.results.at(-1).exitPac);
+  assert.ok(result.results.at(-1).quotaFpConsigliata > result.results[0].quotaFpConsigliata);
+  assert.ok(result.results.at(-1).quotaPacConsigliata < result.results[0].quotaPacConsigliata);
+  assert.ok(result.results.at(-1).exitOttimale > result.results[0].exitOttimale);
 });
 
 test('l ottimizzatore valuta l imposta di uscita FP all orizzonte, non all anno corrente', () => {
   const model = new FinancialModel();
   // Condizioni dell'anno 19 su 30: montante proiettato su 12 anni residui.
   const inputs = {
-    grossInvestmentTarget: 3000,
+    netInvestmentTarget: 3000,
     quotaMinAderente: 300,
     quotaDatorePotenziale: 450,
     reddito: 30000,
@@ -695,21 +686,22 @@ test('l ottimizzatore valuta l imposta di uscita FP all orizzonte, non all anno 
     anniResidui: 12
   };
 
-  // Aliquota "se esco oggi" (13.8%): il margine resta al PAC.
+  // Aliquota "se esco oggi" (13.8%): il margine resta prevalentemente al PAC.
   const oggi = model._optimizeAllocation({ ...inputs, tassazioneFpScadenza: 0.138 });
-  assert.equal(Math.round(oggi.quotaFp), 300);
 
-  // L'aliquota a scadenza (10,5%) aumenta il valore netto della medesima
-  // allocazione senza alterare il vincolo lordo.
+  // L'aliquota a scadenza (10,5%) rende il FP più interessante, senza
+  // alterare il vincolo netto.
   const scadenza = model._optimizeAllocation({ ...inputs, tassazioneFpScadenza: 0.105 });
-  assert.equal(scadenza.quotaFp + scadenza.quotaPac, 3000);
+  assert.ok(scadenza.quotaFp >= oggi.quotaFp);
+  assert.ok(Math.abs(scadenza.quotaFp + scadenza.quotaPac - scadenza.risparmio - 3000) < 0.01);
+  assert.ok(Math.abs(oggi.quotaFp + oggi.quotaPac - oggi.risparmio - 3000) < 0.01);
 
   // A parità di allocazione, la differenza di valore è esattamente
   // contributo deducibile × delta aliquota.
   assert.ok(scadenza.totaleNetto > oggi.totaleNetto);
 });
 
-test('l allocazione ottimale non e inferiore agli scenari puri sull exit finale', () => {
+test('l allocazione resta ammissibile anche con salti fiscali e configurazioni diverse', () => {
   const model = new FinancialModel();
   const scenarios = [
     baseConfig,
@@ -722,10 +714,11 @@ test('l allocazione ottimale non e inferiore agli scenari puri sull exit finale'
 
   for (const config of scenarios) {
     const result = model.calculateResults(config);
-    const finalRow = result.results.at(-1);
-
-    assert.ok(finalRow.exitMix >= finalRow.exitFp - 1);
-    assert.ok(finalRow.exitMix >= finalRow.exitPac - 1);
+    for (const row of result.results) {
+      const reconstructedNet = row.quotaFpConsigliata + row.quotaPacConsigliata - row.risparmioFiscale;
+      assert.ok(Math.abs(reconstructedNet - row.investimentoNetto) <= 1);
+      assert.ok(Number.isFinite(row.exitOttimale));
+    }
   }
 });
 
@@ -735,8 +728,8 @@ test('converte i risultati in CSV con intestazione coerente', () => {
 
   assert.equal(
     model.convertToCSV(result.results),
-    'Anno,Entro Min,Extra Min,Entro Ded,Extra Ded,Aderente,Datore,Risparmio,FP Cons,FP Deducibile,FP Non Deducibile,Datore Deducibile,PAC Cons,PAC Oltre Limite,FP Busta,FP Bonifico,Diff Busta,Scelta,Exit FP,Exit PAC,Exit Mix\r\n' +
-      '1,300,2700,3000,0,3000,450,717,3000,3000,0,450,0,0,300,2700,182,FP,2933,3000,2933\r\n'
+    'Anno,Entro Min,Extra Min,Entro Ded,Extra Ded,Aderente,Datore,Risparmio,FP Cons,FP Deducibile,FP Non Deducibile,Datore Deducibile,PAC Cons,PAC Oltre Limite,FP Busta,FP Bonifico,Diff Busta,Scelta,Investimento Netto,Investimento Lordo,Exit Ottimale\r\n' +
+      '1,300,3631,3931,1,3932,450,932,3931,3931,0,450,1,0,300,3631,267,MIX,3000,3932,3724\r\n'
   );
 });
 
@@ -764,27 +757,27 @@ test('esploratore annuale: fiscalità dell\'anno dal model', () => {
   assert.equal(Math.round(anno1.limiteDisponibileAderente), 4850);
   assert.equal(anno1.quotaEntroMinima, 300);
   assert.equal(anno1.quotaExtraMinima, 0);
-  assert.equal(anno1.quotaExtraDeduzione, 2700);
+  assert.equal(anno1.quotaExtraDeduzione, 2802);
   assert.equal(anno1.diffBustaBonifico, 0);
-  assert.equal(Math.round(anno1.spesaEffettivaAnno), 2898);
-  assert.equal(Math.round(anno1.investimentoPersonaleAnno), 3000);
+  assert.equal(Math.round(anno1.spesaEffettivaAnno), 3000);
+  assert.equal(Math.round(anno1.investimentoPersonaleAnno), 3102);
   assert.equal(Math.round(anno1.beneficioInvestitoAnno), 102);
-  assert.equal(Math.round(anno1.totaleMessoAlLavoroAnno), 3450);
+  assert.equal(Math.round(anno1.totaleMessoAlLavoroAnno), 3552);
   assert.equal(Math.round(anno1.versatoFp), 750);
   assert.equal(anno1.tassoUscitaFp, 0.15);
   assert.equal(anno1.anniPartecipazione, 1);
   assert.equal(Math.round(anno1.montanteFp), 750);
-  assert.equal(Math.round(anno1.montantePac), 2700);
+  assert.equal(Math.round(anno1.montantePac), 2802);
   assert.equal(Math.round(anno1.taxComparison.saving), Math.round(anno1.risparmioBaselineBusta));
   assert.equal(
     Math.round(anno1.montanteFp + anno1.montantePac - anno1.impostaUscitaFp - anno1.impostaUscitaPac + anno1.risparmioInExit),
-    results[0].exitMix
+    results[0].exitOttimale
   );
 
   // Dopo 15 anni di partecipazione l'aliquota di uscita FP scende.
   const anno23 = model.buildAnnualExplorerData(config, results, 23);
   assert.equal(anno23.tassoUscitaFp, 0.126);
-  assert.equal(Math.round(anno23.versatoFp), 17250);
+  assert.equal(Math.round(anno23.versatoFp), 35930);
   assert.ok(anno23.montanteFp > anno23.versatoFp);
   assert.ok(anno23.rendimentoFpAnno + anno23.rendimentoPacAnno > 0);
 });
