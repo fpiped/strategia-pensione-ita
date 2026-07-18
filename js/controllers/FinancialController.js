@@ -2,7 +2,7 @@ import { FinancialModel } from '../models/FinancialModel.js';
 import { FinancialView } from '../views/FinancialView.js';
 import { FINANCIAL_CONSTANTS } from '../constants/financial-constants.js';
 import { applyPeriodicVariation } from '../calculators/pension-contributions.js';
-import { calculateEffectiveTaxRate, calculateNetAnnualReturn } from '../calculators/investment-growth.js';
+import { calculateEffectiveTaxRate, calculateExitEquivalentAnnualReturn, calculateNetAnnualReturn } from '../calculators/investment-growth.js';
 import { REGIONAL_TAX_2026 } from '../constants/regional-tax-data.js';
 import {
   calculateLocalTaxRate,
@@ -491,7 +491,7 @@ export class FinancialController {
         contributoDatoreFisso: state.contributoDatoreFisso,
         quotaMinAderentePerc: state.quotaMinAderentePerc / 100,
         baseContributivaFpTipo: state.baseContributivaFpTipo,
-        // Base alternativa alla RAL: coincide con il minimo retributivo annuo.
+        // Base retributiva alternativa alla RAL, indicata da fondo o CCNL.
         baseContributivaFp: baseContributiva,
         baseDatoreFpTipo: state.baseDatoreFpTipo,
         baseDatoreFp: baseContributiva,
@@ -534,14 +534,14 @@ export class FinancialController {
       // Aggiorna la view
       this.view.createTable(this.getStrategyRows(), this.tableView, this.getStrategyExitLabel());
       this.view.highlightTableYear(this.annualExplorerYear);
-      this.view.updateMetricsDashboard(results.results);
+      this.view.updateMetricsDashboard(results.results, results.tir);
       this.view.updateChoiceSequence(results.results);
       this.view.updateResultExplanation(results.results);
       this.renderAnnualExplorer();
       this.view.updateInputWarnings(buildInputWarnings(config));
       this.view.updateChart(results.results);
 
-      this.updateInvestmentModeSummary(config, results.results);
+      this.updateInvestmentModeSummary(config, results.strategies);
       this.updateFpSplitCards(results.results, config);
 
       // Aggiorna il contenuto CSV per il download
@@ -581,7 +581,7 @@ export class FinancialController {
         this.calculateNetReturnFromValues(state.rendimentoAnnualeFpPerc, costiFp, tassaFp) / 100
       ));
       setText(['rendimentoNettoPac', 'guided-rendimento-netto-pac'], formatPercent(
-        this.calculateNetReturnFromValues(state.rendimentoAnnualePacPerc, costiPac, tassaPac) / 100
+        this.calculateNetReturnFromValues(state.rendimentoAnnualePacPerc, costiPac, tassaPac, state.durata || 1) / 100
       ));
     }
 
@@ -599,20 +599,28 @@ export class FinancialController {
         FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_AGEVOLATA,
         isFp ? FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_FP_ORDINARIA : FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_PAC_ORDINARIA
       );
-      return this.calculateNetReturnFromValues(grossReturn, costs, taxRate);
+      // Il PAC è tassato solo all'exit: il suo netto comparabile è
+      // l'equivalente annuo sull'orizzonte del piano.
+      return this.calculateNetReturnFromValues(grossReturn, costs, taxRate, isFp ? null : (state.durata || 1));
     }
 
-    calculateNetReturnFromValues(grossReturnPerc, annualCostsPerc, taxRate) {
+    calculateNetReturnFromValues(grossReturnPerc, annualCostsPerc, taxRate, exitYears = null) {
       // La formula vive nel calculator: qui solo conversione %<->frazione.
-      return calculateNetAnnualReturn(Math.max(grossReturnPerc, 0) / 100, {
+      // Con exitYears il netto è l'equivalente annuo della tassazione
+      // all'exit (PAC); senza, la tassazione è annuale (FP).
+      const options = {
         mode: 'lordo',
         costiAnnui: Math.min(Math.max(annualCostsPerc, 0), 100) / 100,
-        taxRate,
-        taxTiming: 'annual'
-      }) * 100;
+        taxRate
+      };
+      const grossReturn = Math.max(grossReturnPerc, 0) / 100;
+      const net = exitYears
+        ? calculateExitEquivalentAnnualReturn(grossReturn, options, exitYears)
+        : calculateNetAnnualReturn(grossReturn, { ...options, taxTiming: 'annual' });
+      return net * 100;
     }
 
-    // Campi minimo retributivo visibili solo se una delle basi lo usa.
+    // Campo altra base visibile solo se quota aderente o datore la usa.
     updateContributionBaseFields(state) {
       const usesMinimumWage = state.baseContributivaFpTipo === 'minimoRetributivo'
         || state.baseDatoreFpTipo === 'minimoRetributivo';
@@ -864,8 +872,8 @@ export class FinancialController {
       setText(['fp-split-diff-note', 'guided-fp-split-diff-note'], note);
     }
 
-    updateInvestmentModeSummary(config, results = []) {
-      const firstYear = results[0];
+    updateInvestmentModeSummary(config, strategies = {}) {
+      const firstYear = strategies.mix?.[0];
       if (!firstYear) return;
 
       const formatMoney = (value) => `${Math.round(Math.max(value, 0)).toLocaleString('it-IT')} €`;
@@ -877,21 +885,23 @@ export class FinancialController {
         config.variazioneInvestimentoValore
       );
       const risparmioFiscale = firstYear.risparmioFiscale || 0;
+      const investimentoEffettivo = (firstYear.quotaFpConsigliata || 0) + (firstYear.quotaPacConsigliata || 0);
+      const spesaEffettiva = Math.max(investimentoEffettivo - risparmioFiscale, 0);
 
       const equivalentCard = byId('investment-year1-equivalent-card');
       if (equivalentCard) equivalentCard.hidden = false;
       setText('investment-year1-gross-display', formatMoney(investimentoAnno));
-      setText(['investment-year1-tax-saving-display', 'guided-investment-year1-tax-saving-display'], formatMoney(risparmioFiscale));
-      setText(['investment-year1-equivalent-label', 'guided-investment-year1-equivalent-label'], 'PAC equivalente anno 1');
+      setText(['investment-year1-fp-label', 'guided-investment-year1-fp-label'], 'Spesa effettiva · anno 1');
+      setText(['investment-year1-equivalent-label', 'guided-investment-year1-equivalent-label'], 'Investimento · anno 1');
+      setText(['investment-year1-tax-saving-display', 'guided-investment-year1-tax-saving-display'], formatMoney(spesaEffettiva));
+      setText(['investment-year1-equivalent-display', 'guided-investment-year1-equivalent-display'], formatMoney(investimentoEffettivo));
+      setText(['investment-mode-explanation', 'guided-investment-mode-explanation'], `Quanto esce di tasca dopo ${formatMoney(risparmioFiscale)} di beneficio fiscale.`);
+      setText(['investment-year1-equivalent-copy', 'guided-investment-year1-equivalent-copy'], `${formatMoney(firstYear.quotaFpConsigliata || 0)} FP + ${formatMoney(firstYear.quotaPacConsigliata || 0)} PAC.`);
 
       if (config.modalitaConfronto === 'sacrificioNetto') {
-        setText(['investment-year1-equivalent-display', 'guided-investment-year1-equivalent-display'], formatMoney(Math.max(investimentoAnno - risparmioFiscale, 0)));
-        setText(['investment-mode-explanation', 'guided-investment-mode-explanation'], 'Ti rientra in tasca: non viene investito.');
         return;
       }
 
-      setText(['investment-year1-equivalent-display', 'guided-investment-year1-equivalent-display'], formatMoney(investimentoAnno));
-      setText(['investment-mode-explanation', 'guided-investment-mode-explanation'], "Da reinvestire attivamente ogni anno: la simulazione lo somma al budget dall'anno successivo.");
     }
 
     /**

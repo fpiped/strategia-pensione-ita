@@ -80,7 +80,7 @@ async function setSelect(page, id, value) {
 }
 
 const fieldValue = (page, id) => page.evaluate((id) => document.getElementById(id).value, id);
-const storedScenario = (page) => page.evaluate(() => localStorage.getItem('strategia-pensione-scenario-v1'));
+const storedScenario = (page) => page.evaluate(() => localStorage.getItem('strategia-pensione-scenario-v2'));
 
 const { server, base: BASE } = await startStaticServer();
 // channel 'chromium' usa il build completo installato da `playwright install
@@ -102,7 +102,7 @@ try {
   await setNumber(pageA, 'durata', 42);
   await setNumber(pageA, 'investimento', 8000);
   await setSelect(pageA, 'modalitaConfronto', 'sacrificioNetto');
-  await pageA.waitForTimeout(600); // oltre il debounce di persistenza
+  await pageA.waitForFunction(() => localStorage.getItem('strategia-pensione-scenario-v2') !== null);
 
   const saved = JSON.parse(await storedScenario(pageA));
   check('salvataggio: diff in localStorage', saved?.durata === 42 && saved?.investimento === 8000 && saved?.modalitaConfronto === 'sacrificioNetto', JSON.stringify(saved));
@@ -217,7 +217,7 @@ try {
   check('vendor: Chart.js e icone presenti', await pageE.evaluate(() => Boolean(window.Chart && document.querySelector('span[data-lucide] svg'))));
   check('fonti: regole fiscali 2026 renderizzate', await pageE.evaluate(() =>
     document.querySelector('[data-fiscal-year]')?.textContent === '2026' &&
-    document.querySelectorAll('#fiscal-source-list .docs-source-item').length === 13
+    document.querySelectorAll('#fiscal-source-list .docs-source-item').length >= 14
   ));
   const fiscalSourceDetails = await pageE.evaluate(() => {
     const deduction = document.querySelector('[data-fiscal-rule="pensionDeduction"]');

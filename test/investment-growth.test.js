@@ -6,6 +6,7 @@ import {
   applyPacAnnualGrowth,
   applyYearGrowth,
   calculateEffectiveTaxRate,
+  calculateExitEquivalentAnnualReturn,
   calculateFpExit,
   calculateNetAnnualReturn,
   calculatePacExit,
@@ -37,9 +38,11 @@ test('applica tassazione annuale e costi al rendimento lordo FP', () => {
   });
 
   assert.equal(Math.round(options.taxRate * 1000), 170);
-  assert.equal(Math.round(calculateNetAnnualReturn(0.10, { ...options, taxTiming: 'annual' }) * 10000), 722);
+  // Prima i costi, poi l'imposta sul risultato netto maturato:
+  // (1.10 × 0.99 − 1) × (1 − 0.17) = 7.387%.
+  assert.equal(Math.round(calculateNetAnnualReturn(0.10, { ...options, taxTiming: 'annual' }) * 10000), 739);
   assert.equal(Math.round(applyFpAnnualGrowth(0, 1000, 0.10, options)), 1000);
-  assert.equal(Math.round(projectFpContribution(1000, 0.10, 2, options)), 1072);
+  assert.equal(Math.round(projectFpContribution(1000, 0.10, 2, options)), 1074);
 });
 
 test('applica costi annui PAC durante la crescita e tassazione alla exit', () => {
@@ -57,10 +60,25 @@ test('applica costi annui PAC durante la crescita e tassazione alla exit', () =>
   assert.equal(Math.round(calculatePacExit(montante, 1000, options)), 1060);
 });
 
+test('rendimento PAC comparabile: tassazione all exit riportata ad annuo equivalente', () => {
+  const options = { mode: 'lordo', costiAnnui: 0.002, taxRate: 0.26 };
+  // Su 1 anno equivale alla tassazione annuale del gain.
+  const oneYear = calculateExitEquivalentAnnualReturn(0.06, options, 1);
+  const rc = (1.06 * 0.998) - 1;
+  assert.equal(Number(oneYear.toFixed(6)), Number((rc * 0.74).toFixed(6)));
+  // Su 30 anni il differimento dell'imposta vale: annuo equivalente più alto.
+  const long = calculateExitEquivalentAnnualReturn(0.06, options, 30);
+  assert.ok(long > oneYear);
+  // In modalità netto restituisce il rendimento com'è.
+  assert.equal(calculateExitEquivalentAnnualReturn(0.05, { mode: 'netto' }, 10), 0.05);
+});
+
 test('applica il costo fisso una volta l anno solo in modalita lorda e a strumento attivo', () => {
   const gross = createGrowthOptions({ mode: 'lordo', costoFissoAnnuo: 20 });
   assert.equal(applyFpAnnualGrowth(0, 1000, 0.05, gross), 980);
-  assert.equal(Math.round(applyFpAnnualGrowth(980, 0, 0.05, gross) * 100), 99626);
+  // Il costo fisso riduce la base imponibile: 980 × 1.05 − 20 = 1009;
+  // imposta = 29 × 26% = 7.54 → 1001.46.
+  assert.equal(Math.round(applyFpAnnualGrowth(980, 0, 0.05, gross) * 100), 100146);
   assert.equal(applyPacAnnualGrowth(0, 1000, 0.05, gross), 980);
   assert.equal(applyPacAnnualGrowth(0, 0, 0.05, gross), 0);
   assert.equal(applyFpAnnualGrowth(0, 1000, 0.05, { ...gross, mode: 'netto' }), 1000);
@@ -87,6 +105,8 @@ test('aggiorna lo stato annuale di FP, PAC e risparmio fiscale', () => {
 
   assert.equal(state.montanteFP, 1540);
   assert.equal(state.contributiFP, 1500);
+  assert.equal(state.contributiFpDeducibili, 1500);
+  assert.equal(state.contributiFpNonDeducibili, 0);
   assert.equal(Math.round(state.montantePAC), 1280);
   assert.equal(state.investimentoPAC, 1200);
   assert.equal(state.risparmioAccumulato, 180);
@@ -118,4 +138,19 @@ test('calcola exit complessiva strategia con o senza risparmio fiscale', () => {
 
   assert.equal(calculateStrategyExit(state, 0.15, true), 5850);
   assert.equal(calculateStrategyExit(state, 0.15, true, false), 5750);
+});
+
+test('non tassa nuovamente i contributi FP non dedotti', () => {
+  const state = {
+    montanteFP: 5000,
+    contributiFP: 3000,
+    contributiFpDeducibili: 2500,
+    contributiFpNonDeducibili: 500,
+    montantePAC: 1200,
+    investimentoPAC: 1000,
+    risparmioAccumulato: 0,
+    risparmioDaReinvestire: 0
+  };
+
+  assert.equal(calculateStrategyExit(state, 0.15, false, false), 5825);
 });

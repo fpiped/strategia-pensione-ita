@@ -37,7 +37,10 @@ test('deriva le costanti compatibili dalla configurazione fiscale', () => {
   assert.equal(FINANCIAL_CONSTANTS.LIMITE_DEDUZIONE_FP, rules.pensionFund.deductionLimit);
   assert.equal(FINANCIAL_CONSTANTS.MASSIMALE_CONTRIBUTIVO_INPS, rules.inps.contributionCeiling);
   assert.equal(FINANCIAL_CONSTANTS.SOGLIA_IVS_AGGIUNTIVO, rules.inps.additionalIvsThreshold);
+  assert.equal(rules.inps.contributionCeiling, 122295);
+  assert.equal(rules.inps.additionalIvsThreshold, 56224);
+  assert.equal(FINANCIAL_CONSTANTS.TRATTAMENTO_INTEGRATIVO_RIDUZIONE_DETRAZIONE, rules.supplementaryTreatment.capienzaDeductionReduction);
+  assert.equal(rules.supplementaryTreatment.capienzaDeductionReduction, 75);
   assert.equal(FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_FP_ORDINARIA, rules.investmentTax.pensionFundOrdinaryRate);
   assert.equal(FINANCIAL_CONSTANTS.TASSAZIONE_RENDIMENTI_PAC_ORDINARIA, rules.investmentTax.pacOrdinaryRate);
 });
-

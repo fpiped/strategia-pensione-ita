@@ -5,7 +5,7 @@
  */
 export const HELP_CONTENT = {
         reddito: {
-            title: 'Reddito annuo',
+            title: 'RAL',
             dove: 'Contratto di lavoro, busta paga o Certificazione Unica: è la retribuzione annua lorda ordinaria da lavoratore dipendente.',
             come: 'Se scegli RAL come base, il modello la usa per quota minima aderente e contributo datore, oltre che per IRPEF e contributi INPS.',
             effetto: 'Più è alta, più cresce il beneficio della deduzione FP. Non è pensato per autonomi, partite IVA o regimi sostitutivi.'
@@ -59,34 +59,34 @@ export const HELP_CONTENT = {
             effetto: 'Un budget crescente sposta più capitale negli anni finali, dove il confronto FP/PAC può cambiare.'
         },
         modalitaConfronto: {
-            title: 'Modalità investimento',
-            dove: 'Scelta di metodo, non un dato da recuperare: decide che cosa il confronto FP/PAC tiene fermo, ed è l\'opzione che più cambia l\'approccio della simulazione.',
-            come: 'Budget fissa quanto destini ogni anno: FP e PAC ricevono lo stesso importo e il risparmio fiscale del FP viene reinvestito dall\'anno successivo. Netto fissa il sacrificio reale: il risparmio fiscale ti rientra in tasca e il PAC investe solo il costo netto del versamento FP. Esempio con 3.000 € e aliquota marginale 33%: il FP genera ~990 € di risparmio IRPEF; in Budget il PAC di confronto investe 3.000 € e i 990 € si sommano al budget dell\'anno dopo, in Netto il versamento FP "costa" 2.010 € e il PAC di confronto investe 2.010 €.',
-            effetto: 'Cambia la domanda a cui risponde il verdetto: con Budget "dove rendono di più 3.000 € l\'anno?", con Netto "a parità di rinuncia sul netto, cosa conviene?".'
+            title: 'Che cifra vuoi inserire?',
+            dove: 'Scegli Spesa se sai quanto vuoi far uscire di tasca ogni anno. Scegli Investimento se sai quanto vuoi investire complessivamente tra FP e PAC.',
+            come: 'Spesa: l’importo inserito resta fisso e il beneficio fiscale può aumentare l’investimento complessivo. Investimento: resta fisso il totale personale allocato tra FP e PAC e il modello calcola quanto costa realmente dopo il beneficio fiscale.',
+            effetto: 'Le due modalità descrivono lo stesso confronto da due punti di vista e devono produrre risultati inversi coerenti. L’investimento mostrato è personale: il contributo del datore è indicato separatamente.'
         },
         baseContributivaFpTipo: {
             title: 'Base quota aderente',
-            dove: 'Scheda del fondo o CCNL: se parlano di minimo tabellare o paga base scegli Retribuzione minima, altrimenti lascia RAL.',
-            come: 'È la base annua su cui si calcola la quota minima che devi versare per ottenere il contributo del datore.',
-            effetto: 'Con la base sbagliata la quota minima stimata risulta troppo alta o troppo bassa.'
+            dove: 'Controlla la scheda “Contribuzione” del fondo, il CCNL o l’accordo aziendale. Cerca la frase che accompagna la percentuale: può indicare RAL, retribuzione utile TFR, minimo contrattuale, paga base oppure una specifica somma di elementi della busta paga. Se non indica chiaramente la RAL, scegli Altra base.',
+            come: 'È l’importo annuo a cui viene applicata la percentuale minima dell’aderente. Esempio: quota 1% su RAL 35.000 € = 350 €; su altra base 30.000 € = 300 €. Raggiungere questa quota è normalmente necessario per ottenere il contributo del datore.',
+            effetto: 'Questa scelta riguarda solo il calcolo della quota minima FP: non modifica la RAL usata per IRPEF e INPS. La base del datore può essere scelta separatamente.'
         },
         baseContributivaFp: {
-            title: 'Minimo retributivo annuo',
-            dove: 'CCNL: minimo tabellare o paga base mensile moltiplicati per le mensilità previste.',
-            come: 'Usato come base annua per quota aderente e/o contributo datore quando scegli Retribuzione minima.',
-            effetto: 'Se supera la RAL, il calcolatore mostra un avviso perché è un caso insolito.'
+            title: 'Altra base retributiva',
+            dove: 'Inserisci il valore annuo indicato dal fondo, CCNL o accordo aziendale. Puoi trovarlo nella tabella delle contribuzioni, nella nota sotto le percentuali o nelle voci retributive della busta paga. Se la base è mensile, moltiplicala solo per le mensilità previste dalla regola: non assumere automaticamente 13 o 14.',
+            come: 'Esempi possibili: minimo tabellare del livello; paga base; paga base + contingenza + EDR; retribuzione utile ai fini TFR; retribuzione pensionabile; imponibile convenzionale; somma di specifiche voci fisse prevista dal CCNL; retribuzione fissa con esclusione di premi, straordinari e altre componenti variabili. Usa la definizione esatta del tuo fondo: basi con nomi simili possono includere elementi diversi.',
+            effetto: 'È un unico importo condiviso quando Base aderente e/o Base datore sono su Altra base. Non aggiunge reddito, non cambia IRPEF o INPS e non simula il TFR: serve soltanto come moltiplicatore delle percentuali FP. Esempio: 30.000 € × quota datore 1,5% = 450 €.'
         },
         baseDatoreFpTipo: {
             title: 'Base contributo datore',
-            dove: 'Scheda del fondo o CCNL, come per la base quota aderente.',
-            come: 'Base annua su cui si calcola il contributo percentuale del datore: RAL oppure lo stesso minimo retributivo annuo indicato nello scenario.',
-            effetto: 'La scelta cambia l\'importo del contributo datore stimato.'
+            dove: 'Controlla la regola specifica del contributo aziendale nella scheda del fondo, nel CCNL o nell’accordo aziendale. Non dedurla dalla base aderente: il datore può applicare la propria percentuale alla RAL, alla retribuzione utile TFR, al minimo contrattuale o a un’altra base espressamente definita.',
+            come: 'Con RAL, la percentuale del datore si applica alla RAL. Con Altra base, si applica al valore inserito nel campo dedicato. Esempio: 1,5% su 35.000 € = 525 €; su 30.000 € = 450 €.',
+            effetto: 'Il contributo viene riconosciuto solo quando versi almeno la quota minima aderente. È capitale aggiuntivo del datore: non aumenta la tua spesa personale, ma occupa parte del limite deducibile.'
         },
         variazioneBaseContributiva: {
-            title: 'Aumento minimo retributivo',
-            dove: 'Rinnovi del CCNL: aumenti previsti dei minimi tabellari.',
-            come: 'Applica aumenti periodici al minimo retributivo annuo, con frequenza in anni e valore in percentuale o euro.',
-            effetto: 'Se il minimo cresce, crescono anche quota minima richiesta e contributo datore.'
+            title: 'Aumento altra base',
+            dove: 'Rinnovi del CCNL o variazioni previste della base contributiva scelta.',
+            come: 'Applica aumenti periodici all’altra base retributiva, con frequenza in anni e valore in percentuale o euro.',
+            effetto: 'Se la base cresce, crescono anche quota minima richiesta e contributo datore.'
         },
         contribuzioneDatoreFpPerc: {
             title: 'Contributo datore di lavoro',

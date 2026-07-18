@@ -55,6 +55,28 @@ test('calcola split versamento FP e risparmio fiscale', () => {
   })), 777);
 });
 
+test('sterilizza il taglio IRPEF riducendo le detrazioni, con soglia sul reddito complessivo', () => {
+  // RAL 213.900 → imponibile ≈ 202.000 (INPS al massimale), appena sopra soglia.
+  const inputs = { reddito: 213900, investimento: 5300, quotaDatoreFp: 0, ulterioriDetrazioni: 1000 };
+
+  // Il bonifico è onere deducibile: non abbassa il reddito complessivo,
+  // la sterilizzazione resta e il beneficio è il solo 43% marginale.
+  const bonifico = calculateTaxComparison({ ...inputs, modalitaVersamentoFp: 'tuttoBonifico' });
+  assert.equal(bonifico.before.highIncomeDeductionsCut, 440);
+  assert.equal(bonifico.after.highIncomeDeductionsCut, 440);
+  assert.equal(Math.round(bonifico.saving), 2279);
+
+  // La quota in busta invece abbassa il reddito complessivo sotto soglia:
+  // le detrazioni tornano piene e il beneficio recupera anche i 440€.
+  const busta = calculateTaxComparison({ ...inputs, modalitaVersamentoFp: 'tuttoBusta' });
+  assert.equal(busta.after.highIncomeDeductionsCut, 0);
+  assert.equal(Math.round(busta.saving), 2719);
+
+  // Senza detrazioni da ridurre la sterilizzazione è incapiente.
+  const incapiente = calculateTaxComparison({ ...inputs, ulterioriDetrazioni: 0, modalitaVersamentoFp: 'tuttoBusta' });
+  assert.equal(Math.round(incapiente.saving), 2279);
+});
+
 test('espone il confronto fiscale completo senza FP e con FP', () => {
   const comparison = calculateTaxComparison({
     reddito: 32304,

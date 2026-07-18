@@ -156,7 +156,12 @@ function attachNumberInput(store, field, input) {
     // Digitazione parziale o campo vuoto: lo store tiene l'ultimo valore
     // valido; il fallback al minimo scatta solo al change (blur).
     if (!Number.isFinite(value)) return;
-    store.set({ [field.key]: clampNumber(value, field, store.get()) });
+    const clamped = clampNumber(value, field, store.get());
+    // Se lo store era già sul limite, store.set() non emette una notifica e
+    // quindi il render non correggerebbe il testo appena digitato (es. 100
+    // seguito da un altro 0). Correggiamo subito anche il valore visibile.
+    if (clamped !== value) input.value = String(clamped);
+    store.set({ [field.key]: clamped });
   });
   input.addEventListener('change', () => {
     const value = clampNumber(parseFloat(input.value), field, store.get());

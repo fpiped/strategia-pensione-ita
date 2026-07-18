@@ -9,18 +9,20 @@
  *
  * Ogni valore che rientra (da localStorage o da un link condiviso) passa da
  * sanitizeScenario: chiavi sconosciute scartate, tipi verificati, numeri
- * riportati nei limiti dei campi. I payload portano una versione (v: 1) per
+ * riportati nei limiti dei campi. I payload portano una versione per
  * poter cambiare formato in futuro senza rompere i vecchi link.
  */
 
 import { FIELDS, clampNumber } from '../bindings.js';
 
-const STORAGE_KEY = 'strategia-pensione-scenario-v1';
+const STORAGE_KEY = 'strategia-pensione-scenario-v2';
 // Lo scenario viaggia nel fragment (#s=...), non nella query string: il
 // fragment non viene inviato al server, quindi i parametri (es. reddito)
 // non finiscono nei log di chi serve la pagina.
 const SHARE_PREFIX = '#s=';
-const PAYLOAD_VERSION = 1;
+// v2 cambia la semantica delle modalità investimento: i vecchi scenari non
+// devono essere reinterpretati silenziosamente con un diverso budget netto.
+const PAYLOAD_VERSION = 2;
 const MAX_TEXT_LENGTH = 200;
 
 const EXTRA_KEYS = ['localTaxMode', 'municipalityLabel'];

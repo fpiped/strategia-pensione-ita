@@ -38,7 +38,7 @@ test('encode/decode fanno roundtrip, anche con caratteri non ASCII', () => {
 
   const decoded = decodeScenario(encodeScenario(diff));
 
-  assert.equal(decoded.v, 1);
+  assert.equal(decoded.v, 2);
   assert.equal(decoded.durata, 25);
   assert.equal(decoded.municipalityLabel, diff.municipalityLabel);
 });
@@ -104,7 +104,7 @@ test('buildShareUrl aggiunge il fragment solo se lo scenario differisce', () => 
   const url = new URL(modified);
   assert.equal(url.search, '');
   assert.match(url.hash, /^#s=/);
-  assert.deepEqual(decodeScenario(url.hash.slice(3)), { v: 1, durata: 40 });
+  assert.deepEqual(decodeScenario(url.hash.slice(3)), { v: 2, durata: 40 });
 });
 
 test('buildShareUrl sostituisce un fragment già presente', () => {
@@ -112,7 +112,7 @@ test('buildShareUrl sostituisce un fragment già presente', () => {
 
   const url = new URL(buildShareUrl({ ...DEFAULTS, durata: 40 }, DEFAULTS, base));
 
-  assert.deepEqual(decodeScenario(url.hash.slice(3)), { v: 1, durata: 40 });
+  assert.deepEqual(decodeScenario(url.hash.slice(3)), { v: 2, durata: 40 });
 });
 
 test('il roundtrip completo riproduce lo scenario di partenza', () => {
