@@ -3,6 +3,29 @@ import { CURRENT_FISCAL_RULES, CURRENT_FISCAL_YEAR } from '../constants/fiscal-r
 const money = (value) => `${value.toLocaleString('it-IT', { useGrouping: 'always' })} €`;
 const percent = (value) => `${(value * 100).toLocaleString('it-IT', { maximumFractionDigits: 2 })}%`;
 
+const SOURCE_GROUPS = [
+  {
+    title: 'Reddito da lavoro e contributi previdenziali',
+    description: 'Come si passa dal reddito lordo all’imponibile sul quale viene calcolata l’IRPEF.',
+    ids: ['inpsRate', 'inpsCeiling', 'additionalIvs']
+  },
+  {
+    title: 'IRPEF, detrazioni e sostegni al reddito',
+    description: 'Imposta lorda, detrazione da lavoro dipendente, trattamento integrativo e bonus cuneo sono passaggi distinti.',
+    ids: ['irpef', 'employeeDeduction', 'supplementaryTreatment', 'taxWedgeBonus', 'localTaxes']
+  },
+  {
+    title: 'Previdenza complementare',
+    description: 'Limite deducibile, tassazione della prestazione e ipotesi di uscita anticipata dal fondo pensione.',
+    ids: ['pensionDeduction', 'nonDeductedContributions', 'pensionExitTax', 'earlyRedemption', 'pensionInvestmentTax']
+  },
+  {
+    title: 'PAC e investimenti finanziari',
+    description: 'Fiscalità applicata alla plusvalenza del PAC quando il rendimento è inserito in modalità lorda.',
+    ids: ['pacCapitalGain']
+  }
+];
+
 function describeValue(id, rules) {
   const { irpef, pensionFund, inps, supplementaryTreatment, taxWedgeBonus, investmentTax } = rules;
   const descriptions = {
@@ -11,13 +34,15 @@ function describeValue(id, rules) {
       return `${percent(brackets[0].rate)} fino a ${money(brackets[0].upTo)}, ` +
         `${percent(brackets[1].rate)} fino a ${money(brackets[1].upTo)}, ` +
         `${percent(brackets[2].rate)} oltre; sopra ${money(irpef.highIncomeAdjustment.threshold)} ` +
-        `il beneficio del taglio (${money(irpef.highIncomeAdjustment.amount)}) è sterilizzato.`;
+        `di reddito complessivo il beneficio del taglio è sterilizzato riducendo ` +
+        `le detrazioni di ${money(irpef.highIncomeAdjustment.amount)}.`;
     },
     employeeDeduction: () => `${money(irpef.employeeDeduction.minimumAmount)}.`,
     pensionDeduction: () => `${money(pensionFund.deductionLimit)}/anno, datore incluso e TFR escluso.`,
     pensionExitTax: () => `${percent(pensionFund.exitTax.initialRate)}, ` +
       `-${percent(pensionFund.exitTax.reductionPerYear)}/anno oltre il ` +
       `${pensionFund.exitTax.reductionStartsAfterYears}°, minimo ${percent(pensionFund.exitTax.minimumRate)}.`,
+    nonDeductedContributions: () => 'esclusi dalla base imponibile finale, assumendo la comunicazione al fondo.',
     earlyRedemption: () => `${percent(pensionFund.exitTax.earlyRedemptionRate)} sui contributi dedotti.`,
     inpsRate: () => `${percent(inps.employeeRate)}, modificabile.`,
     inpsCeiling: () => `${money(inps.contributionCeiling)}.`,
@@ -54,7 +79,19 @@ export function renderFiscalRulesDocumentation() {
   if (!container) return;
   container.replaceChildren();
 
-  for (const item of CURRENT_FISCAL_RULES.documentation) {
+  const itemsById = new Map(CURRENT_FISCAL_RULES.documentation.map((item) => [item.id, item]));
+  for (const group of SOURCE_GROUPS) {
+    const section = document.createElement('section');
+    section.className = 'docs-source-group';
+    const heading = document.createElement('h3');
+    heading.textContent = group.title;
+    const description = document.createElement('p');
+    description.textContent = group.description;
+    section.append(heading, description);
+
+    for (const id of group.ids) {
+      const item = itemsById.get(id);
+      if (!item) continue;
     const article = document.createElement('article');
     article.className = 'docs-source-item';
     article.dataset.fiscalRule = item.id;
@@ -76,6 +113,8 @@ export function renderFiscalRulesDocumentation() {
     });
 
     addLabelledParagraph(article, 'Aggiornamento', `${item.effective}.`);
-    container.append(article);
+      section.append(article);
+    }
+    container.append(section);
   }
 }

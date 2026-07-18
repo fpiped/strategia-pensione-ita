@@ -11,6 +11,7 @@ export const FINANCIAL_CONSTANTS = {
   TRATTAMENTO_INTEGRATIVO_IMPORTO: rules.supplementaryTreatment.amount,
   TRATTAMENTO_INTEGRATIVO_SOGLIA_PIENA: rules.supplementaryTreatment.fullThreshold,
   TRATTAMENTO_INTEGRATIVO_SOGLIA_MAX: rules.supplementaryTreatment.maximumThreshold,
+  TRATTAMENTO_INTEGRATIVO_RIDUZIONE_DETRAZIONE: rules.supplementaryTreatment.capienzaDeductionReduction,
   BONUS_CUNEO_SOGLIA_1: rules.taxWedgeBonus.thresholds[0],
   BONUS_CUNEO_SOGLIA_2: rules.taxWedgeBonus.thresholds[1],
   BONUS_CUNEO_SOGLIA_3: rules.taxWedgeBonus.thresholds[2],

@@ -39,7 +39,7 @@ test('segnala rendimento PAC inferiore al rendimento FP', () => {
   ]);
 });
 
-test('segnala minimo retributivo superiore alla RAL senza bloccare il valore', () => {
+test('segnala altra base retributiva superiore alla RAL senza bloccare il valore', () => {
   const warnings = buildInputWarnings({
     reddito: 30000,
     investimento: 3000,
@@ -53,7 +53,7 @@ test('segnala minimo retributivo superiore alla RAL senza bloccare il valore', (
     ulterioriDetrazioni: 0
   });
 
-  assert.ok(warnings.includes('Minimo retributivo annuo superiore alla RAL: è insolito, verifica che il valore sia corretto.'));
+  assert.ok(warnings.includes('Altra base retributiva superiore alla RAL: verifica che il valore indicato dal fondo o dal CCNL sia corretto.'));
 });
 
 test('segnala rendimento netto PAC inferiore al netto FP calcolato', () => {

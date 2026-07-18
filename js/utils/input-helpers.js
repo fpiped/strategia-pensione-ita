@@ -42,7 +42,7 @@ export function buildInputWarnings(config) {
     config.baseContributivaFp > config.reddito &&
     (config.baseContributivaFpTipo !== 'ral' || (config.baseDatoreFpTipo && config.baseDatoreFpTipo !== 'same' && config.baseDatoreFpTipo !== 'ral'))
   ) {
-    warnings.push('Minimo retributivo annuo superiore alla RAL: è insolito, verifica che il valore sia corretto.');
+    warnings.push('Altra base retributiva superiore alla RAL: verifica che il valore indicato dal fondo o dal CCNL sia corretto.');
   }
 
   if (config.variazioneBaseContributivaFrequenza > 0 && config.variazioneBaseContributivaValore < 0) {

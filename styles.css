@@ -267,6 +267,24 @@ header {
     margin-top: 0.25rem;
 }
 
+.metric-return {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: 0.45rem;
+    margin-top: 0.65rem;
+    padding: 0;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+}
+
+.metric-return strong {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+
 .metric-badge {
     position: absolute;
     top: 0.75rem;
@@ -6007,6 +6025,20 @@ td,
     margin-bottom: 0;
 }
 
+.docs-source-group + .docs-source-group {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--ds-border-soft);
+}
+
+.docs-source-group > h3 {
+    margin-bottom: 0.35rem;
+}
+
+.docs-source-group > p {
+    margin-top: 0;
+}
+
 .control-shell .variation-grid[open] > .variation-header,
 .guided-dialog .variation-grid[open] > .variation-header {
     border-bottom: 1px solid var(--ds-border-soft);
@@ -7333,4 +7365,49 @@ a.logo:hover h1 {
     .intro-section {
         padding-right: 250px;
     }
+}
+
+/* Hero essenziale: conserva il pannello, ma contiene solo le azioni. */
+.intro-section.actions-only {
+    padding-right: 1.45rem;
+}
+
+.intro-section.actions-only .intro-actions {
+    margin-top: 0;
+}
+
+@media (max-width: 768px) {
+    .intro-section.actions-only {
+        padding-right: 1.15rem;
+    }
+}
+
+/* L'indice usa lo stesso trattamento neutro delle azioni secondarie. */
+.docs-index a,
+.docs-index a:visited {
+    min-height: 3.1rem;
+    background: var(--ds-surface-panel);
+    border-color: var(--ds-border);
+    color: var(--ds-text);
+}
+
+.docs-index a:hover {
+    background: var(--ds-surface-muted);
+    border-color: var(--ds-border);
+    color: var(--ds-text);
+}
+
+/* Stesso ritmo verticale e stessa geometria delle sezioni di Calcola. */
+.docs-index,
+.docs-collapsible {
+    margin-bottom: 1.45rem;
+}
+
+.docs-section h2.docs-collapsible-title {
+    margin: 0 0 0.85rem;
+    padding: 0.95rem 1rem 0.8rem;
+}
+
+.docs-collapsible.collapsed .docs-collapsible-title {
+    margin-bottom: 0;
 }
