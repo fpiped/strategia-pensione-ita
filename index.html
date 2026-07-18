@@ -211,14 +211,14 @@
                                         </div>
                                         <div class="mini-metrics investment-mode-summary" aria-live="polite">
                                             <div class="mini-metric output">
-                                                <span id="investment-year1-fp-label">Scenario tutto FP · anno 1</span>
+                                                <span id="investment-year1-fp-label">Investimento netto · anno 1</span>
                                                 <strong id="investment-year1-tax-saving-display">-</strong>
                                                 <p id="investment-mode-explanation">Riduce nello stesso anno quanto esce di tasca.</p>
                                             </div>
                                             <div class="mini-metric output" id="investment-year1-equivalent-card">
-                                                <span id="investment-year1-equivalent-label">Investimento · anno 1</span>
+                                                <span id="investment-year1-equivalent-label">Investimento lordo · anno 1</span>
                                                 <strong id="investment-year1-equivalent-display">-</strong>
-                                                <p id="investment-year1-equivalent-copy">Alternativa con lo stesso costo effettivo.</p>
+                                                <p id="investment-year1-equivalent-copy">Quota FP personale + quota PAC.</p>
                                             </div>
                                             <span id="investment-year1-gross-display" hidden>-</span>
                                         </div>
@@ -774,11 +774,11 @@
                                     <div class="step-rows">
                                         <div class="step-row"><div><span>Vincolata alla minima</span><b>Serve ad agganciare il contributo datore</b></div><strong id="annual-within-min-value">-</strong></div>
                                         <div class="step-row"><div><span>Libera oltre la minima</span><b>Contesa tra FP e PAC dall'ottimizzatore</b></div><strong id="annual-above-min-value">-</strong></div>
-                                        <div class="step-row"><div><span>Spesa effettiva</span><b>Quanto esce realmente di tasca</b></div><strong id="annual-effective-expense-value">-</strong></div>
-                                        <div class="step-row"><div><span>Investimento personale</span><b>Quota FP + quota PAC</b></div><strong id="annual-personal-investment-value">-</strong></div>
-                                        <div class="step-row"><div><span>Finanziato dal beneficio fiscale</span><b>Investimento personale − spesa effettiva</b></div><strong id="annual-tax-funded-value">-</strong></div>
+                                        <div class="step-row"><div><span>Investimento netto</span><b>Quanto esce realmente di tasca</b></div><strong id="annual-effective-expense-value">-</strong></div>
+                                        <div class="step-row"><div><span>Investimento lordo</span><b>Quota FP personale + quota PAC</b></div><strong id="annual-personal-investment-value">-</strong></div>
+                                        <div class="step-row"><div><span>Beneficio fiscale</span><b>Investimento lordo − investimento netto</b></div><strong id="annual-tax-funded-value">-</strong></div>
                                         <div class="step-row"><div><span>Quota datore</span><b>Incentivo riconosciuto nell'anno</b></div><strong id="annual-employer-value">-</strong></div>
-                                        <div class="step-row"><div><span>Totale messo al lavoro</span><b>Investimento personale + contributo datore</b></div><strong id="annual-total-at-work-value">-</strong></div>
+                                        <div class="step-row"><div><span>Totale messo al lavoro</span><b>Investimento lordo + contributo datore</b></div><strong id="annual-total-at-work-value">-</strong></div>
                                         <div class="step-row"><div><span>Quota FP deducibile</span><b>Parte personale che produce il beneficio fiscale</b></div><strong id="annual-personal-deductible-value">-</strong></div>
                                         <div class="step-row"><div><span>Quota FP non deducibile</span><b>Solo l'eventuale minimo necessario per ottenere il datore</b></div><strong id="annual-personal-nondeductible-value">-</strong></div>
                                         <div class="step-row"><div><span>Deduzione usata</span><b>Parte personale deducibile + datore deducibile</b></div><strong id="annual-deducted-value">-</strong></div>
@@ -976,14 +976,14 @@
                             </div>
                             <div class="mini-metrics" aria-live="polite">
                                 <div class="mini-metric output">
-                                    <span id="guided-investment-year1-fp-label">Scenario tutto FP · anno 1</span>
+                                    <span id="guided-investment-year1-fp-label">Investimento netto · anno 1</span>
                                     <strong id="guided-investment-year1-tax-saving-display">-</strong>
                                     <p id="guided-investment-mode-explanation">Riduce nello stesso anno quanto esce di tasca.</p>
                                 </div>
                                 <div class="mini-metric output">
-                                    <span id="guided-investment-year1-equivalent-label">Investimento · anno 1</span>
+                                    <span id="guided-investment-year1-equivalent-label">Investimento lordo · anno 1</span>
                                     <strong id="guided-investment-year1-equivalent-display">-</strong>
-                                    <p id="guided-investment-year1-equivalent-copy">Alternativa con lo stesso costo effettivo.</p>
+                                    <p id="guided-investment-year1-equivalent-copy">Quota FP personale + quota PAC.</p>
                                 </div>
                             </div>
                             <div class="guided-note" data-help-note="investimento variazioneInvestimento"></div>
@@ -1511,20 +1511,20 @@ Imposta netta − sostegni riconosciuti
                     </section>
 
                     <section class="docs-collapsible" id="opzioni">
-                    <h2 class="docs-collapsible-title">4. Investimento lordo e spesa effettiva</h2>
+                    <h2 class="docs-collapsible-title">4. Investimento lordo e investimento netto</h2>
                     <div class="docs-collapsible-content">
                         <p>L’importo inserito è sempre l’<strong>investimento personale lordo</strong> che vuoi allocare ogni anno tra fondo pensione e PAC. Il beneficio fiscale non aumenta questo importo: riduce quanto esce effettivamente dalle tue tasche.</p>
 
                         <div class="highlight">
                             <strong>Le tre grandezze da non confondere</strong>
-                            <pre>Investimento personale = quota FP personale + quota PAC
-Investimento personale − beneficio fiscale = spesa effettiva
-Investimento personale + contributo datore = totale messo al lavoro</pre>
-                            <p>Il contributo datoriale non è una spesa personale e non fa parte dell’investimento personale: è capitale aggiuntivo che entra nel FP.</p>
+                            <pre>Investimento lordo = quota FP personale + quota PAC
+Investimento netto = investimento lordo − beneficio fiscale
+Investimento lordo + contributo datore = totale messo al lavoro</pre>
+                            <p>Il contributo datoriale non fa parte dell’investimento lordo personale: è capitale aggiuntivo che entra nel FP.</p>
                         </div>
 
                         <h3>Esempio</h3>
-                        <p>Se inserisci 5.000 € e l’allocazione scelta è 3.000 € nel FP e 2.000 € nel PAC, nei due strumenti finiscono esattamente 5.000 €. Con un beneficio fiscale di 900 €, la spesa effettiva è 4.100 €. L’eventuale contributo del datore si aggiunge separatamente e non riduce l’investimento personale richiesto.</p>
+                        <p>Se inserisci 5.000 € e l’allocazione scelta è 3.000 € nel FP e 2.000 € nel PAC, l’investimento lordo è esattamente 5.000 €. Con un beneficio fiscale di 900 €, l’investimento netto è 4.100 €. L’eventuale contributo del datore si aggiunge separatamente e non modifica l’investimento lordo richiesto.</p>
 
                         <h3>“Nello stesso anno” è una convenzione economica</h3>
                         <p>Il modello attribuisce il beneficio allo stesso anno dell’investimento. Nella realtà il momento in cui lo percepisci dipende da busta paga, conguaglio e dichiarazione dei redditi. La simulazione rappresenta l’equivalenza economica annuale, non la data bancaria del rimborso.</p>
@@ -1556,8 +1556,8 @@ Investimento personale + contributo datore = totale messo al lavoro</pre>
                         <div class="highlight">
                             <strong>Come verificare uno scenario</strong>
                             <ol>
-                                <li>controlla spesa effettiva e investimento personale;</li>
-                                <li>verifica che quota FP + quota PAC coincidano con l’investimento personale;</li>
+                                <li>confronta investimento netto e investimento lordo;</li>
+                                <li>verifica che quota FP personale + quota PAC coincidano con l’investimento lordo;</li>
                                 <li>verifica il contributo datoriale e il limite deducibile;</li>
                                 <li>confronta il costo fiscale senza e con FP;</li>
                                 <li>riconcilia montanti, imposte di uscita ed exit netta.</li>

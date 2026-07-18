@@ -463,7 +463,7 @@ export class FinancialModel {
         );
 
         // Tutti i benchmark versano lo stesso investimento lordo indicato;
-        // il beneficio fiscale resta in tasca e riduce la spesa effettiva.
+        // il beneficio fiscale resta in tasca e riduce l'investimento netto.
         const fpFirst = this._resolveAllFpAllocation({
           ...optimizerInputs,
           grossInvestmentTarget: ctx.grossInvestmentTarget,

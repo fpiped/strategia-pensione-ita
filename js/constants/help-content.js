@@ -50,7 +50,7 @@ export const HELP_CONTENT = {
             title: 'Investimento annuo',
             dove: 'L\'importo personale lordo che vuoi allocare ogni anno tra fondo pensione e PAC, TFR escluso.',
             come: 'La quota oltre il limite deducibile di 5.300 €/anno (incluso contributo datore, escluso TFR) viene considerata sempre PAC.',
-            effetto: 'Importi più alti saturano prima la deduzione; il beneficio fiscale riduce la spesa effettiva ma non aumenta l’investimento indicato.'
+            effetto: 'Importi più alti saturano prima la deduzione; il beneficio fiscale riduce l’investimento netto ma non aumenta l’investimento lordo indicato.'
         },
         variazioneInvestimento: {
             title: 'Aumento investimento',
