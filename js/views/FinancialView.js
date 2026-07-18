@@ -14,6 +14,10 @@ export class FinancialView {
       return choice;
     }
 
+    isTechnicalPacResidual(row) {
+      return Boolean(row?._allocation?.pacResidualTechnical);
+    }
+
     /**
      * Aggiorna il dashboard delle metriche con i valori di exit finali
      * @param {Array} results - Risultati dei calcoli
@@ -53,6 +57,9 @@ export class FinancialView {
           let value = result[key];
           if (key === 'scelta') {
             value = value === 'NESSUNO' ? 'N/A' : this.formatChoiceLabel(value);
+          }
+          if (key === 'quotaPacConsigliata' && this.isTechnicalPacResidual(result)) {
+            value = '0 €';
           }
           if (key !== 'anno' && typeof value === 'number') {
             value = this.formatMoney(value);
@@ -257,7 +264,9 @@ export class FinancialView {
         .join(' · ');
 
       const firstSplitDetail = firstRow
-        ? `Anno 1: ${this.formatMoney(firstRow.quotaFpConsigliata || 0)} FP e ${this.formatMoney(firstRow.quotaPacConsigliata || 0)} PAC`
+        ? this.isTechnicalPacResidual(firstRow)
+          ? 'Anno 1: tutto nel FP'
+          : `Anno 1: ${this.formatMoney(firstRow.quotaFpConsigliata || 0)} FP e ${this.formatMoney(firstRow.quotaPacConsigliata || 0)} PAC`
         : 'Nessuna quota allocata';
       const timingDetail = lastChoice === 'FP'
         ? 'Negli ultimi anni l’allocazione privilegia il FP.'
@@ -391,6 +400,8 @@ export class FinancialView {
       const afterTax = e.taxComparison?.after || {};
       const quotaFp = row.quotaFpConsigliata || 0;
       const quotaPac = row.quotaPacConsigliata || 0;
+      const pacResidualTechnical = this.isTechnicalPacResidual(row);
+      const pacDisplay = pacResidualTechnical ? money(0) : money(quotaPac);
       const quotaBusta = row.quotaFpBusta || 0;
       const quotaBonifico = row.quotaFpBonifico || 0;
       const datore = row.quotaDatore || 0;
@@ -400,7 +411,7 @@ export class FinancialView {
       setText('annual-exit-value', money(exitOttimale));
       setText('annual-choice-value', this.formatChoiceLabel(row.scelta || '-'));
       setText('annual-fp-value', money(quotaFp));
-      setText('annual-pac-value', money(quotaPac));
+      setText('annual-pac-value', pacDisplay);
       setText('annual-income-value', money(e.redditoAnno));
       setText('annual-extra-income-value', money(e.premiAnno + e.altriRedditiAnno));
       setText('annual-budget-value', money(e.investimentoAnno));
@@ -452,7 +463,10 @@ export class FinancialView {
             ? `Non viene aggiunto nuovo capitale: questo anno mostra soltanto l’evoluzione del versamento effettuato nell’anno 1.`
             : `Dopo la quota minima, il modello divide il resto tra FP e PAC scegliendo euro per euro il valore netto più alto a scadenza.`;
       setText('annual-fp-step-value', money(quotaFp));
-      setText('annual-fp-formula', `${money(e.spesaEffettivaAnno)} spesa + ${money(e.beneficioInvestitoAnno)} beneficio = ${money(e.investimentoPersonaleAnno)} investiti = ${money(quotaFp)} FP + ${money(quotaPac)} PAC. ${employerReason}${allocationReason} Orizzonte: ${yearsLeft} anni; rendimenti netti FP/PAC: ${percent((config.rendimentoNettoFpEffettivo || 0) * 100)} / ${percent((config.rendimentoNettoPacEffettivo || 0) * 100)}.`);
+      const allocationFormula = pacResidualTechnical
+        ? `${money(e.investimentoPersonaleAnno)} FP`
+        : `${money(quotaFp)} FP + ${money(quotaPac)} PAC`;
+      setText('annual-fp-formula', `${money(e.spesaEffettivaAnno)} spesa + ${money(e.beneficioInvestitoAnno)} beneficio = ${money(e.investimentoPersonaleAnno)} investiti = ${allocationFormula}. ${employerReason}${allocationReason} Orizzonte: ${yearsLeft} anni; rendimenti netti FP/PAC: ${percent((config.rendimentoNettoFpEffettivo || 0) * 100)} / ${percent((config.rendimentoNettoPacEffettivo || 0) * 100)}.`);
       setText('annual-within-min-value', money(e.quotaEntroMinima));
       setText('annual-above-min-value', money(e.quotaExtraMinima));
       setText('annual-effective-expense-value', money(e.spesaEffettivaAnno));

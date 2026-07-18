@@ -129,6 +129,20 @@ try {
     JSON.stringify(frequencyControl)
   );
 
+  await setNumber(pageA, 'durata', 1);
+  await pageA.waitForFunction(() => document.getElementById('investment-year1-equivalent-copy')?.textContent === 'Tutto nel FP.');
+  const technicalResidual = await pageA.evaluate(() => ({
+    summary: document.getElementById('investment-year1-equivalent-copy')?.textContent || '',
+    allocation: document.querySelector('#output-table tbody tr')?.cells[3]?.textContent || '',
+    pac: document.querySelector('#output-table tbody tr')?.cells[6]?.textContent || ''
+  }));
+  check('residuo PAC: presentato come FP sostanziale, non come vero mix',
+    technicalResidual.summary === 'Tutto nel FP.'
+      && technicalResidual.allocation === 'FP'
+      && technicalResidual.pac === '0 €',
+    JSON.stringify(technicalResidual)
+  );
+
   await setNumber(pageA, 'durata', 42);
   await setNumber(pageA, 'investimento', 8000);
   await pageA.waitForFunction(() => localStorage.getItem('strategia-pensione-scenario-v3') !== null);

@@ -847,6 +847,10 @@ export class FinancialController {
       const risparmioFiscale = firstYear.risparmioFiscale || 0;
       const investimentoLordo = firstYear.investimentoLordo
         || ((firstYear.quotaFpConsigliata || 0) + (firstYear.quotaPacConsigliata || 0));
+      const pacResidualTechnical = Boolean(firstYear._allocation?.pacResidualTechnical);
+      const allocationCopy = pacResidualTechnical
+        ? 'Tutto nel FP.'
+        : `${formatMoney(firstYear.quotaFpConsigliata || 0)} FP + ${formatMoney(firstYear.quotaPacConsigliata || 0)} PAC.`;
 
       const equivalentCard = byId('investment-year1-equivalent-card');
       if (equivalentCard) equivalentCard.hidden = false;
@@ -856,7 +860,7 @@ export class FinancialController {
       setText(['investment-year1-tax-saving-display', 'guided-investment-year1-tax-saving-display'], formatMoney(investimentoAnno));
       setText(['investment-year1-equivalent-display', 'guided-investment-year1-equivalent-display'], formatMoney(investimentoLordo));
       setText(['investment-mode-explanation', 'guided-investment-mode-explanation'], `Quanto esce realmente di tasca; il beneficio di ${formatMoney(risparmioFiscale)} viene reinvestito.`);
-      setText(['investment-year1-equivalent-copy', 'guided-investment-year1-equivalent-copy'], `${formatMoney(firstYear.quotaFpConsigliata || 0)} FP + ${formatMoney(firstYear.quotaPacConsigliata || 0)} PAC.`);
+      setText(['investment-year1-equivalent-copy', 'guided-investment-year1-equivalent-copy'], allocationCopy);
 
     }
 
