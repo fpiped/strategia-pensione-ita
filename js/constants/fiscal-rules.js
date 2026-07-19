@@ -136,7 +136,7 @@ export const FISCAL_RULES = {
       {
         id: 'supplementaryTreatment',
         title: 'Trattamento integrativo',
-        sourceNote: 'D.L. 3/2020 conv. L. 21/2020, mod. L. 234/2021; capienza con detrazione lavoro ridotta di 75€ ex L. 207/2024, art. 1 c. 3',
+        sourceNote: 'D.L. 3/2020 conv. L. 21/2020, mod. L. 234/2021: fino a 15.000€ capienza sulla sola imposta lorda da lavoro; tra 15.000€ e 28.000€ confronto con l’imposta lorda complessiva. Detrazione lavoro ridotta di 75€ nel primo confronto ex L. 207/2024, art. 1 c. 3',
         sources: [
           { label: 'D.L. 3/2020', url: 'https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legge:2020-02-05;3' },
           { label: 'L. 207/2024', url: 'https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2024-12-30;207' }
@@ -145,8 +145,8 @@ export const FISCAL_RULES = {
       },
       {
         id: 'taxWedgeBonus',
-        title: 'Bonus cuneo dipendenti',
-        sourceNote: 'L. 207/2024, art. 1 c. 4-9',
+        title: 'Somma e detrazione cuneo dipendenti',
+        sourceNote: 'L. 207/2024, art. 1 c. 4-9: somma esente fino a 20.000€; ulteriore detrazione dall’imposta lorda tra 20.000€ e 40.000€',
         sources: [{ label: 'L. 207/2024', url: 'https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2024-12-30;207' }],
         effective: 'dal 2025, a regime'
       },
