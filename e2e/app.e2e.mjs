@@ -99,6 +99,50 @@ try {
 
   check('boot: nessuno scenario salvato al primo accesso', (await storedScenario(pageA)) === null);
 
+  const pacDefaults = await pageA.evaluate(() => ({
+    fpReturn: document.getElementById('rendimentoAnnualeFpPerc')?.value,
+    guidedFpReturn: document.getElementById('guided-rendimento-fp')?.value,
+    mode: document.getElementById('rendimentoPacMode')?.value,
+    percentCost: document.getElementById('costiAnnuiPacPerc')?.value,
+    fixedCost: document.getElementById('costiFissiPac')?.value,
+    guidedMode: document.getElementById('guided-rendimento-pac-mode')?.value,
+    guidedPercentCost: document.getElementById('guided-costi-pac')?.value,
+    guidedFixedCost: document.getElementById('guided-costi-fissi-pac')?.value,
+    costsVisible: !document.querySelector('[data-return-extra="pac"]')?.hidden
+  }));
+  check('predefiniti rendimenti: FP netto 3%; PAC lordo con 0,2% e 10 EUR annui',
+    pacDefaults.fpReturn === '3'
+      && pacDefaults.guidedFpReturn === '3'
+      && pacDefaults.mode === 'lordo'
+      && pacDefaults.percentCost === '0.2'
+      && pacDefaults.fixedCost === '10'
+      && pacDefaults.guidedMode === 'lordo'
+      && pacDefaults.guidedPercentCost === '0.2'
+      && pacDefaults.guidedFixedCost === '10'
+      && pacDefaults.costsVisible,
+    JSON.stringify(pacDefaults)
+  );
+
+  const deductionDefaults = await pageA.evaluate(() => ({
+    ordinary: document.getElementById('detrazioniOrdinarie')?.value,
+    treatment: document.getElementById('detrazioniTrattamentoIntegrativo')?.value,
+    guidedOrdinary: document.getElementById('guided-detrazioni-ordinarie')?.value,
+    guidedTreatment: document.getElementById('guided-detrazioni-trattamento-integrativo')?.value
+  }));
+  check('detrazioni: due controlli autonomi inizializzati a zero',
+    Object.values(deductionDefaults).every((value) => value === '0'),
+    JSON.stringify(deductionDefaults)
+  );
+  await setNumber(pageA, 'detrazioniOrdinarie', 1200);
+  await setNumber(pageA, 'detrazioniTrattamentoIntegrativo', 800);
+  await pageA.waitForFunction(() =>
+    document.getElementById('guided-detrazioni-ordinarie')?.value === '1200'
+    && document.getElementById('guided-detrazioni-trattamento-integrativo')?.value === '800'
+  );
+  check('detrazioni: pannello e guidata condividono entrambi i valori', true);
+  await setNumber(pageA, 'detrazioniOrdinarie', 0);
+  await setNumber(pageA, 'detrazioniTrattamentoIntegrativo', 0);
+
   const frequencyControl = await pageA.evaluate(() => {
     const select = document.getElementById('frequenzaInvestimento');
     const buttons = [...document.querySelectorAll('.investment-frequency-buttons button')];
@@ -134,11 +178,14 @@ try {
   const technicalResidual = await pageA.evaluate(() => ({
     summary: document.getElementById('investment-year1-equivalent-copy')?.textContent || '',
     allocation: document.querySelector('#output-table tbody tr')?.cells[3]?.textContent || '',
+    gross: document.querySelector('#output-table tbody tr')?.cells[2]?.textContent || '',
+    fp: document.querySelector('#output-table tbody tr')?.cells[4]?.textContent || '',
     pac: document.querySelector('#output-table tbody tr')?.cells[6]?.textContent || ''
   }));
   check('residuo PAC: presentato come FP sostanziale, non come vero mix',
     technicalResidual.summary === 'Tutto nel FP.'
       && technicalResidual.allocation === 'FP'
+      && technicalResidual.fp === technicalResidual.gross
       && technicalResidual.pac === '0 €',
     JSON.stringify(technicalResidual)
   );
@@ -179,7 +226,9 @@ try {
   }));
   check('solo anno 1: nessun nuovo investimento dal secondo anno', singlePayment.secondYear[1] === '0 €', singlePayment.secondYear.join('|'));
   check('solo anno 1: allocazione compatta in tabella', singlePayment.secondYear.includes('N/A'), singlePayment.secondYear.join('|'));
-  check('solo anno 1: spiegazione e label coerenti', singlePayment.description.includes('soltanto il versamento') && singlePayment.label.includes('anno 1'));
+  check('solo anno 1: spiegazione coerente senza rinominare il campo',
+    singlePayment.description.includes('soltanto il versamento')
+      && singlePayment.label === 'Investimento netto annuo');
   check('solo anno 1: controlli andamento nascosti', singlePayment.variationControlsHidden && singlePayment.variationFieldsHidden, JSON.stringify(singlePayment));
   await pageA.click('[data-select-target="frequenzaInvestimento"][data-select-value="annuale"]');
   await pageA.waitForFunction(() => document.querySelector('#output-table tbody tr:nth-child(2)')?.cells[1]?.textContent === '8.000 €');
@@ -201,6 +250,23 @@ try {
   check('esploratore: nessuna falsa soglia di capienza', await pageA.evaluate(() => {
     const text = document.querySelector('.annual-explorer-section')?.textContent || '';
     return !text.includes('Tetto da capienza') && !text.includes('Deduzione utile') && !/NaN|undefined/.test(text);
+  }));
+  check('esploratore: dettaglio progressivo senza griglia a vuoti', await pageA.evaluate(() => {
+    const steps = [...document.querySelectorAll('.annual-explorer-section details.calc-step')];
+    const openSteps = steps.filter((step) => step.open);
+    return steps.length === 7
+      && openSteps.length === 1
+      && openSteps[0]?.textContent.includes('4 · Allocazione');
+  }));
+  check('esploratore: soglie fiscali contestuali renderizzate', await pageA.evaluate(() => {
+    const cards = [...document.querySelectorAll('#annual-tax-thresholds .fiscal-threshold-card')];
+    const text = document.querySelector('.fiscal-thresholds')?.textContent || '';
+    return cards.length === 7
+      && text.includes('Aliquota marginale IRPEF')
+      && text.includes('Detrazione da lavoro')
+      && text.includes('Cuneo: detrazione IRPEF')
+      && text.includes('28.000 €')
+      && !/NaN|undefined/.test(text);
   }));
 
   // --- 3. Reload: lo scenario sopravvive ---
@@ -237,6 +303,27 @@ try {
   await waitBoot(pageC);
   check('link corrotto: app funzionante con predefiniti', (await fieldValue(pageC, 'durata')) === '30');
   check('link corrotto: nessun errore JS', corruptErrors.length === 0, corruptErrors.join(' | '));
+
+  await setNumber(pageC, 'durata', 1);
+  await setNumber(pageC, 'reddito', 6000);
+  await setNumber(pageC, 'altriRedditi', 6000);
+  await setNumber(pageC, 'investimento', 0);
+  await setNumber(pageC, 'contributiInpsPerc', 0);
+  await pageC.waitForFunction(() =>
+    document.getElementById('annual-work-irpef-value')?.textContent.includes('1.380')
+    && document.getElementById('annual-irpef-value')?.textContent.includes('2.760')
+  );
+  const supplementaryBases = await pageC.evaluate(() => ({
+    workTax: document.getElementById('annual-work-irpef-value')?.textContent || '',
+    totalTax: document.getElementById('annual-irpef-value')?.textContent || '',
+    treatment: document.getElementById('annual-supplementary-treatment-value')?.textContent || ''
+  }));
+  check('trattamento integrativo: altri redditi non creano capienza da lavoro',
+    supplementaryBases.workTax.includes('1.380')
+      && supplementaryBases.totalTax.includes('2.760')
+      && supplementaryBases.treatment.includes('0 €'),
+    JSON.stringify(supplementaryBases)
+  );
 
   // --- 7. Ripristino predefiniti ---
   pageB.on('dialog', (dialog) => dialog.accept());
