@@ -1,4 +1,5 @@
 import { renderSiteIcons } from '../icons.js';
+import { getPresentedAllocation } from '../utils/result-presentation.js';
 
 /**
  * FinancialView - Gestisce tutto il rendering dell'interfaccia
@@ -52,15 +53,15 @@ export class FinancialView {
       ];
 
       const rows = results.map(result => {
+        const allocation = getPresentedAllocation(result);
         const row = {};
         columns.forEach(({ key, label }) => {
           let value = result[key];
           if (key === 'scelta') {
-            value = value === 'NESSUNO' ? 'N/A' : this.formatChoiceLabel(value);
+            value = allocation.choice === 'NESSUNO' ? 'N/A' : this.formatChoiceLabel(allocation.choice);
           }
-          if (key === 'quotaPacConsigliata' && this.isTechnicalPacResidual(result)) {
-            value = '0 €';
-          }
+          if (key === 'quotaFpConsigliata') value = allocation.fp;
+          if (key === 'quotaPacConsigliata') value = allocation.pac;
           if (key !== 'anno' && typeof value === 'number') {
             value = this.formatMoney(value);
           }
@@ -225,6 +226,7 @@ export class FinancialView {
       if (!summary || !primaryGrid || !secondaryGrid || !results.length) return;
 
       const sum = (key) => results.reduce((total, row) => total + (row[key] || 0), 0);
+      const allocations = results.map(getPresentedAllocation);
       const formatPercent = (value) => `${value.toLocaleString('it-IT', {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
@@ -236,8 +238,8 @@ export class FinancialView {
       const lastChoice = lastResult.scelta || 'MIX';
 
       const totals = {
-        fp: sum('quotaFpConsigliata'),
-        pac: sum('quotaPacConsigliata'),
+        fp: allocations.reduce((total, allocation) => total + allocation.fp, 0),
+        pac: allocations.reduce((total, allocation) => total + allocation.pac, 0),
         datore: sum('quotaDatore'),
         risparmio: sum('risparmioFiscale'),
         differenzaBustaBonifico: sum('diffBustaBonifico'),
@@ -264,9 +266,12 @@ export class FinancialView {
         .join(' · ');
 
       const firstSplitDetail = firstRow
-        ? this.isTechnicalPacResidual(firstRow)
-          ? 'Anno 1: tutto nel FP'
-          : `Anno 1: ${this.formatMoney(firstRow.quotaFpConsigliata || 0)} FP e ${this.formatMoney(firstRow.quotaPacConsigliata || 0)} PAC`
+        ? (() => {
+          const allocation = getPresentedAllocation(firstRow);
+          return allocation.choice === 'FP'
+            ? 'Anno 1: tutto nel FP'
+            : `Anno 1: ${this.formatMoney(allocation.fp)} FP e ${this.formatMoney(allocation.pac)} PAC`;
+        })()
         : 'Nessuna quota allocata';
       const timingDetail = lastChoice === 'FP'
         ? 'Negli ultimi anni l’allocazione privilegia il FP.'
@@ -276,7 +281,7 @@ export class FinancialView {
             ? 'Dopo l’anno 1 il capitale cresce senza nuovi versamenti.'
             : 'Negli ultimi anni resta conveniente una ripartizione tra FP e PAC.';
 
-      summary.textContent = `Con il budget netto indicato, il piano ottimizzato chiude a ${this.formatMoney(Math.round(optimalExit))}. ${timingDetail}`;
+      summary.textContent = `Con l’investimento netto indicato, il piano ottimizzato chiude a ${this.formatMoney(Math.round(optimalExit))}. ${timingDetail}`;
 
       if (bestValue) this.animateBestValue(bestValue, Math.round(optimalExit));
       if (bestDelta) {
@@ -288,9 +293,9 @@ export class FinancialView {
       const primaryCards = [
         {
           icon: 'wallet-cards',
-          label: 'Budget netto complessivo',
+          label: 'Investimento netto complessivo',
           value: this.formatMoney(Math.round(totals.netto)),
-          detail: 'Somma dei sacrifici netti annuali usati come vincolo dell’ottimizzazione.'
+          detail: 'Somma degli investimenti netti annuali usati come vincolo dell’ottimizzazione.'
         },
         {
           icon: 'pie-chart',
@@ -360,6 +365,87 @@ export class FinancialView {
       renderSiteIcons();
     }
 
+    renderFiscalThresholdInsights(insights = []) {
+      const grid = document.getElementById('annual-tax-thresholds');
+      if (!grid) return;
+
+      const money = (value) => this.formatMoney(Math.round(value || 0));
+      const formatResult = (insight, value) => insight.resultType === 'percent'
+        ? `${((value || 0) * 100).toLocaleString('it-IT', { maximumFractionDigits: 1 })}%`
+        : money(value);
+      const cards = insights.map((insight) => {
+        const card = document.createElement('article');
+        card.className = `fiscal-threshold-card is-${insight.status}`;
+        card.dataset.thresholdId = insight.id;
+
+        const header = document.createElement('div');
+        header.className = 'fiscal-threshold-card-head';
+        const headerCopy = document.createElement('div');
+        const title = document.createElement('h5');
+        title.textContent = insight.title;
+        const basis = document.createElement('p');
+        basis.textContent = insight.basis;
+        headerCopy.append(title, basis);
+
+        header.appendChild(headerCopy);
+        if (insight.status === 'crossed') {
+          const badge = document.createElement('span');
+          badge.className = 'fiscal-threshold-badge';
+          badge.textContent = insight.id === 'tax-capacity'
+            ? 'Imposta azzerata'
+            : 'Soglia attraversata';
+          header.appendChild(badge);
+        }
+
+        const comparison = document.createElement('div');
+        comparison.className = 'fiscal-threshold-comparison';
+        const income = document.createElement('div');
+        const incomeLabel = document.createElement('span');
+        incomeLabel.textContent = 'Reddito di riferimento';
+        const incomeValue = document.createElement('strong');
+        incomeValue.textContent = `${money(insight.beforeIncome)} → ${money(insight.afterIncome)}`;
+        income.append(incomeLabel, incomeValue);
+
+        const result = document.createElement('div');
+        const resultLabel = document.createElement('span');
+        resultLabel.textContent = insight.resultLabel;
+        const resultValue = document.createElement('strong');
+        resultValue.textContent = `${formatResult(insight, insight.beforeResult)} → ${formatResult(insight, insight.afterResult)}`;
+        result.append(resultLabel, resultValue);
+        comparison.append(income, result);
+        card.append(header, comparison);
+
+        if (insight.thresholds.length) {
+          const crossedValues = new Set(insight.crossedThresholds.map(({ value }) => value));
+          const nearest = insight.thresholds.reduce((best, threshold) => {
+            const distance = Math.min(
+              Math.abs(threshold.value - insight.beforeIncome),
+              Math.abs(threshold.value - insight.afterIncome)
+            );
+            return !best || distance < best.distance ? { value: threshold.value, distance } : best;
+          }, null);
+          const list = document.createElement('ul');
+          list.className = 'fiscal-threshold-list';
+          insight.thresholds.forEach((threshold) => {
+            const item = document.createElement('li');
+            if (crossedValues.has(threshold.value)) item.classList.add('is-crossed');
+            else if (threshold.value === nearest?.value) item.classList.add('is-nearest');
+            const amount = document.createElement('strong');
+            amount.textContent = money(threshold.value);
+            const label = document.createElement('span');
+            label.textContent = threshold.label;
+            item.append(amount, label);
+            list.appendChild(item);
+          });
+          card.appendChild(list);
+        }
+
+        return card;
+      });
+
+      grid.replaceChildren(...cards);
+    }
+
     updateAnnualExplorer(results, config, selectedYear = 1, explorer = null) {
       const yearSelect = document.getElementById('annual-explorer-year');
       if (!yearSelect || !results.length || !config) return;
@@ -398,20 +484,21 @@ export class FinancialView {
       const e = explorer || {};
       const beforeTax = e.taxComparison?.before || {};
       const afterTax = e.taxComparison?.after || {};
-      const quotaFp = row.quotaFpConsigliata || 0;
-      const quotaPac = row.quotaPacConsigliata || 0;
+      const exactAllocation = row._allocation || {};
+      const presentedAllocation = getPresentedAllocation(row);
+      const quotaFp = exactAllocation.quotaFp ?? row.quotaFpConsigliata ?? 0;
+      const quotaPac = exactAllocation.quotaPac ?? row.quotaPacConsigliata ?? 0;
       const pacResidualTechnical = this.isTechnicalPacResidual(row);
-      const pacDisplay = pacResidualTechnical ? money(0) : money(quotaPac);
       const quotaBusta = row.quotaFpBusta || 0;
       const quotaBonifico = row.quotaFpBonifico || 0;
       const datore = row.quotaDatore || 0;
-      const risparmio = row.risparmioFiscale || 0;
+      const risparmio = e.taxComparison?.saving ?? exactAllocation.beneficioFiscale ?? row.risparmioFiscale ?? 0;
       const exitOttimale = row.exitOttimale || 0;
 
       setText('annual-exit-value', money(exitOttimale));
-      setText('annual-choice-value', this.formatChoiceLabel(row.scelta || '-'));
-      setText('annual-fp-value', money(quotaFp));
-      setText('annual-pac-value', pacDisplay);
+      setText('annual-choice-value', this.formatChoiceLabel(presentedAllocation.choice || '-'));
+      setText('annual-fp-value', money(presentedAllocation.fp));
+      setText('annual-pac-value', money(presentedAllocation.pac));
       setText('annual-income-value', money(e.redditoAnno));
       setText('annual-extra-income-value', money(e.premiAnno + e.altriRedditiAnno));
       setText('annual-budget-value', money(e.investimentoAnno));
@@ -421,22 +508,33 @@ export class FinancialView {
         ? 'Nessun nuovo versamento: continua a crescere il capitale dell’anno 1.'
         : 'Quanto vuoi che la strategia costi realmente nell’anno.');
       setText('annual-returns-value', `${percent((config.rendimentoNettoFpEffettivo || 0) * 100)} / ${percent((config.rendimentoNettoPacEffettivo || 0) * 100)}`);
+      this.renderFiscalThresholdInsights(e.fiscalThresholds || []);
       // Step 1 - Imponibile e IRPEF
       setText('annual-taxable-step-value', money(e.imponibileIrpef));
       setText('annual-taxable-formula', `${money(e.redditoAnno)} retribuzione + ${money(e.premiAnno + e.altriRedditiAnno)} accessori - ${money(e.contributiInps)} INPS = ${money(e.imponibileIrpef)} imponibile IRPEF.`);
       setText('annual-gross-income-value', money(e.redditoFiscaleAnno));
       setText('annual-inps-value', `-${money(e.contributiInps)}`);
       setText('annual-irpef-value', money(e.irpefLorda));
+      setText('annual-work-irpef-value', money(e.irpefLordaLavoro));
       setText('annual-addizionali-value', money(e.addizionali));
       setText('annual-marginal-rate-value', `${e.aliquotaMarginale}%`);
       setText('annual-employee-deduction-value', `-${money(e.detrazioneLavoro)}`);
-      setText('annual-other-deductions-value', `-${money(e.ulterioriDetrazioni)}`);
+      setText('annual-ordinary-deductions-value', `-${money(e.detrazioniOrdinarie)}`);
+      setText('annual-supplementary-deductions-value', `-${money(e.detrazioniTrattamentoIntegrativo)}`);
       setText('annual-net-tax-value', money(e.impostaNetta));
       setText('annual-supplementary-treatment-value', `+${money(e.trattamentoIntegrativo)}`);
-      setText('annual-tax-wedge-bonus-value', `+${money(e.bonusCuneo)}`);
+      setText('annual-tax-wedge-bonus-value', e.sommaCuneo > 0
+        ? `+${money(e.sommaCuneo)} somma`
+        : e.detrazioneCuneoNominale > 0
+          ? `-${money(e.detrazioneCuneoUsata)} detrazione`
+          : money(0));
       setText('annual-bonuses-value', `+${money(e.trattamentoIntegrativo + e.bonusCuneo)}`);
       setText('annual-fiscal-cost-step-value', money(beforeTax.fiscalCost));
-      setText('annual-tax-components-formula', `${money(e.irpefLorda)} IRPEF + ${money(e.addizionali)} addizionali - ${money(Math.max(e.detrazioneLavoro + e.ulterioriDetrazioni - (e.riduzioneDetrazioniAltiRedditi || 0), 0))} detrazioni${e.riduzioneDetrazioniAltiRedditi ? ` (ridotte di ${money(e.riduzioneDetrazioniAltiRedditi)} oltre ${money(e.sogliaRedditiAlti)} di reddito)` : ''} = ${money(e.impostaNetta)} imposta netta; meno ${money(e.trattamentoIntegrativo + e.bonusCuneo)} sostegni = ${money(beforeTax.fiscalCost)} costo fiscale.`);
+      const detrazioniNominali = Math.max(
+        e.detrazioneLavoro + e.altreDetrazioniTotali - (e.riduzioneDetrazioniAltiRedditi || 0),
+        0
+      ) + (e.detrazioneCuneoNominale || 0);
+      setText('annual-tax-components-formula', `max(${money(e.irpefLorda)} IRPEF - ${money(detrazioniNominali)} detrazioni, 0) = ${money(e.irpefNetta)} IRPEF netta; + ${money(e.addizionali)} addizionali = ${money(e.impostaNetta)} imposta netta; meno ${money(e.trattamentoIntegrativo + e.sommaCuneo)} somme erogate = ${money(beforeTax.fiscalCost)} costo fiscale.`);
 
       // Step 2 - Limite di deduzione: nessuna stima di capienza fiscale;
       // qui si mostra solo il limite normativo esatto e come viene occupato.
@@ -451,7 +549,7 @@ export class FinancialView {
 
       // Step 3 - Allocazione e motivazione leggibile.
       const yearsLeft = Math.max((config.durata || safeYear) - safeYear + 1, 1);
-      const choice = row.scelta || '-';
+      const choice = presentedAllocation.choice || '-';
       const employerReason = datore > 0
         ? `${money(e.quotaMinimaStimata)} nel FP sbloccano ${money(datore)} del datore. `
         : '';
@@ -462,11 +560,15 @@ export class FinancialView {
           : choice === 'NESSUNO'
             ? `Non viene aggiunto nuovo capitale: questo anno mostra soltanto l’evoluzione del versamento effettuato nell’anno 1.`
             : `Dopo la quota minima, il modello divide il resto tra FP e PAC scegliendo euro per euro il valore netto più alto a scadenza.`;
-      setText('annual-fp-step-value', money(quotaFp));
+      setText('annual-fp-step-value', money(presentedAllocation.fp));
+      const investimentoNettoEsatto = (exactAllocation.investimentoLordo ?? e.investimentoPersonaleAnno ?? 0)
+        - (exactAllocation.beneficioFiscale ?? e.beneficioInvestitoAnno ?? 0);
+      const investimentoLordoEsatto = exactAllocation.investimentoLordo ?? e.investimentoPersonaleAnno ?? 0;
+      const beneficioEsatto = exactAllocation.beneficioFiscale ?? e.beneficioInvestitoAnno ?? 0;
       const allocationFormula = pacResidualTechnical
-        ? `${money(e.investimentoPersonaleAnno)} FP`
-        : `${money(quotaFp)} FP + ${money(quotaPac)} PAC`;
-      setText('annual-fp-formula', `${money(e.spesaEffettivaAnno)} spesa + ${money(e.beneficioInvestitoAnno)} beneficio = ${money(e.investimentoPersonaleAnno)} investiti = ${allocationFormula}. ${employerReason}${allocationReason} Orizzonte: ${yearsLeft} anni; rendimenti netti FP/PAC: ${percent((config.rendimentoNettoFpEffettivo || 0) * 100)} / ${percent((config.rendimentoNettoPacEffettivo || 0) * 100)}.`);
+        ? `${money(presentedAllocation.fp)} FP mostrati`
+        : `${moneyExact(quotaFp)} FP + ${moneyExact(quotaPac)} PAC`;
+      setText('annual-fp-formula', `${moneyExact(investimentoNettoEsatto)} investimento netto + ${moneyExact(beneficioEsatto)} beneficio = ${moneyExact(investimentoLordoEsatto)} investimento lordo = ${allocationFormula}. ${employerReason}${allocationReason} Orizzonte: ${yearsLeft} anni; rendimenti netti FP/PAC: ${percent((config.rendimentoNettoFpEffettivo || 0) * 100)} / ${percent((config.rendimentoNettoPacEffettivo || 0) * 100)}.`);
       setText('annual-within-min-value', money(e.quotaEntroMinima));
       setText('annual-above-min-value', money(e.quotaExtraMinima));
       setText('annual-effective-expense-value', money(e.spesaEffettivaAnno));
@@ -493,7 +595,7 @@ export class FinancialView {
       const beforeBonuses = (beforeTax.supplementaryTreatment || 0) + (beforeTax.taxWedgeBonus || 0);
       const afterBonuses = (afterTax.supplementaryTreatment || 0) + (afterTax.taxWedgeBonus || 0);
       setText('annual-tax-formula', quotaFp > 0
-        ? `${money(beforeTax.fiscalCost)} costo fiscale senza FP - (${money(afterTax.fiscalCost)} con FP) = ${money(risparmio)} beneficio effettivo.`
+        ? `${moneyExact(beforeTax.fiscalCost)} costo fiscale senza FP - ${moneyExact(afterTax.fiscalCost)} con FP = ${moneyExact(risparmio)} beneficio effettivo.`
         : `Nessuna quota FP dedotta: il costo fiscale non cambia e il beneficio è 0 €.`);
       setText('annual-taxable-before-after-value', `${money(beforeTax.taxableIncome)} → ${money(afterTax.taxableIncome)}`);
       setText('annual-gross-tax-before-after-value', `${money((beforeTax.grossIncomeTax || 0) + (beforeTax.localTaxes || 0))} → ${money((afterTax.grossIncomeTax || 0) + (afterTax.localTaxes || 0))}`);
@@ -502,11 +604,13 @@ export class FinancialView {
       setText('annual-tax-wedge-before-after-value', `${money(beforeTax.taxWedgeBonus)} → ${money(afterTax.taxWedgeBonus)}`);
       setText('annual-bonus-before-after-value', `${money(beforeBonuses)} → ${money(afterBonuses)}`);
       setText('annual-fiscal-cost-before-after-value', `${money(beforeTax.fiscalCost)} → ${money(afterTax.fiscalCost)}`);
-      setText('annual-effective-rate-value', quotaFp > 0 ? percent(e.aliquotaEffettiva) : '-');
+      setText('annual-effective-rate-value', quotaFp > 0 ? percent((risparmio / quotaFp) * 100) : '-');
 
       // Step 6 - Riconciliazione completa dell'exit.
+      const exitEsatta = (e.montanteFp || 0) + (e.montantePac || 0)
+        - (e.impostaUscitaFp || 0) - (e.impostaUscitaPac || 0);
       setText('annual-exit-step-value', money(exitOttimale));
-      setText('annual-exit-formula', `${money(e.montanteFp)} FP + ${money(e.montantePac)} PAC - ${money(e.impostaUscitaFp)} imposta FP - ${money(e.impostaUscitaPac)} imposta PAC = ${money(exitOttimale)} netto. Il beneficio fiscale ha già finanziato i versamenti dell'anno.`);
+      setText('annual-exit-formula', `${moneyExact(e.montanteFp)} FP + ${moneyExact(e.montantePac)} PAC - ${moneyExact(e.impostaUscitaFp)} imposta FP - ${moneyExact(e.impostaUscitaPac)} imposta PAC = ${moneyExact(exitEsatta)} netto. Il beneficio fiscale ha già finanziato i versamenti dell'anno.`);
       setText('annual-montante-fp-value', `${money(e.montanteFp)} (${money(e.versatoFp)} versati)`);
       setText('annual-fp-deductible-total-value', money(e.versatoFpDeducibile));
       setText('annual-fp-nondeductible-total-value', money(e.versatoFpNonDeducibile));

@@ -20,7 +20,7 @@ export const HELP_CONTENT = {
             title: 'Altri redditi imponibili IRPEF',
             dove: 'Dichiarazione dei redditi: es. locazioni ordinarie o redditi diversi imponibili IRPEF.',
             come: 'Aumentano il reddito fiscale usato per aliquote e beneficio della deduzione.',
-            effetto: 'Non toccano la base previdenziale né quella per quota minima e contributo datore.'
+            effetto: 'Non toccano la base previdenziale né quella per quota minima e contributo datore. Entrano nel reddito complessivo del trattamento integrativo, ma non nell’IRPEF da lavoro usata per verificarne la capienza fino a 15.000 €.'
         },
         variazionePremi: {
             title: 'Aumento premi e bonus',
@@ -49,14 +49,14 @@ export const HELP_CONTENT = {
         investimento: {
             title: 'Investimento netto',
             dove: 'Quanto vuoi che la strategia ti costi realmente per ciascun versamento, dopo il beneficio fiscale e con TFR e contributo datore esclusi.',
-            come: 'Per ogni quota FP il modello ricalcola il beneficio e investe nel PAC la capacità residua: FP personale + PAC − beneficio = investimento netto.',
-            effetto: 'Con Ogni anno il budget viene ripetuto per tutta la durata; con Solo anno 1 viene ottimizzato una volta e poi seguito nel tempo. Il beneficio fiscale aumenta il lordo senza essere contato due volte.'
+            come: 'Prova la quota FP personale totale euro per euro, ricalcola l’intera fiscalità e ricava il PAC residuo: FP personale + PAC − beneficio = investimento netto.',
+            effetto: 'Con Ogni anno simula nuovi ricalcoli sullo stato accumulato; con Solo anno 1 ottimizza il versamento iniziale e segue solo quello. Il beneficio può finanziare altro FP oppure PAC ed è già incluso nel lordo.'
         },
         variazioneInvestimento: {
             title: 'Aumento investimento',
             dove: 'Ipotesi tua su quanto potrai aumentare il risparmio annuo nel tempo.',
             come: 'Puoi usare una percentuale o un importo fisso in euro: ogni 3 anni e aumento 10% significa aumento dell\'investimento ogni 3 anni.',
-            effetto: 'Un budget netto crescente aumenta la capacità lorda finanziata anche dal beneficio fiscale negli anni successivi.'
+            effetto: 'Un investimento netto crescente aumenta la capacità lorda finanziata anche dal beneficio fiscale negli anni successivi.'
         },
         baseContributivaFpTipo: {
             title: 'Base quota aderente',
@@ -74,7 +74,7 @@ export const HELP_CONTENT = {
             title: 'Base contributo datore',
             dove: 'Controlla la regola specifica del contributo aziendale nella scheda del fondo, nel CCNL o nell’accordo aziendale. Non dedurla dalla base aderente: il datore può applicare la propria percentuale alla RAL, alla retribuzione utile TFR, al minimo contrattuale o a un’altra base espressamente definita.',
             come: 'Con RAL, la percentuale del datore si applica alla RAL. Con Altra base, si applica al valore inserito nel campo dedicato. Esempio: 1,5% su 35.000 € = 525 €; su 30.000 € = 450 €.',
-            effetto: 'Il contributo viene riconosciuto solo quando versi almeno la quota minima aderente. È capitale aggiuntivo del datore: non aumenta la tua spesa personale, ma occupa parte del limite deducibile.'
+            effetto: 'Il contributo viene riconosciuto solo quando versi almeno la quota minima aderente. È capitale aggiuntivo del datore: non aumenta il tuo investimento netto, ma occupa parte del limite deducibile.'
         },
         variazioneBaseContributiva: {
             title: 'Aumento altra base',
@@ -86,7 +86,7 @@ export const HELP_CONTENT = {
             title: 'Contributo datore di lavoro',
             dove: 'Scheda del fondo, CCNL o accordo aziendale.',
             come: 'Percentuale applicata alla base contributo datore, riconosciuta solo se versi almeno la quota minima aderente.',
-            effetto: 'È capitale extra che il PAC non riceve: pesa molto nel confronto.'
+            effetto: 'È capitale extra che il PAC non riceve: al raggiungimento della quota minima può creare un salto netto nella convenienza del FP.'
         },
         quotaMinAderentePerc: {
             title: 'Quota minima aderente',
@@ -97,19 +97,19 @@ export const HELP_CONTENT = {
         addizionaliPerc: {
             title: 'Addizionali manuali',
             dove: 'Busta paga (conguaglio) o dichiarazione dei redditi: somma tra aliquota media regionale e comunale. Esempio: 1,73% + 0,80% = 2,53%.',
-            come: 'Il modello le somma all\'IRPEF nel calcolo dell\'imposta.',
-            effetto: 'Aumentano anche il risparmio fiscale della deduzione. Se non vuoi calcolarle a mano, usa “Da località”.'
+            come: 'Il modello usa la percentuale come un’unica aliquota piatta e la ricalcola sull’imponibile prima e dopo il versamento FP.',
+            effetto: 'Non riproduce eventuali esenzioni o scaglioni locali: per quelli usa “Da località”.'
         },
         regioneAddizionali: {
             title: 'Regione addizionali',
             dove: 'La tua Regione o Provincia autonoma di residenza fiscale.',
-            come: 'Applica le aliquote regionali importate dal CSV MEF.',
+            come: 'Ricalcola gli scaglioni regionali sull’imponibile di ogni candidato FP.',
             effetto: 'Se selezioni anche il Comune, la Regione viene impostata automaticamente dalla provincia del Comune.'
         },
         comuneAddizionali: {
             title: 'Comune addizionali',
             dove: 'Il tuo Comune di residenza fiscale: digita nome, provincia o codice catastale e scegli dai risultati.',
-            come: 'Aggiunge l\'addizionale comunale e imposta automaticamente la Regione.',
+            come: 'Ricalcola aliquota, scaglioni ed esenzione ordinaria del Comune sull’imponibile di ogni candidato FP.',
             effetto: 'Alcune note comunali particolari restano semplificate nel calcolo.'
         },
         contributiInpsPerc: {
@@ -142,17 +142,23 @@ export const HELP_CONTENT = {
             come: 'Aliquota aggiuntiva applicata alla quota di reddito sopra la soglia IVS.',
             effetto: 'Rileva solo per redditi sopra soglia.'
         },
-        ulterioriDetrazioni: {
-            title: 'Ulteriori detrazioni',
-            dove: 'Dichiarazione dei redditi: bonus e detrazioni oltre a quelle da lavoro dipendente (es. spese sanitarie, interessi mutuo).',
-            come: 'Riducono l\'imposta netta: non sono deduzioni, non abbassano il reddito imponibile.',
-            effetto: 'Se sono alte riducono la capienza fiscale e quindi il beneficio effettivo della deduzione FP.'
+        detrazioniOrdinarie: {
+            title: 'Detrazioni ordinarie',
+            dove: 'Dichiarazione dei redditi: inserisci qui le detrazioni che riducono l’IRPEF ma non concorrono al trattamento integrativo tra 15.000 € e 28.000 €.',
+            come: 'Esempi: spese sanitarie correnti, spese scolastiche, assicurazioni e altre detrazioni non comprese nell’elenco speciale del trattamento integrativo. Inserisci l’importo della detrazione, non la spesa sostenuta.',
+            effetto: 'Riducono l’IRPEF entro la capienza, ma non possono aumentare il trattamento integrativo.'
+        },
+        detrazioniTrattamentoIntegrativo: {
+            title: 'Detrazioni rilevanti per il trattamento integrativo',
+            dove: 'Dichiarazione dei redditi: usa questo campo solo per le categorie ammesse dalla disciplina del trattamento integrativo.',
+            come: 'Comprendono le detrazioni familiari previste, determinati interessi su mutui e le rate residue di specifiche spese sanitarie, edilizie o previste da altre norme sostenute entro il 31 dicembre 2021. Inserisci l’importo della detrazione, senza ripeterlo tra le ordinarie.',
+            effetto: 'Riducono l’IRPEF e, soltanto tra 15.000 € e 28.000 €, possono far maturare trattamento integrativo fino a 1.200 €.'
         },
         modalitaVersamentoFp: {
             title: 'Versamento della quota FP extra',
             dove: 'Ufficio HR/payroll o fondo pensione: verifica quali canali di versamento sono ammessi.',
             come: 'La quota minima aderente passa sempre in busta per agganciare il contributo datore; l\'extra può andare in busta o via bonifico. Automatico sceglie la ripartizione più conveniente anno per anno.',
-            effetto: 'Tutta la quota deducibile riduce l\'imponibile IRPEF, ma solo la quota in busta riduce la base usata per detrazioni da lavoro dipendente, ex Bonus Renzi e bonus cuneo.'
+            effetto: 'Tutta la quota deducibile riduce l\'imponibile IRPEF, ma solo la quota in busta riduce la base usata per detrazione da lavoro, trattamento integrativo e misure sul cuneo.'
         },
         anzianitaPregressaFp: {
             title: 'Anzianità pregressa FP',
@@ -182,7 +188,7 @@ export const HELP_CONTENT = {
             title: 'Costi annui EUR FP',
             dove: 'Scheda costi del fondo: quota associativa, spese amministrative o altre commissioni espresse in euro.',
             come: 'Importo sottratto una volta per ogni anno in cui il FP è attivo. Si applica solo con rendimento Lordo.',
-            effetto: 'Pesa soprattutto sui montanti piccoli. Non inserirlo se è già incluso nel rendimento netto.'
+            effetto: 'Pesa soprattutto sui montanti piccoli, può eroderli fino a zero ed è condiviso da tutti i versamenti già presenti nel FP. Non inserirlo se è incluso nel rendimento netto.'
         },
         quotaAgevolataFpPerc: {
             title: 'Quota FP agevolata 12,5%',
@@ -211,8 +217,8 @@ export const HELP_CONTENT = {
         costiFissiPac: {
             title: 'Costi annui EUR PAC',
             dove: 'Canone del broker, commissioni minime e altri costi ricorrenti espressi in euro.',
-            come: 'Importo sottratto una volta per ogni anno in cui il PAC è attivo. Nel costo percentuale includi invece TER, bollo e altri costi proporzionali.',
-            effetto: 'Pesa soprattutto sui PAC piccoli. Non inserirlo se è già incluso nel rendimento netto.'
+            come: 'Importo sottratto una volta per ogni anno in cui il PAC è attivo. Si applica con rendimento Lordo; nel costo percentuale includi invece TER, bollo e altri costi proporzionali.',
+            effetto: 'Pesa soprattutto sui PAC piccoli, può eroderli fino a zero ed è condiviso dall’intero conto: non viene moltiplicato per il numero di versamenti. Non inserirlo se è già incluso nel rendimento netto.'
         },
         quotaAgevolataPacPerc: {
             title: 'Quota PAC agevolata 12,5%',

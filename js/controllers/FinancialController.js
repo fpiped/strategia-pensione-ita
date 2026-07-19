@@ -3,6 +3,8 @@ import { FinancialView } from '../views/FinancialView.js';
 import { FINANCIAL_CONSTANTS } from '../constants/financial-constants.js';
 import { applyPeriodicVariation } from '../calculators/pension-contributions.js';
 import { calculateEffectiveTaxRate, calculateExitEquivalentAnnualReturn, calculateNetAnnualReturn } from '../calculators/investment-growth.js';
+import { createFlatLocalTaxRules } from '../calculators/local-tax-calculator.js';
+import { calculateIrpefTaxableIncome } from '../calculators/tax-calculator.js';
 import { REGIONAL_TAX_2026 } from '../constants/regional-tax-data.js';
 import {
   calculateLocalTaxRate,
@@ -15,6 +17,7 @@ import {
   buildInputWarnings
 } from '../utils/input-helpers.js';
 import { createStore } from '../store.js';
+import { getPresentedAllocation } from '../utils/result-presentation.js';
 import { hydrateState, bindFields, dropUnknownChoices } from '../bindings.js';
 import {
   buildShareUrl,
@@ -310,10 +313,8 @@ export class FinancialController {
       const singlePayment = state.frequenzaInvestimento === 'singolo';
       setText('investment-frequency-description', singlePayment
         ? 'Ottimizza soltanto il versamento dell’anno 1 e segue quel capitale fino alla fine.'
-        : 'Ripete ogni anno il budget netto indicato e ottimizza ciascun nuovo versamento.');
-      setText(['investment-amount-label', 'guided-investment-amount-label'], singlePayment
-        ? 'Investimento netto · anno 1'
-        : 'Investimento netto annuo');
+        : 'Simula ogni anno un nuovo investimento netto e lo ottimizza usando lo stato accumulato.');
+      setText(['investment-amount-label', 'guided-investment-amount-label'], 'Investimento netto annuo');
       setText('guided-investment-step-title', singlePayment ? 'Investimento anno 1' : 'Investimento annuo');
 
       document.querySelectorAll('select[data-variation-fields]').forEach((select) => {
@@ -427,6 +428,9 @@ export class FinancialController {
         state[andamentoKey] === 'crescente' ? state[valueKey] : 0
       );
       const baseContributiva = Math.max(state.minimoRetributivoAnnuo, 0);
+      const localTaxRules = state.localTaxMode === 'auto'
+        ? this.getSelectedLocalTax(state).rules
+        : createFlatLocalTaxRules(state.addizionaliPerc / 100);
 
       const config = {
         durata: state.durata || 1,
@@ -464,7 +468,9 @@ export class FinancialController {
         sogliaIvsAggiuntivo: state.sogliaIvsAggiuntivo,
         aliquotaIvsAggiuntivaPerc: state.aliquotaIvsAggiuntivaPerc / 100,
         addizionaliPerc: state.addizionaliPerc / 100,
-        ulterioriDetrazioni: state.ulterioriDetrazioni,
+        localTaxRules,
+        detrazioniOrdinarie: state.detrazioniOrdinarie,
+        detrazioniTrattamentoIntegrativo: state.detrazioniTrattamentoIntegrativo,
         modalitaVersamentoFp: state.modalitaVersamentoFp,
 
         // Tassi di rendimento
@@ -639,10 +645,15 @@ export class FinancialController {
     }
 
     getSelectedLocalTax(state) {
+      const imponibileLavoro = calculateIrpefTaxableIncome({
+        reddito: state.reddito + Math.max(state.premiStraordinari, 0),
+        contributiInpsPerc: state.contributiInpsPerc / 100,
+        massimaleContributivoInps: state.massimaleContributivoInps,
+        sogliaIvsAggiuntivo: state.sogliaIvsAggiuntivo,
+        aliquotaIvsAggiuntivaPerc: state.aliquotaIvsAggiuntivaPerc / 100
+      });
       return calculateLocalTaxRate({
-        reddito: state.reddito
-          + Math.max(state.premiStraordinari, 0)
-          + Math.max(state.altriRedditi, 0),
+        reddito: imponibileLavoro + Math.max(state.altriRedditi, 0),
         regionId: state.regioneAddizionali,
         municipalityCode: state.comuneAddizionali
       });
@@ -847,10 +858,10 @@ export class FinancialController {
       const risparmioFiscale = firstYear.risparmioFiscale || 0;
       const investimentoLordo = firstYear.investimentoLordo
         || ((firstYear.quotaFpConsigliata || 0) + (firstYear.quotaPacConsigliata || 0));
-      const pacResidualTechnical = Boolean(firstYear._allocation?.pacResidualTechnical);
-      const allocationCopy = pacResidualTechnical
+      const allocation = getPresentedAllocation(firstYear);
+      const allocationCopy = allocation.choice === 'FP'
         ? 'Tutto nel FP.'
-        : `${formatMoney(firstYear.quotaFpConsigliata || 0)} FP + ${formatMoney(firstYear.quotaPacConsigliata || 0)} PAC.`;
+        : `${formatMoney(allocation.fp)} FP + ${formatMoney(allocation.pac)} PAC.`;
 
       const equivalentCard = byId('investment-year1-equivalent-card');
       if (equivalentCard) equivalentCard.hidden = false;

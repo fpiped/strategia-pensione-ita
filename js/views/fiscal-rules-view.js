@@ -11,7 +11,7 @@ const SOURCE_GROUPS = [
   },
   {
     title: 'IRPEF, detrazioni e sostegni al reddito',
-    description: 'Imposta lorda, detrazione da lavoro dipendente, trattamento integrativo e bonus cuneo sono passaggi distinti.',
+    description: 'Imposta lorda, detrazione da lavoro, trattamento integrativo, somma cuneo e detrazione cuneo sono passaggi distinti.',
     ids: ['irpef', 'employeeDeduction', 'supplementaryTreatment', 'taxWedgeBonus', 'localTaxes']
   },
   {
@@ -47,11 +47,12 @@ function describeValue(id, rules) {
     inpsRate: () => `${percent(inps.employeeRate)}, modificabile.`,
     inpsCeiling: () => `${money(inps.contributionCeiling)}.`,
     additionalIvs: () => `+${percent(inps.additionalIvsRate)} oltre ${money(inps.additionalIvsThreshold)}.`,
-    supplementaryTreatment: () => `${money(supplementaryTreatment.amount)}/anno; pieno fino a ` +
-      `${money(supplementaryTreatment.fullThreshold)}, a capienza fino a ${money(supplementaryTreatment.maximumThreshold)}.`,
+    supplementaryTreatment: () => `${money(supplementaryTreatment.amount)}/anno; fino a ` +
+      `${money(supplementaryTreatment.fullThreshold)} con capienza sulla sola IRPEF da lavoro, ` +
+      `poi con detrazioni ammesse fino a ${money(supplementaryTreatment.maximumThreshold)}.`,
     taxWedgeBonus: () => `somma integrativa fino a ${money(taxWedgeBonus.thresholds[2])}; ` +
       `detrazione ${money(taxWedgeBonus.fullDeduction)} tra ${money(taxWedgeBonus.thresholds[2])} ` +
-      `e ${money(taxWedgeBonus.thresholds[4])}.`,
+      `e ${money(taxWedgeBonus.thresholds[4])}, entro la capienza IRPEF.`,
     pensionInvestmentTax: () => `${percent(investmentTax.pensionFundOrdinaryRate)} ordinaria, ` +
       `${percent(investmentTax.governmentBondsRate)} su quota titoli di Stato in modalità lorda.`,
     pacCapitalGain: () => `${percent(investmentTax.pacOrdinaryRate)} ordinaria, ` +
