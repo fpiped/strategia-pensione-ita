@@ -36,11 +36,22 @@ const scenarioKeys = () => [...FIELDS.map((field) => field.key), ...EXTRA_KEYS];
  */
 export function sanitizeScenario(raw, defaults) {
   if (!raw || typeof raw !== 'object') return null;
+  const normalizedRaw = { ...raw };
+  // Migrazione scenari v3 precedenti alla distinzione: l'importo unico
+  // conserva l'effetto IRPEF, ma non viene promosso automaticamente a
+  // detrazione rilevante per il trattamento integrativo.
+  if (
+    !('detrazioniOrdinarie' in normalizedRaw)
+    && typeof normalizedRaw.ulterioriDetrazioni === 'number'
+    && Number.isFinite(normalizedRaw.ulterioriDetrazioni)
+  ) {
+    normalizedRaw.detrazioniOrdinarie = normalizedRaw.ulterioriDetrazioni;
+  }
   const state = { ...defaults };
   const patch = {};
   for (const field of FIELDS) {
-    if (!(field.key in raw)) continue;
-    const value = raw[field.key];
+    if (!(field.key in normalizedRaw)) continue;
+    const value = normalizedRaw[field.key];
     switch (field.type) {
       case 'number':
         if (typeof value !== 'number' || !Number.isFinite(value)) break;

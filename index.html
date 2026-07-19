@@ -120,7 +120,7 @@
                             <div class="investment-frequency-control param-card-full">
                                 <div class="investment-frequency-copy">
                                     <span class="investment-frequency-label">Versamenti simulati</span>
-                                    <p id="investment-frequency-description">Ripete ogni anno il budget netto indicato e ottimizza ciascun nuovo versamento.</p>
+                                    <p id="investment-frequency-description">Simula ogni anno un nuovo investimento netto e lo ottimizza usando lo stato accumulato.</p>
                                 </div>
                                 <select id="frequenzaInvestimento" class="form-control native-select" aria-label="Versamenti simulati">
                                     <option value="annuale" selected>Ogni anno</option>
@@ -227,7 +227,7 @@
                                             <div class="mini-metric output">
                                                 <span id="investment-year1-fp-label">Investimento netto · anno 1</span>
                                                 <strong id="investment-year1-tax-saving-display">-</strong>
-                                                <p id="investment-mode-explanation">Riduce nello stesso anno quanto esce di tasca.</p>
+                                                <p id="investment-mode-explanation">Il beneficio fiscale viene reinvestito nello stesso anno economico.</p>
                                             </div>
                                             <div class="mini-metric output" id="investment-year1-equivalent-card">
                                                 <span id="investment-year1-equivalent-label">Investimento lordo · anno 1</span>
@@ -493,8 +493,12 @@
                                     <div class="control-subgroup">
                                         <div class="form-row">
                                             <div class="form-group">
-                                                <label for="ulterioriDetrazioni"><span class="help-trigger" data-help="ulterioriDetrazioni">Ulteriori detrazioni</span></label>
-                                                <div class="control-field"><input type="number" id="ulterioriDetrazioni" class="form-control" value="0" min="0" step="100"><span class="unit">EUR</span></div>
+                                                <label for="detrazioniOrdinarie"><span class="help-trigger" data-help="detrazioniOrdinarie">Detrazioni ordinarie</span></label>
+                                                <div class="control-field"><input type="number" id="detrazioniOrdinarie" class="form-control" value="0" min="0" step="100"><span class="unit">EUR</span></div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="detrazioniTrattamentoIntegrativo"><span class="help-trigger" data-help="detrazioniTrattamentoIntegrativo">Detrazioni per trattamento integrativo</span></label>
+                                                <div class="control-field"><input type="number" id="detrazioniTrattamentoIntegrativo" class="form-control" value="0" min="0" step="100"><span class="unit">EUR</span></div>
                                             </div>
                                         </div>
                                     </div>
@@ -525,7 +529,7 @@
                                         <div class="form-row">
                                             <div class="form-group">
                                                 <label for="rendimentoAnnualeFpPerc"><span class="help-trigger" data-help="rendimentoAnnualeFpPerc">Rendimento FP</span></label>
-                                                <div class="control-field"><input type="number" id="rendimentoAnnualeFpPerc" class="form-control" value="4" min="0" max="100" step="0.1"><span class="unit">%</span></div>
+                                                <div class="control-field"><input type="number" id="rendimentoAnnualeFpPerc" class="form-control" value="3" min="0" max="100" step="0.1"><span class="unit">%</span></div>
                                             </div>
                                             <div class="form-group">
                                                 <label for="rendimentoFpMode"><span class="help-trigger" data-help="rendimentoFpMode">Tipo rendimento</span></label>
@@ -558,7 +562,7 @@
                                             </div>
                                             <div class="mini-metrics">
                                                 <div class="mini-metric output"><span>Tassa effettiva FP</span><strong id="tassaEffettivaFp">20,00%</strong><p>Da quota agevolata e ordinaria.</p></div>
-                                                <div class="mini-metric output"><span>Netto calcolato FP</span><strong id="rendimentoNettoFp">4,00%</strong><p>Dopo costi % e tasse; i costi EUR sono applicati al montante.</p></div>
+                                                <div class="mini-metric output"><span>Netto calcolato FP</span><strong id="rendimentoNettoFp">3,00%</strong><p>Dopo costi % e tasse; i costi EUR sono applicati al montante.</p></div>
                                             </div>
                                         </div>
                                     </div>
@@ -572,24 +576,24 @@
                                             <div class="form-group">
                                                 <label for="rendimentoPacMode"><span class="help-trigger" data-help="rendimentoPacMode">Tipo rendimento</span></label>
                                                 <select id="rendimentoPacMode" class="form-control native-select">
-                                                    <option value="netto" selected>Netto</option>
-                                                    <option value="lordo">Lordo</option>
+                                                    <option value="netto">Netto</option>
+                                                    <option value="lordo" selected>Lordo</option>
                                                 </select>
                                                 <div class="segmented-control" data-select-group="rendimentoPacMode">
-                                                    <button type="button" class="active" data-select-target="rendimentoPacMode" data-select-value="netto" aria-pressed="true">Netto</button>
-                                                    <button type="button" data-select-target="rendimentoPacMode" data-select-value="lordo" aria-pressed="false">Lordo</button>
+                                                    <button type="button" data-select-target="rendimentoPacMode" data-select-value="netto" aria-pressed="false">Netto</button>
+                                                    <button type="button" class="active" data-select-target="rendimentoPacMode" data-select-value="lordo" aria-pressed="true">Lordo</button>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="return-gross-fields conditional-grid" data-return-extra="pac" hidden>
+                                        <div class="return-gross-fields conditional-grid" data-return-extra="pac">
                                             <div class="form-row">
                                                 <div class="form-group">
                                                     <label for="costiAnnuiPacPerc"><span class="help-trigger" data-help="costiAnnuiPacPerc">Costi annui %</span></label>
-                                                    <div class="control-field"><input type="number" id="costiAnnuiPacPerc" class="form-control" value="0" min="0" max="5" step="0.1"><span class="unit">%</span></div>
+                                                    <div class="control-field"><input type="number" id="costiAnnuiPacPerc" class="form-control" value="0.2" min="0" max="5" step="0.1"><span class="unit">%</span></div>
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="costiFissiPac"><span class="help-trigger" data-help="costiFissiPac">Costi annui EUR</span></label>
-                                                    <div class="control-field"><input type="number" id="costiFissiPac" class="form-control" value="0" min="0" max="10000" step="1"><span class="unit">€/anno</span></div>
+                                                    <div class="control-field"><input type="number" id="costiFissiPac" class="form-control" value="10" min="0" max="10000" step="1"><span class="unit">€/anno</span></div>
                                                 </div>
                                             </div>
                                             <div class="form-row">
@@ -678,13 +682,17 @@
                 <section class="workspace-section annual-explorer-section" aria-labelledby="annual-explorer-title">
                     <h3 id="annual-explorer-title" class="results-title">Calcoli esplorabili per anno</h3>
                     <div class="annual-explorer-body">
-                    <div class="explorer-controls">
-                        <div class="year-select">
-                            <select id="annual-explorer-year" class="form-control" aria-label="Anno da ispezionare"></select>
+                    <div class="explorer-toolbar">
+                        <div class="explorer-toolbar-copy">
+                            <span class="section-kicker">Verifica del risultato</span>
+                            <p class="explorer-intro">Scegli un anno e ricostruisci il calcolo dal reddito fino al valore netto. Ogni passaggio mostra subito il risultato principale; aprilo per vedere formula e componenti.</p>
                         </div>
+                        <label class="year-select" for="annual-explorer-year">
+                            <span>Anno da analizzare</span>
+                            <select id="annual-explorer-year" class="form-control" aria-label="Anno da ispezionare"></select>
+                        </label>
                     </div>
                     <div class="annual-explorer">
-                        <p class="explorer-intro">Dal reddito al valore netto: segui i sette nuclei nell'ordine. Reddito, imposta, agevolazioni e investimento restano separati, così ogni risultato può essere ricostruito con i numeri mostrati.</p>
                         <div class="year-answer" aria-label="Risultato anno selezionato">
                             <div class="year-answer-card main">
                                 <span>Valore netto a fine anno</span>
@@ -713,10 +721,32 @@
                             <div class="annual-input"><span id="annual-budget-label">Investimento netto indicato</span><strong id="annual-budget-value">-</strong><p id="annual-budget-copy">Quanto vuoi che la strategia costi realmente nell’anno.</p></div>
                             <div class="annual-input"><span>Rendimenti netti</span><strong id="annual-returns-value">-</strong><p>FP e PAC dopo costi e imposte.</p></div>
                         </div>
+                        <details class="fiscal-thresholds" open>
+                            <summary class="fiscal-thresholds-summary">
+                                <span class="fiscal-thresholds-heading">
+                                    <span class="section-kicker">Soglie fiscali dell’anno</span>
+                                    <span class="fiscal-thresholds-title">Cosa cambia prima e dopo il versamento FP</span>
+                                </span>
+                            </summary>
+                            <div class="fiscal-thresholds-body">
+                                <p>Le soglie IRPEF usano tutto il contributo deducibile. Detrazioni e bonus si spostano invece soltanto con la quota versata in busta.</p>
+                                <div class="fiscal-threshold-grid" id="annual-tax-thresholds" aria-live="polite"></div>
+                            </div>
+                        </details>
+                        <div class="calc-flow-head">
+                            <div>
+                                <span class="section-kicker">Percorso di calcolo</span>
+                                <h4>Dal reddito all’exit netta</h4>
+                            </div>
+                            <p>Apri un passaggio per vedere la formula e riconciliare ogni valore.</p>
+                        </div>
                         <div class="calc-flow" aria-label="Passaggi di calcolo anno selezionato">
-                            <section class="calc-step">
+                            <details class="calc-step">
+                                <summary class="calc-step-summary">
+                                    <span class="calc-step-heading"><span class="step-meta">1 · Reddito e previdenza</span><span class="calc-step-name">Come nasce l'imponibile IRPEF</span></span>
+                                    <strong id="annual-taxable-step-value">-</strong>
+                                </summary>
                                 <div class="step-content">
-                                    <div class="step-title"><div><span class="step-meta">1 · Reddito e previdenza</span><h4>Come nasce l'imponibile IRPEF</h4></div><strong id="annual-taxable-step-value">-</strong></div>
                                     <p>Prima si sommano i redditi considerati; poi si sottraggono i contributi INPS a carico del lavoratore.</p>
                                     <div class="step-formula" id="annual-taxable-formula">-</div>
                                     <div class="step-rows">
@@ -724,28 +754,36 @@
                                         <div class="step-row"><div><span>Contributi INPS</span><b>Dedotti prima dell'IRPEF</b></div><strong id="annual-inps-value">-</strong></div>
                                     </div>
                                 </div>
-                            </section>
-                            <section class="calc-step">
+                            </details>
+                            <details class="calc-step">
+                                <summary class="calc-step-summary">
+                                    <span class="calc-step-heading"><span class="step-meta">2 · Imposta e agevolazioni</span><span class="calc-step-name">Dal reddito imponibile al costo fiscale</span></span>
+                                    <strong id="annual-fiscal-cost-step-value">-</strong>
+                                </summary>
                                 <div class="step-content">
-                                    <div class="step-title"><div><span class="step-meta">2 · Imposta e agevolazioni</span><h4>Dal reddito imponibile al costo fiscale</h4></div><strong id="annual-fiscal-cost-step-value">-</strong></div>
-                                    <p>IRPEF e addizionali formano l'imposta lorda; detrazioni e sostegni al reddito la riducono con regole differenti.</p>
+                                    <p>Le detrazioni riducono l’IRPEF lorda; le addizionali si aggiungono dopo, mentre le somme erogate riducono il costo fiscale finale.</p>
                                     <div class="step-formula" id="annual-tax-components-formula">-</div>
                                     <div class="step-rows">
                                         <div class="step-row"><div><span>IRPEF lorda</span><b>Scaglioni 23% · 33% · 43%</b></div><strong id="annual-irpef-value">-</strong></div>
+                                        <div class="step-row"><div><span>IRPEF lorda da lavoro</span><b>Usata per il trattamento integrativo fino a 15.000 €</b></div><strong id="annual-work-irpef-value">-</strong></div>
                                         <div class="step-row"><div><span>Addizionali</span><b>Regionale + comunale stimate</b></div><strong id="annual-addizionali-value">-</strong></div>
                                         <div class="step-row"><div><span>Aliquota marginale</span><b>IRPEF sull'ultimo euro dedotto</b></div><strong id="annual-marginal-rate-value">-</strong></div>
                                         <div class="step-row"><div><span>Detrazione lavoro</span><b>Art. 13 TUIR sull'imponibile</b></div><strong id="annual-employee-deduction-value">-</strong></div>
-                                        <div class="step-row"><div><span>Ulteriori detrazioni</span><b>Il valore indicato nel pannello</b></div><strong id="annual-other-deductions-value">-</strong></div>
+                                        <div class="step-row"><div><span>Detrazioni ordinarie</span><b>Riducono l’IRPEF, non il trattamento integrativo</b></div><strong id="annual-ordinary-deductions-value">-</strong></div>
+                                        <div class="step-row"><div><span>Detrazioni rilevanti</span><b>Riducono l’IRPEF e rilevano per il trattamento integrativo</b></div><strong id="annual-supplementary-deductions-value">-</strong></div>
                                         <div class="step-row"><div><span>Imposta netta</span><b>Lorda + addizionali − detrazioni, minimo 0</b></div><strong id="annual-net-tax-value">-</strong></div>
                                         <div class="step-row"><div><span>Trattamento integrativo</span><b>Ex Bonus Renzi, con soglie e capienza</b></div><strong id="annual-supplementary-treatment-value">-</strong></div>
-                                        <div class="step-row"><div><span>Bonus cuneo</span><b>Somma o ulteriore detrazione da lavoro</b></div><strong id="annual-tax-wedge-bonus-value">-</strong></div>
-                                        <div class="step-row"><div><span>Sostegni riconosciuti</span><b>Trattamento integrativo + bonus cuneo</b></div><strong id="annual-bonuses-value">-</strong></div>
+                                        <div class="step-row"><div><span>Beneficio cuneo effettivo</span><b>Somma esente oppure detrazione usata entro la capienza</b></div><strong id="annual-tax-wedge-bonus-value">-</strong></div>
+                                        <div class="step-row"><div><span>Agevolazioni riconosciute</span><b>Trattamento integrativo + beneficio cuneo effettivo</b></div><strong id="annual-bonuses-value">-</strong></div>
                                     </div>
                                 </div>
-                            </section>
-                            <section class="calc-step">
+                            </details>
+                            <details class="calc-step">
+                                <summary class="calc-step-summary">
+                                    <span class="calc-step-heading"><span class="step-meta">3 · Limite FP</span><span class="calc-step-name">Quanto può essere dedotto</span></span>
+                                    <strong id="annual-limit-step-value">-</strong>
+                                </summary>
                                 <div class="step-content">
-                                    <div class="step-title"><div><span class="step-meta">3 · Limite FP</span><h4>Quanto può essere dedotto</h4></div><strong id="annual-limit-step-value">-</strong></div>
                                     <p>Il contributo del datore occupa una parte del limite. L'eventuale extra volontario viene assegnato al PAC o al FP non dedotto in base al valore netto finale stimato.</p>
                                     <div class="step-formula" id="annual-limit-formula">-</div>
                                     <div class="step-rows">
@@ -757,10 +795,13 @@
                                         <div class="step-row"><div><span>Extra volontario → PAC o FP non dedotto</span><b>L'eccedenza va allo strumento più efficiente; nel FP resta come quota non dedotta</b></div><strong id="annual-over-limit-value">-</strong></div>
                                     </div>
                                 </div>
-                            </section>
-                            <section class="calc-step">
+                            </details>
+                            <details class="calc-step" open>
+                                <summary class="calc-step-summary">
+                                    <span class="calc-step-heading"><span class="step-meta">4 · Allocazione</span><span class="calc-step-name">Perché FP, PAC o entrambi</span></span>
+                                    <strong id="annual-fp-step-value">-</strong>
+                                </summary>
                                 <div class="step-content">
-                                    <div class="step-title"><div><span class="step-meta">4 · Allocazione</span><h4>Perché FP, PAC o entrambi</h4></div><strong id="annual-fp-step-value">-</strong></div>
                                     <p>Mostra quanto esce di tasca, quanto viene investito e come il beneficio fiscale finanzia la differenza; poi divide l'investimento tra FP e PAC.</p>
                                     <div class="step-formula" id="annual-fp-formula">-</div>
                                     <div class="step-rows">
@@ -777,10 +818,13 @@
                                         <div class="step-row"><div><span>Orizzonte residuo</span><b>Anni di crescita considerati per questa scelta</b></div><strong id="annual-years-left-value">-</strong></div>
                                     </div>
                                 </div>
-                            </section>
-                            <section class="calc-step">
+                            </details>
+                            <details class="calc-step">
+                                <summary class="calc-step-summary">
+                                    <span class="calc-step-heading"><span class="step-meta">5 · Modalità di versamento</span><span class="calc-step-name">Busta paga o bonifico</span></span>
+                                    <strong id="annual-payroll-step-value">-</strong>
+                                </summary>
                                 <div class="step-content">
-                                    <div class="step-title"><div><span class="step-meta">5 · Modalità di versamento</span><h4>Busta paga o bonifico</h4></div><strong id="annual-payroll-step-value">-</strong></div>
                                     <p>Mostra quanta quota passa in busta e quanta via bonifico.</p>
                                     <div class="step-formula" id="annual-payroll-formula">-</div>
                                     <div class="step-rows">
@@ -791,10 +835,13 @@
                                         <div class="step-row"><div><span>Differenza</span><b>Positivo: conviene mettere l'extra in busta</b></div><strong id="annual-split-diff-value">-</strong></div>
                                     </div>
                                 </div>
-                            </section>
-                            <section class="calc-step">
+                            </details>
+                            <details class="calc-step">
+                                <summary class="calc-step-summary">
+                                    <span class="calc-step-heading"><span class="step-meta">6 · Confronto fiscale</span><span class="calc-step-name">Senza FP e con FP</span></span>
+                                    <strong id="annual-tax-saving-value">-</strong>
+                                </summary>
                                 <div class="step-content">
-                                    <div class="step-title"><div><span class="step-meta">6 · Confronto fiscale</span><h4>Senza FP e con FP</h4></div><strong id="annual-tax-saving-value">-</strong></div>
                                     <p>Il beneficio è la differenza finale dopo IRPEF, addizionali, detrazioni e bonus. Un costo fiscale negativo significa che i bonus superano l'imposta netta.</p>
                                     <div class="step-formula" id="annual-tax-formula">-</div>
                                     <div class="step-rows">
@@ -802,17 +849,20 @@
                                         <div class="step-row"><div><span>IRPEF + addizionali</span><b>Senza FP → con FP</b></div><strong id="annual-gross-tax-before-after-value">-</strong></div>
                                         <div class="step-row"><div><span>Detrazione lavoro</span><b>Senza FP → con FP</b></div><strong id="annual-deduction-before-after-value">-</strong></div>
                                         <div class="step-row"><div><span>Trattamento integrativo</span><b>Ex Bonus Renzi: senza FP → con FP</b></div><strong id="annual-supplementary-before-after-value">-</strong></div>
-                                        <div class="step-row"><div><span>Bonus cuneo</span><b>Senza FP → con FP</b></div><strong id="annual-tax-wedge-before-after-value">-</strong></div>
-                                        <div class="step-row"><div><span>Sostegni riconosciuti</span><b>Somma dei due: senza FP → con FP</b></div><strong id="annual-bonus-before-after-value">-</strong></div>
+                                        <div class="step-row"><div><span>Beneficio cuneo effettivo</span><b>Somma esente o detrazione utilizzata: senza FP → con FP</b></div><strong id="annual-tax-wedge-before-after-value">-</strong></div>
+                                        <div class="step-row"><div><span>Agevolazioni riconosciute</span><b>Trattamento integrativo + cuneo: senza FP → con FP</b></div><strong id="annual-bonus-before-after-value">-</strong></div>
                                         <div class="step-row"><div><span>Costo fiscale finale</span><b>Imposta netta − bonus</b></div><strong id="annual-fiscal-cost-before-after-value">-</strong></div>
-                                        <div class="step-row"><div><span>Aliquota effettiva</span><b>Beneficio ÷ tuo versamento dedotto</b></div><strong id="annual-effective-rate-value">-</strong></div>
+                                        <div class="step-row"><div><span>Aliquota effettiva</span><b>Beneficio ÷ quota FP personale</b></div><strong id="annual-effective-rate-value">-</strong></div>
                                     </div>
                                 </div>
-                            </section>
-                            <section class="calc-step">
+                            </details>
+                            <details class="calc-step">
+                                <summary class="calc-step-summary">
+                                    <span class="calc-step-heading"><span class="step-meta">7 · Crescita e uscita</span><span class="calc-step-name">Come si ottiene il valore netto</span></span>
+                                    <strong id="annual-exit-step-value">-</strong>
+                                </summary>
                                 <div class="step-content">
-                                    <div class="step-title"><div><span class="step-meta">7 · Crescita e uscita</span><h4>Come si ottiene il valore netto</h4></div><strong id="annual-exit-step-value">-</strong></div>
-                                    <p>Montanti maturati, imposte di uscita e beneficio fiscale ancora disponibile devono sommare al risultato.</p>
+                                    <p>L’exit netta è data dai montanti maturati meno le imposte di uscita. Il beneficio fiscale è già stato reinvestito e non viene sommato di nuovo.</p>
                                     <div class="step-formula" id="annual-exit-formula">-</div>
                                     <div class="step-rows">
                                         <div class="step-row"><div><span>Montante FP lordo</span><b>Versamenti + rendimenti maturati</b></div><strong id="annual-montante-fp-value">-</strong></div>
@@ -826,7 +876,7 @@
                                         <div class="step-row"><div><span>Beneficio fiscale già utilizzato</span><b>Finanzia il confronto sul costo netto e non viene sommato due volte</b></div><strong id="annual-saving-in-exit-value">-</strong></div>
                                     </div>
                                 </div>
-                            </section>
+                            </details>
                         </div>
                     </div>
                     </div>
@@ -968,7 +1018,7 @@
                                 <div class="mini-metric output">
                                     <span id="guided-investment-year1-fp-label">Investimento netto · anno 1</span>
                                     <strong id="guided-investment-year1-tax-saving-display">-</strong>
-                                    <p id="guided-investment-mode-explanation">Riduce nello stesso anno quanto esce di tasca.</p>
+                                    <p id="guided-investment-mode-explanation">Il beneficio fiscale viene reinvestito nello stesso anno economico.</p>
                                 </div>
                                 <div class="mini-metric output">
                                     <span id="guided-investment-year1-equivalent-label">Investimento lordo · anno 1</span>
@@ -1217,15 +1267,19 @@
                         </section>
                         <section class="guided-step" data-guided-step="10">
                             <div class="guided-step-head">
-                                <h3>Ulteriori detrazioni</h3>
+                                <h3>Altre detrazioni IRPEF</h3>
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="guided-ulteriori-detrazioni">Ulteriori detrazioni</label>
-                                    <div class="control-field"><input type="number" id="guided-ulteriori-detrazioni" class="form-control" min="0" step="100"><span class="unit">EUR</span></div>
+                                    <label for="guided-detrazioni-ordinarie">Detrazioni ordinarie</label>
+                                    <div class="control-field"><input type="number" id="guided-detrazioni-ordinarie" class="form-control" min="0" step="100"><span class="unit">EUR</span></div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="guided-detrazioni-trattamento-integrativo">Detrazioni per trattamento integrativo</label>
+                                    <div class="control-field"><input type="number" id="guided-detrazioni-trattamento-integrativo" class="form-control" min="0" step="100"><span class="unit">EUR</span></div>
                                 </div>
                             </div>
-                            <div class="guided-note" data-help-note="ulterioriDetrazioni"></div>
+                            <div class="guided-note" data-help-note="detrazioniOrdinarie detrazioniTrattamentoIntegrativo"></div>
                         </section>
                         <section class="guided-step" data-guided-step="11">
                             <div class="guided-step-head">
@@ -1294,7 +1348,7 @@
                                 </div>
                                 <div class="mini-metrics">
                                     <div class="mini-metric output"><span>Tassa effettiva FP</span><strong id="guided-tassa-effettiva-fp">20,00%</strong><p>Da quota agevolata e ordinaria.</p></div>
-                                    <div class="mini-metric output"><span>Netto calcolato FP</span><strong id="guided-rendimento-netto-fp">4,00%</strong><p>Dopo costi % e tasse; i costi EUR sono applicati al montante.</p></div>
+                                    <div class="mini-metric output"><span>Netto calcolato FP</span><strong id="guided-rendimento-netto-fp">3,00%</strong><p>Dopo costi % e tasse; i costi EUR sono applicati al montante.</p></div>
                                 </div>
                             </div>
                             <div class="guided-note" data-help-note="rendimentoAnnualeFpPerc rendimentoFpMode costiAnnuiFpPerc costiFissiFp quotaAgevolataFpPerc"></div>
@@ -1311,16 +1365,16 @@
                                 <div class="form-group">
                                     <label for="guided-rendimento-pac-mode">Tipo rendimento</label>
                                     <select id="guided-rendimento-pac-mode" class="form-control native-select">
-                                        <option value="netto" selected>Netto</option>
-                                        <option value="lordo">Lordo</option>
+                                        <option value="netto">Netto</option>
+                                        <option value="lordo" selected>Lordo</option>
                                     </select>
                                     <div class="segmented-control" data-select-group="guided-rendimento-pac-mode">
-                                        <button type="button" class="active" data-select-target="guided-rendimento-pac-mode" data-select-value="netto" aria-pressed="true">Netto</button>
-                                        <button type="button" data-select-target="guided-rendimento-pac-mode" data-select-value="lordo" aria-pressed="false">Lordo</button>
+                                        <button type="button" data-select-target="guided-rendimento-pac-mode" data-select-value="netto" aria-pressed="false">Netto</button>
+                                        <button type="button" class="active" data-select-target="guided-rendimento-pac-mode" data-select-value="lordo" aria-pressed="true">Lordo</button>
                                     </div>
                                 </div>
                             </div>
-                            <div class="conditional-grid" data-guided-return-extra="pac" hidden>
+                            <div class="conditional-grid" data-guided-return-extra="pac">
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label for="guided-costi-pac">Costi annui %</label>
@@ -1403,7 +1457,8 @@
                         <p>Il versamento del primo anno rimane investito molto più a lungo del versamento dell’ultimo anno. Per questo il calcolatore non impone una scelta unica per tutta la durata: valuta separatamente la convenienza del versamento di ciascun anno usando il suo <strong>orizzonte residuo</strong>.</p>
 
                         <h3>Versamento annuale o solo anno 1</h3>
-                        <p><strong>Ogni anno</strong> costruisce un piano ipotizzando che il budget netto venga investito nuovamente per tutta la durata. <strong>Solo anno 1</strong> ottimizza invece la decisione presa oggi e segue quel capitale fino alla fine, senza aggiungere altri versamenti. Questa seconda vista serve a rifare il calcolo ogni anno con reddito, regole fiscali e ipotesi aggiornate.</p>
+                        <p><strong>Ogni anno</strong> simula una sequenza di ricalcoli: nell’anno corrente usa il patrimonio già costruito e il nuovo investimento netto, sceglie la ripartizione migliore senza farla dipendere da versamenti futuri non ancora effettuati, aggiorna i montanti e ripete il calcolo l’anno successivo. Gli importi futuri servono a costruire le righe successive della simulazione, non a rendere conveniente oggi una scelta che funzionerebbe soltanto grazie a denaro futuro.</p>
+                        <p><strong>Solo anno 1</strong> ottimizza invece il versamento iniziale e segue soltanto quel capitale fino alla fine, senza aggiungere altri versamenti. È la vista più diretta della decisione presa oggi; la modalità annuale mostra cosa accadrebbe ripetendo lo stesso metodo di decisione nel tempo.</p>
 
                         <h3>Ambito della simulazione</h3>
                         <p>Il modello è pensato per un lavoratore dipendente soggetto all’IRPEF ordinaria. Confronta contribuzione personale volontaria, eventuale contributo del datore e PAC. <strong>Non simula il TFR</strong>, la pensione pubblica o la scelta se aderire a un fondo pensione.</p>
@@ -1414,95 +1469,132 @@
                     <section class="docs-collapsible" id="vantaggi">
                     <h2 class="docs-collapsible-title">2. Il metodo: come ragiona il calcolatore</h2>
                     <div class="docs-collapsible-content">
-                        <p>La filosofia è semplice: <strong>confrontare tutte le alternative con lo stesso metro</strong>. Il metro principale è l’exit netta, cioè il valore che rimane dopo versamenti, contributo datoriale, beneficio fiscale, crescita, costi e imposte.</p>
+                        <p>La filosofia è semplice: <strong>confrontare tutte le ripartizioni del nuovo versamento con lo stesso metro</strong>. Il metro è il valore netto all’orizzonte scelto, dopo contributo datoriale, beneficio fiscale reinvestito, crescita, costi e imposte finali.</p>
 
                         <ol class="docs-process-list">
-                            <li><strong>Costruisce la situazione dell’anno.</strong> Aggiorna reddito, importo annuo, basi contributive e anzianità FP.</li>
-                            <li><strong>Calcola la fiscalità senza il nuovo versamento FP.</strong> Determina INPS, imponibile IRPEF, imposta, detrazioni e sostegni al reddito.</li>
-                            <li><strong>Prova possibili quote FP.</strong> Per ogni quota ricalcola il costo fiscale effettivo, il contributo datoriale e quanto resta per il PAC.</li>
-                            <li><strong>Proietta ogni quota fino all’uscita.</strong> Usa gli anni residui, i rendimenti, i costi e la tassazione impostati.</li>
-                            <li><strong>Sceglie l’allocazione migliore dell’anno.</strong> Può risultare FP, PAC oppure una divisione tra i due.</li>
-                            <li><strong>Aggiorna i montanti.</strong> La scelta entra nella storia della strategia e l’anno successivo riparte dai capitali già accumulati.</li>
+                            <li><strong>Fotografa lo stato disponibile.</strong> Usa montanti già accumulati, reddito, investimento netto, basi contributive e anzianità FP dell’anno.</li>
+                            <li><strong>Calcola la fiscalità senza il nuovo FP.</strong> Determina INPS, imponibile IRPEF, imposta, detrazioni, bonus e costo fiscale di partenza.</li>
+                            <li><strong>Prova la quota FP totale euro per euro.</strong> Per ogni candidato determina contributo datoriale, parte deducibile, parte non dedotta e beneficio fiscale effettivo.</li>
+                            <li><strong>Ricava automaticamente il PAC.</strong> È il residuo che rende uguale il costo netto del candidato all’importo indicato dall’utente.</li>
+                            <li><strong>Proietta il piano fino all’orizzonte.</strong> Applica rendimenti, costi fissi e percentuali, possibili erosioni del montante e imposte finali.</li>
+                            <li><strong>Sceglie il candidato con il valore netto maggiore.</strong> Può risultare tutto FP, tutto PAC oppure qualsiasi divisione sulla griglia di 1 €.</li>
+                            <li><strong>Aggiorna lo stato.</strong> In modalità Ogni anno la scelta diventa patrimonio già esistente per il ricalcolo successivo.</li>
                         </ol>
 
-                        <h3>Esplora direttamente tutte le ripartizioni rilevanti</h3>
-                        <p>Il minimo nel FP può essere molto conveniente perché sblocca il contributo del datore, mentre gli euro successivi possono avere una convenienza diversa. Il modello prova la quota FP a incrementi di 1 €, includendo esplicitamente i confini fiscali e contributivi rilevanti. Per ciascuna quota calcola il beneficio effettivo e assegna al PAC la capacità residua.</p>
+                        <h3>Una sola variabile: la quota FP personale totale</h3>
+                        <p>Il modello prova la quota FP personale totale a incrementi di 1 €, aggiungendo anche i confini esatti che possono cadere tra due euro, come la quota minima necessaria al datore e il limite deducibile. Scelta la quota FP, il PAC non è una seconda variabile da indovinare: è determinato dall’identità di costo.</p>
+                        <pre>Beneficio fiscale = fiscalità senza FP − fiscalità con il candidato FP
+Investimento lordo disponibile = investimento netto + beneficio fiscale
+Quota PAC = investimento lordo disponibile − quota FP personale</pre>
 
                         <div class="highlight">
-                            <strong>Un solo problema di ottimizzazione</strong>
-                            <p>“Tutto PAC” è già il candidato con quota FP pari a zero; non serve mostrarlo come strategia separata. Oltre il limite deducibile, l’eventuale capacità residua va al PAC oppure al FP non dedotto, scegliendo lo strumento con il valore netto finale marginale più alto. La quota minima necessaria al datore resta valutabile anche quando supera lo spazio deducibile.</p>
+                            <strong>Tutte le combinazioni sulla griglia</strong>
+                            <p>“Tutto PAC” è il candidato con quota FP pari a zero e non serve mostrarlo come strategia separata. La scansione comprende anche FP deducibile, FP non dedotto e PAC contemporaneamente. Un residuo inferiore a 1 € viene assorbito nel FP come approssimazione tecnica, così non apre un PAC soltanto per effetto dell’arrotondamento.</p>
                         </div>
 
-                        <h3>Il beneficio fiscale non è una percentuale fissa</h3>
-                        <p>Una deduzione riduce il reddito su cui si calcola l’IRPEF; una detrazione riduce direttamente l’imposta. Sono due cose diverse. Il beneficio del FP viene ottenuto confrontando il costo fiscale completo <strong>senza FP</strong> e <strong>con FP</strong>, quindi può cambiare quando la deduzione attraversa uno scaglione, modifica la detrazione da lavoro o incide sui sostegni al reddito.</p>
+                        <h3>Il beneficio fiscale non è “quota FP × aliquota”</h3>
+                        <p>Una <strong>deduzione</strong> riduce il reddito imponibile; una <strong>detrazione</strong> riduce invece l’imposta lorda e può essere inutilizzabile se manca capienza. Il beneficio FP viene ottenuto rifacendo l’intero calcolo prima e dopo ogni candidato, non applicando una sola aliquota marginale.</p>
                         <pre>Costo fiscale senza FP
 − Costo fiscale con FP
 = Beneficio fiscale effettivo</pre>
+                        <p>Per questo due quote FP distanti 1 € possono produrre benefici che non differiscono semplicemente dell’aliquota IRPEF: possono cambiare detrazione da lavoro, trattamento integrativo, somma o detrazione cuneo, addizionali dovute o riduzione delle detrazioni per redditi elevati.</p>
 
-                        <h3>Come viene gestito il beneficio che finanzia altro investimento</h3>
-                        <p>Il beneficio dipende dalla quota FP, ma aumenta a sua volta l’importo investibile. Il modello non applica una semplice aliquota media: per ogni quota FP ricalcola l’intera fiscalità e verifica la relazione <strong>FP personale + PAC − beneficio = investimento netto</strong>. Se un salto fiscale cambia il beneficio, cambia automaticamente anche il residuo PAC. Non occorre invertire una funzione fiscale né trovare una spesa netta “esatta” nel solo FP: il PAC rende sempre ammissibile il candidato.</p>
-
-                        <h3>Salti fiscali e precisione della ricerca</h3>
-                        <p>Detrazioni, sostegni e contributo datoriale possono creare discontinuità. Per questo la ricerca non presume che la funzione sia continua o monotona: valuta i candidati sulla griglia di 1 € e aggiunge i punti di soglia rilevanti. L’ottimo è quindi il migliore tra i candidati simulati; differenze inferiori all’euro e configurazioni estreme con costi fissi restano approssimazioni pratiche, non una dimostrazione analitica di ottimo globale.</p>
+                        <h3>Dove nascono salti e cambi di convenienza</h3>
+                        <div class="highlight">
+                            <strong>La funzione non è una retta</strong>
+                            <ul>
+                                <li><strong>Scaglioni IRPEF:</strong> attraversare un confine cambia il beneficio dell’euro successivo.</li>
+                                <li><strong>Detrazioni e capienza:</strong> se altre detrazioni hanno già azzerato l’IRPEF, una nuova deduzione può non produrre il beneficio atteso.</li>
+                                <li><strong>Trattamento integrativo e misure sul cuneo:</strong> soglie, capienza e décalage possono aumentare, ridurre o annullare il vantaggio marginale del FP.</li>
+                                <li><strong>Addizionali:</strong> nel modello sono dovute solo quando resta IRPEF netta positiva; l’azzeramento dell’imposta può quindi creare un cambio netto.</li>
+                                <li><strong>Contributo datore:</strong> raggiungere la quota minima può aggiungere capitale in un solo passaggio.</li>
+                                <li><strong>Limite deducibile:</strong> oltre il plafond gli euro FP successivi non generano nuovo beneficio, ma restano valutabili come contributi non dedotti.</li>
+                            </ul>
+                        </div>
+                        <p>La ricerca non interpola tra pochi casi e non presume che il beneficio cresca in modo regolare: ricalcola ogni euro e confronta direttamente il valore finale. Il risultato è il migliore candidato annuale sulla griglia di 1 €, più le soglie esatte aggiunte. Lo scarto residuo è inferiore all’euro.</p>
 
                         <h3>Cosa significa “ottimale”</h3>
-                        <p>Significa migliore <strong>all’interno delle ipotesi inserite</strong> e rispetto all’obiettivo di massimizzare l’exit netta. Non significa migliore in assoluto: il modello non assegna un valore personale a rischio, volatilità, disponibilità immediata del denaro o preferenza per una rendita.</p>
+                        <p>Significa migliore <strong>per il nuovo versamento dell’anno</strong>, tra i candidati simulati e secondo le ipotesi inserite. In modalità Ogni anno il risultato finale è la sequenza di questi ricalcoli: non è un ottimo globale che decide oggi tutte le allocazioni dei prossimi decenni. Il modello non assegna inoltre un valore personale a rischio, volatilità, liquidità, garanzie o preferenza per una rendita.</p>
                     </div>
                     </section>
 
                     <section class="docs-collapsible" id="simulazione">
                     <h2 class="docs-collapsible-title">3. Il calcolo annuale, dall’inizio alla fine</h2>
                     <div class="docs-collapsible-content">
-                        <p>Ogni anno segue lo stesso percorso. L’esploratore nella pagina Calcola mostra i numeri reali dello scenario selezionato nello stesso ordine.</p>
+                        <p>Ogni candidato FP segue il percorso seguente. L’esploratore nella pagina Calcola espone gli stessi passaggi per l’allocazione scelta, così il beneficio fiscale e l’exit possono essere ricostruiti senza affidarsi a una percentuale nascosta.</p>
 
-                        <h3>A. Reddito e contributi previdenziali</h3>
-                        <p>Si parte dalla RAL e dagli altri redditi imponibili considerati. I contributi INPS a carico del lavoratore vengono sottratti prima dell’IRPEF.</p>
-                        <pre>RAL + premi imponibili + altri redditi
-− contributi INPS
-= imponibile IRPEF</pre>
-                        <p>L’aliquota INPS mostrata è modificabile perché può dipendere dalla posizione del lavoratore. Massimale contributivo e soglia dell’aliquota IVS aggiuntiva sono invece assunzioni normative annuali.</p>
+                        <h3>A. Costruzione dell’imponibile</h3>
+                        <p>RAL, premi e straordinari formano il reddito di lavoro su cui il modello calcola i contributi INPS. Gli altri redditi imponibili entrano invece nell’IRPEF senza aumentare la base contributiva previdenziale.</p>
+                        <pre>Reddito di lavoro = RAL + premi imponibili
+Contributi INPS = funzione del solo reddito di lavoro
+Imponibile IRPEF = reddito di lavoro − contributi INPS + altri redditi</pre>
+                        <p>L’aliquota INPS è modificabile perché dipende dalla posizione del lavoratore. Massimale contributivo e soglia IVS aggiuntiva sono applicati separatamente: sopra una soglia il comportamento può quindi cambiare.</p>
 
-                        <h3>B. IRPEF e addizionali</h3>
-                        <p>All’imponibile vengono applicati gli scaglioni IRPEF. Si aggiungono poi le addizionali regionali e comunali stimate. L’<strong>aliquota marginale</strong> è l’aliquota applicata all’ultimo euro di reddito: aiuta a capire il possibile valore di una deduzione, ma da sola non basta a calcolare il beneficio reale.</p>
+                        <h3>B. Fotografia fiscale senza il nuovo FP</h3>
+                        <p>Il modello applica gli scaglioni IRPEF all’imponibile, calcola la detrazione da lavoro e sottrae sia le detrazioni ordinarie sia quelle rilevanti per il trattamento integrativo. Entrambe riducono l’IRPEF entro la capienza; soltanto il secondo gruppo entra anche nella verifica speciale tra 15.000 € e 28.000 €.</p>
+                        <pre>IRPEF netta = max(IRPEF lorda − detrazioni utilizzabili − detrazione cuneo, 0)
+Addizionali dovute = regionale + comunale ricalcolate sull’imponibile, se IRPEF netta &gt; 0
+Costo fiscale = IRPEF netta + addizionali − trattamento integrativo − somma cuneo</pre>
+                        <p>Con “Da località” il modello ricalcola per ogni quota FP gli scaglioni e le esenzioni ordinarie presenti nel dataset. L’inserimento manuale usa invece la percentuale indicata come un’unica aliquota piatta, sempre sul nuovo imponibile.</p>
+                        <p>Il trattamento integrativo usa due imposte lorde distinte: fino a 15.000 € verifica la capienza prodotta dai soli redditi da lavoro ammessi; tra 15.000 € e 28.000 € confronta invece le detrazioni rilevanti con l’IRPEF lorda complessiva. Gli altri redditi incidono sulla soglia complessiva, ma non possono creare da soli la capienza da lavoro richiesta nella prima fascia.</p>
+                        <p>Il cuneo segue due percorsi distinti: fino a 20.000 € è una somma esente, riconoscibile anche senza capienza; tra 20.000 € e 40.000 € è invece una detrazione dall’IRPEF lorda, utilizzabile solo fino all’imposta disponibile. Le addizionali vengono determinate dopo questa detrazione.</p>
+                        <p>L’<strong>aliquota marginale</strong> descrive soltanto l’ultimo euro nello scaglione IRPEF. Non include detrazioni, capienza, bonus o soglie e non coincide necessariamente con il beneficio marginale del FP.</p>
 
-                        <h3>C. Detrazioni e sostegni al reddito</h3>
-                        <p>Questi elementi sono mostrati separatamente perché hanno funzioni diverse:</p>
+                        <h3>C. Deduzione, detrazioni e capienza: tre concetti diversi</h3>
                         <ul>
-                            <li><strong>Detrazione da lavoro dipendente:</strong> riduce l’imposta lorda secondo l’art. 13 TUIR.</li>
-                            <li><strong>Ulteriori detrazioni:</strong> valore sintetico inserito dall’utente per rappresentare altre riduzioni dell’imposta; non riduce il reddito imponibile.</li>
-                            <li><strong>Trattamento integrativo:</strong> il cosiddetto ex Bonus Renzi, calcolato con soglie e verifica di capienza.</li>
-                            <li><strong>Bonus cuneo:</strong> somma o ulteriore detrazione per lavoro dipendente introdotta dalla L. 207/2024.</li>
+                            <li><strong>Deduzione FP:</strong> sottrae la quota ammessa dal reddito imponibile prima di calcolare l’IRPEF.</li>
+                            <li><strong>Detrazione:</strong> sottrae un importo dall’IRPEF lorda dopo il calcolo per scaglioni.</li>
+                            <li><strong>Capienza:</strong> è l’imposta disponibile da abbattere; se è già zero, altre detrazioni non producono rimborso nel modello.</li>
+                            <li><strong>Sostegni al reddito:</strong> trattamento integrativo, somma cuneo e detrazione cuneo seguono soglie e regole di capienza differenti.</li>
                         </ul>
-                        <pre>IRPEF lorda + addizionali
-− detrazioni
-= imposta netta
+                        <p>Le altre detrazioni sono separate in due controlli autonomi: quelle ordinarie riducono soltanto l’IRPEF; quelle rilevanti riducono l’IRPEF e concorrono al trattamento integrativo tra 15.000 € e 28.000 €. Gli importi non vanno duplicati tra i due campi. Se il totale è elevato, può lasciare poca o nessuna capienza e ridurre il beneficio reale della deduzione FP.</p>
 
-Imposta netta − sostegni riconosciuti
-= costo fiscale usato nel confronto</pre>
-
-                        <h3>D. Limite deducibile e contributo del datore</h3>
-                        <p>Il limite ordinario comprende sia il contributo personale sia quello datoriale; il TFR è escluso. Il datore viene riconosciuto solo quando la quota minima aderente richiesta è raggiunta.</p>
+                        <h3>D. Quota minima, datore e spazio deducibile</h3>
+                        <p>Il limite ordinario comprende contributo personale e datoriale; il TFR è escluso. Per ogni quota FP candidata il datore viene aggiunto soltanto se la quota minima aderente è raggiunta.</p>
                         <pre>Limite annuo
 − contributo del datore
 = spazio massimo disponibile per il contributo personale deducibile</pre>
-                        <p>Se la quota minima richiesta dal fondo è superiore allo spazio residuo, il modello valuta comunque il minimo: la parte eccedente non genera beneficio fiscale ma permette di ottenere il datore. Un’ulteriore eccedenza volontaria può andare al PAC o al FP non dedotto, in base al valore netto marginale stimato a fine orizzonte.</p>
+                        <p>Il raggiungimento del minimo può provocare un salto perché aggiunge in blocco il contributo datoriale. Se il minimo supera lo spazio residuo di deduzione, viene comunque valutato: la parte eccedente non genera beneficio fiscale ma può essere necessaria per ottenere il datore. Ulteriori euro FP oltre il plafond sono registrati come non dedotti e competono normalmente con il PAC.</p>
                         <p>La quota non dedotta viene conservata separatamente e non è tassata di nuovo all’uscita. Il modello assume che sia stata comunicata alla forma pensionistica nei termini previsti; in mancanza della comunicazione il trattamento reale può essere diverso.</p>
                         <p>La percentuale minima aderente e quella datoriale possono essere applicate alla RAL oppure a un’altra base indicata dal fondo o dal CCNL. Questa base serve soltanto a calcolare le quote: non aggiunge reddito e non simula il TFR.</p>
 
-                        <h3>E. Busta paga e bonifico</h3>
-                        <p>La quota FP deducibile riduce l’IRPEF sia se trattenuta in busta sia se versata con bonifico. La parte in busta può però modificare anche il reddito considerato per detrazione da lavoro e sostegni al reddito. In modalità automatica il modello confronta le alternative e usa quella più conveniente nello specifico anno.</p>
+                        <h3>E. Ricalcolo con il candidato FP</h3>
+                        <p>La parte deducibile riduce l’imponibile IRPEF sia tramite busta sia tramite bonifico. Nel modello, però, soltanto la quota in busta riduce anche il reddito usato per detrazione da lavoro, trattamento integrativo, misure sul cuneo e soglia delle detrazioni per redditi elevati. Per questo i due canali possono produrre benefici diversi.</p>
+                        <p>La modalità automatica confronta la quota minima in busta con tutto il contributo fiscalmente rilevante in busta. Non cerca ogni possibile divisione intermedia tra busta e bonifico.</p>
+                        <pre>Beneficio del candidato
+= costo fiscale senza FP
+− costo fiscale ricalcolato con il candidato FP</pre>
 
-                        <h3>F. Crescita, costi e tassazione</h3>
+                        <div class="highlight">
+                            <strong>Un salto non lascia il budget senza soluzione</strong>
+                            <p>Se una soglia fa aumentare o diminuire bruscamente il beneficio, cambia anche l’investimento lordo disponibile. Il PAC viene ricalcolato come residuo per quello specifico candidato: <strong>FP personale + PAC − beneficio = investimento netto</strong>. Non è necessario che esista una quota “tutto FP” corrispondente a ogni investimento netto.</p>
+                        </div>
+
+                        <h3>F. Crescita e costi</h3>
                         <p>I versamenti sono trattati con <strong>capitalizzazione posticipata</strong>: entrano alla fine dell’anno e iniziano a maturare rendimento dall’anno successivo. I montanti già presenti maturano invece il rendimento dell’anno corrente.</p>
-                        <p>Con rendimento netto, la percentuale inserita è usata direttamente. Con rendimento lordo, il modello sottrae costi percentuali e in euro e applica la fiscalità prevista: annuale sui rendimenti FP, alla vendita sulla plusvalenza PAC.</p>
+                        <p>Con rendimento netto, la percentuale inserita è usata direttamente e il calcolatore non sottrae nuovamente costi o imposte. Con rendimento lordo:</p>
+                        <ul>
+                            <li>i costi percentuali riducono ogni anno il rendimento del montante;</li>
+                            <li>il costo fisso viene sottratto una sola volta per strumento e per anno attivo, non una volta per versamento;</li>
+                            <li>se rendimento e costi erodono completamente un montante, questo viene fermato a zero e non diventa negativo;</li>
+                            <li>il FP tassa annualmente soltanto il risultato positivo dopo i costi;</li>
+                            <li>il PAC rinvia la tassazione all’uscita.</li>
+                        </ul>
 
-                        <h3>G. Exit netta</h3>
+                        <h3>G. Perdite e basi fiscali</h3>
+                        <p>Nel PAC lordo la plusvalenza viene calcolata sul conto aggregato:</p>
+                        <pre>Plusvalenza PAC = max(montante PAC − capitale versato PAC, 0)</pre>
+                        <p>Se il montante è sotto il capitale versato, non viene applicata imposta finale. Il modello non genera però un credito fiscale da usare contro altri strumenti o redditi.</p>
+                        <p>Nel FP le quote non dedotte vengono prima escluse dalla base tassabile. I contributi dedotti sono tassati all’aliquota di uscita soltanto nei limiti di quanto il montante può effettivamente restituire dopo le quote non dedotte. Costi o perdite non possono quindi produrre un’exit negativa.</p>
+                        <p>Eventuali risultati negativi annuali del FP dovuti ai costi non producono nel modello un credito fiscale riportabile per compensare risultati positivi successivi. È una semplificazione prudenziale che rileva soprattutto per montanti molto piccoli e costi fissi elevati.</p>
+
+                        <h3>H. Exit netta e scelta</h3>
                         <p>Alla fine di ogni anno viene calcolato quanto rimarrebbe liquidando economicamente la strategia in quel momento.</p>
                         <pre>Montante FP + montante PAC
 − imposta di uscita FP
 − imposta sulla plusvalenza PAC, quando applicabile
 = exit netta</pre>
-                        <p>Il beneficio fiscale non viene sommato nuovamente: ha già ridotto la spesa o finanziato una parte dell’investimento dello stesso anno.</p>
+                        <p>Per scegliere la quota dell’anno, ogni candidato viene proiettato fino all’orizzonte finale usando lo stato già accumulato ma senza nuovi versamenti futuri. Vince quello con l’exit finale maggiore. Il beneficio fiscale non viene sommato nuovamente alla exit: ha già finanziato una parte dell’investimento lordo.</p>
                     </div>
                     </section>
 
@@ -1523,6 +1615,9 @@ Investimento lordo + contributo datore = totale messo al lavoro</pre>
                         <h3>Esempio</h3>
                         <p>Se inserisci 4.100 € netti e l’allocazione scelta genera 900 € di beneficio fiscale, il calcolatore può investire 5.000 € lordi: per esempio 3.000 € nel FP e 2.000 € nel PAC. L’eventuale contributo del datore si aggiunge separatamente e porta il totale messo al lavoro oltre 5.000 €.</p>
 
+                        <h3>Il beneficio può finanziare altro FP</h3>
+                        <p>I 900 € dell’esempio non vengono destinati automaticamente al PAC. Il calcolatore prova direttamente quote FP personali più alte: se una parte del beneficio viene versata nel FP e genera a sua volta ulteriore beneficio, il candidato contiene già questo effetto. La parte che non va nel FP diventa PAC attraverso la relazione di budget. Non esiste quindi un reinvestimento separato deciso dopo l’ottimizzazione.</p>
+
                         <h3>“Nello stesso anno” è una convenzione economica</h3>
                         <p>Il modello attribuisce il beneficio allo stesso anno dell’investimento. Nella realtà il momento in cui lo percepisci dipende da busta paga, conguaglio e dichiarazione dei redditi. La simulazione rappresenta l’equivalenza economica annuale, non la data bancaria del rimborso.</p>
                     </div>
@@ -1531,18 +1626,18 @@ Investimento lordo + contributo datore = totale messo al lavoro</pre>
                     <section class="docs-collapsible" id="risultati">
                     <h2 class="docs-collapsible-title">5. Come leggere i risultati</h2>
                     <div class="docs-collapsible-content">
-                        <h3>Allocazione ottimale</h3>
-                        <p>È l’exit netta della sequenza scelta anno per anno. La barra temporale mostra quando il modello preferisce FP, PAC o una divisione. Una transizione verso il FP negli ultimi anni indica spesso che il PAC ha meno tempo per recuperare deduzione e contributo datoriale.</p>
+                        <h3>Sequenza dei ricalcoli annuali</h3>
+                        <p>È l’exit netta della sequenza scelta anno per anno. La barra temporale mostra quando il modello preferisce FP, PAC o una divisione. Una transizione verso il FP negli ultimi anni indica spesso che il PAC ha meno tempo per recuperare il vantaggio iniziale di deduzione e contributo datoriale. La sequenza non è un piano globale fissato oggi: ogni riga è la migliore decisione annuale dato lo stato raggiunto fino a quel momento.</p>
 
                         <h3>Exit netta e TIR non dicono la stessa cosa</h3>
                         <ul>
                             <li><strong>Exit netta:</strong> capitale finale stimato dopo imposte.</li>
-                            <li><strong>TIR annuo sulla spesa:</strong> rendimento annualizzato dei flussi reali dell’utente; usa le spese effettive come uscite e l’exit netta finale come entrata.</li>
+                            <li><strong>TIR annuo sull’investimento netto:</strong> rendimento annualizzato dei flussi reali dell’utente; usa gli investimenti netti come uscite e l’exit netta finale come entrata.</li>
                         </ul>
-                        <p>Il contributo datoriale aumenta l’exit ma non viene trattato come denaro uscito dalla tua tasca. Il beneficio fiscale è già incorporato nella spesa e non viene contato due volte. Anche il TIR usa la convenzione posticipata: flussi annuali a fine anno.</p>
+                        <p>Il contributo datoriale aumenta l’exit ma non viene trattato come denaro uscito dalla tua tasca. Il beneficio fiscale è già incorporato nell’investimento lordo e non viene contato due volte. Anche il TIR usa la convenzione posticipata: flussi annuali a fine anno.</p>
 
                         <h3>Tabella e grafico</h3>
-                        <p>La tabella mostra l’evoluzione dell’unica strategia ottimizzata: budget netto, investimento lordo derivato, ripartizione FP/PAC, beneficio, datore ed exit netta. Il grafico mostra la crescita dell’exit ottimale; non rappresenta la volatilità reale dei mercati, perché i rendimenti ipotizzati sono costanti.</p>
+                        <p>La tabella mostra l’evoluzione della strategia simulata: investimento netto, investimento lordo derivato, ripartizione FP/PAC, beneficio, datore ed exit netta. Il grafico mostra la crescita dell’exit della sequenza annuale; non rappresenta la volatilità reale dei mercati, perché i rendimenti ipotizzati sono costanti.</p>
 
                         <h3>Calcoli esplorabili per anno</h3>
                         <p>È la prova numerica del risultato. Scegli un anno e segui i nuclei nell’ordine: reddito e INPS, imposta e agevolazioni, limite FP, allocazione, busta/bonifico, confronto fiscale, crescita ed exit. Le formule riassuntive e le righe di dettaglio devono permettere di ricostruire i valori mostrati.</p>
@@ -1570,7 +1665,8 @@ Investimento lordo + contributo datore = totale messo al lavoro</pre>
                             <li>Il modello è costruito per lavoro dipendente soggetto a IRPEF ordinaria; non copre autonomi, partite IVA, regimi sostitutivi o tutte le situazioni familiari.</li>
                             <li>Il TFR non è incluso. “Retribuzione utile TFR” può essere usata soltanto come base per le percentuali del fondo.</li>
                             <li>Non sono simulati pensione pubblica, montante FP iniziale, capitale PAC iniziale o patrimonio esterno.</li>
-                            <li>Le ulteriori detrazioni sono un importo sintetico: non ricostruiscono tutte le agevolazioni personali.</li>
+                            <li>La simulazione parte da zero: per usare il calcolatore come ricalcolo reale dopo alcuni anni servirebbero montanti e basi fiscali già esistenti, che oggi non sono input.</li>
+                            <li>Le altre detrazioni restano importi sintetici distinti per effetto fiscale: non ricostruiscono tutte le condizioni personali di ogni singola agevolazione.</li>
                         </ul>
 
                         <h3>Tempo e potere d’acquisto</h3>
@@ -1584,17 +1680,29 @@ Investimento lordo + contributo datore = totale messo al lavoro</pre>
                         <h3>Rendimenti, rischio e costi</h3>
                         <ul>
                             <li>I rendimenti sono ipotesi costanti: non vengono simulate volatilità, crisi, ordine dei rendimenti o probabilità.</li>
+                            <li>L’interfaccia non costruisce anni di rendimento negativo; le perdite rappresentate possono derivare dall’erosione causata dai costi rispetto al capitale versato.</li>
                             <li>In modalità Netto, rendimento, costi e fiscalità devono essere già coerenti nella percentuale inserita.</li>
                             <li>In modalità Lordo, il modello applica costi percentuali e annui in euro e la fiscalità configurata.</li>
+                            <li>I costi fissi sono condivisi dal montante dello strumento: vengono applicati una volta per anno attivo, non a ogni singolo versamento.</li>
                             <li>L’ottimo massimizza il valore economico finale; non misura rischio, liquidità, garanzie, qualità del fondo o adeguatezza dell’ETF.</li>
+                        </ul>
+
+                        <h3>Ottimizzazione annuale</h3>
+                        <ul>
+                            <li>La quota FP personale totale è cercata a incrementi di 1 €, oltre alle soglie esatte rilevanti; il residuo tecnico è inferiore all’euro.</li>
+                            <li>Ogni nuovo versamento viene valutato usando lo stato già accumulato e assumendo nessun ulteriore versamento futuro; la modalità Ogni anno ripete questa regola sullo stato aggiornato.</li>
+                            <li>La sequenza pluriennale non è una dimostrazione di ottimo globale con perfetta conoscenza di tutti i flussi futuri.</li>
+                            <li>La modalità automatica busta/bonifico confronta le due alternative previste dal modello, non tutte le ripartizioni intermedie.</li>
                         </ul>
 
                         <h3>Fiscalità e uscita</h3>
                         <ul>
                             <li>Addizionali locali, detrazioni e sostegni al reddito sono stime; casi particolari possono produrre risultati diversi.</li>
+                            <li>Incapienza, soglie e décalage sono ricalcolati per ciascun candidato e possono rendere il beneficio molto diverso dall’aliquota marginale.</li>
                             <li>L’aliquota INPS predefinita è modificabile e non può rappresentare ogni categoria di lavoratore.</li>
                             <li>L’exit FP è un equivalente economico netto per il confronto: non riproduce integralmente vincoli tra capitale, rendita, anticipazioni e modalità concrete di erogazione.</li>
                             <li>Gli eventuali contributi non dedotti sono esclusi dalla base imponibile finale assumendo che siano stati correttamente comunicati al fondo pensione.</li>
+                            <li>Le perdite non generano crediti fiscali riportabili o compensabili con altri strumenti: il modello si limita a non tassare risultati e plusvalenze non positivi.</li>
                             <li>La modalità “riscatto anticipato” applica l’aliquota configurata a un’uscita totale semplificata; non simula tutte le causali previste dalla normativa.</li>
                         </ul>
 

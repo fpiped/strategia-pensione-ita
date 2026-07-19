@@ -12,14 +12,15 @@ test('genera warning per input potenzialmente fuorvianti', () => {
     rendimentoAnnualeFpPerc: 0.02,
     rendimentoAnnualePacPerc: 0.09,
     addizionaliPerc: 0.05,
-    ulterioriDetrazioni: 4000
+    detrazioniOrdinarie: 2000,
+    detrazioniTrattamentoIntegrativo: 2000
   });
 
   assert.equal(warnings.length, 4);
   assert.match(warnings[0], /Investimento annuo molto alto/);
   assert.match(warnings[1], /rendimento netto ipotizzato molto più alto/);
   assert.match(warnings[2], /Addizionali sopra il 4%/);
-  assert.match(warnings[3], /Ulteriori detrazioni elevate/);
+  assert.match(warnings[3], /Altre detrazioni elevate/);
 });
 
 test('segnala rendimento PAC inferiore al rendimento FP', () => {
@@ -31,7 +32,8 @@ test('segnala rendimento PAC inferiore al rendimento FP', () => {
     rendimentoAnnualeFpPerc: 0.05,
     rendimentoAnnualePacPerc: 0.04,
     addizionaliPerc: 0.02,
-    ulterioriDetrazioni: 0
+    detrazioniOrdinarie: 0,
+    detrazioniTrattamentoIntegrativo: 0
   });
 
   assert.deepEqual(warnings, [
@@ -50,7 +52,8 @@ test('segnala altra base retributiva superiore alla RAL senza bloccare il valore
     rendimentoAnnualeFpPerc: 0.04,
     rendimentoAnnualePacPerc: 0.058,
     addizionaliPerc: 0.02,
-    ulterioriDetrazioni: 0
+    detrazioniOrdinarie: 0,
+    detrazioniTrattamentoIntegrativo: 0
   });
 
   assert.ok(warnings.includes('Altra base retributiva superiore alla RAL: verifica che il valore indicato dal fondo o dal CCNL sia corretto.'));
@@ -67,7 +70,8 @@ test('segnala rendimento netto PAC inferiore al netto FP calcolato', () => {
     rendimentoNettoFpEffettivo: 0.05,
     rendimentoNettoPacEffettivo: 0.045,
     addizionaliPerc: 0.02,
-    ulterioriDetrazioni: 0
+    detrazioniOrdinarie: 0,
+    detrazioniTrattamentoIntegrativo: 0
   });
 
   assert.deepEqual(warnings, [
@@ -84,7 +88,8 @@ test('non confronta direttamente budget netto e quota minima lorda', () => {
     rendimentoAnnualeFpPerc: 0.04,
     rendimentoAnnualePacPerc: 0.08,
     addizionaliPerc: 0.02,
-    ulterioriDetrazioni: 0
+    detrazioniOrdinarie: 0,
+    detrazioniTrattamentoIntegrativo: 0
   });
 
   assert.deepEqual(warnings, []);

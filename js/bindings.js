@@ -37,7 +37,8 @@ export const FIELDS = [
   { key: 'altriRedditi', type: 'number', panel: 'altriRedditi', guided: 'guided-altri-redditi', min: 0, max: MONEY_MAX },
   { key: 'investimento', type: 'number', panel: 'investimento', guided: 'guided-investimento', min: 0, max: MONEY_MAX },
   { key: 'minimoRetributivoAnnuo', type: 'number', panel: 'minimoRetributivoAnnuo', guided: 'guided-minimo-retributivo', min: 0, max: MONEY_MAX },
-  { key: 'ulterioriDetrazioni', type: 'number', panel: 'ulterioriDetrazioni', guided: 'guided-ulteriori-detrazioni', min: 0, max: MONEY_MAX },
+  { key: 'detrazioniOrdinarie', type: 'number', panel: 'detrazioniOrdinarie', guided: 'guided-detrazioni-ordinarie', min: 0, max: MONEY_MAX },
+  { key: 'detrazioniTrattamentoIntegrativo', type: 'number', panel: 'detrazioniTrattamentoIntegrativo', guided: 'guided-detrazioni-trattamento-integrativo', min: 0, max: MONEY_MAX },
 
   ...variationGroup('variazioneReddito', 'guided-variazione-reddito'),
   ...variationGroup('variazioneInvestimento', 'guided-variazione-investimento'),

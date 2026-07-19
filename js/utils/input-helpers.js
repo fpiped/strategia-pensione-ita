@@ -79,8 +79,10 @@ export function buildInputWarnings(config) {
     warnings.push('Addizionali sopra il 4%: controlla che la percentuale inserita includa solo regionale e comunale.');
   }
 
-  if (config.ulterioriDetrazioni > 3000) {
-    warnings.push('Ulteriori detrazioni elevate possono ridurre molto la capienza fiscale e quindi il beneficio della deduzione.');
+  const altreDetrazioni = (config.detrazioniOrdinarie ?? config.ulterioriDetrazioni ?? 0)
+    + (config.detrazioniTrattamentoIntegrativo || 0);
+  if (altreDetrazioni > 3000) {
+    warnings.push('Altre detrazioni elevate possono ridurre molto la capienza fiscale e quindi il beneficio della deduzione.');
   }
 
   return warnings;

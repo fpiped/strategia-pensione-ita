@@ -14,6 +14,8 @@ const DEFAULTS = {
   durata: 30,
   reddito: 30000,
   investimento: 5000,
+  detrazioniOrdinarie: 0,
+  detrazioniTrattamentoIntegrativo: 0,
   riscattoAnticipato: false,
   variazioneRedditoTipo: 'percentuale',
   variazioneRedditoValore: 2,
@@ -93,6 +95,12 @@ test('sanitizeScenario restituisce null senza chiavi valide', () => {
   assert.equal(sanitizeScenario({ chiaveInventata: 1 }, DEFAULTS), null);
   assert.equal(sanitizeScenario('non un oggetto', DEFAULTS), null);
   assert.equal(sanitizeScenario(null, DEFAULTS), null);
+});
+
+test('migra le vecchie ulteriori detrazioni tra le ordinarie', () => {
+  const patch = sanitizeScenario({ ulterioriDetrazioni: 1800 }, DEFAULTS);
+
+  assert.deepEqual(patch, { detrazioniOrdinarie: 1800 });
 });
 
 test('buildShareUrl aggiunge il fragment solo se lo scenario differisce', () => {
