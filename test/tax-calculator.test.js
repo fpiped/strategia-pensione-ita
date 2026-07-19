@@ -2,12 +2,12 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
-  calculateBonusCuneoFiscale,
   calculateEmployeeDeduction,
   calculateIncomeTax,
   calculateIrpefTaxableIncome,
   calculateTaxComparison,
   calculateTaxSavings,
+  calculateTaxWedgeSupport,
   calculateTrattamentoIntegrativo,
   splitFpPayment
 } from '../js/calculators/tax-calculator.js';
@@ -29,15 +29,112 @@ test('calcola imponibile IRPEF con massimale INPS e IVS aggiuntivo', () => {
   })), 138265);
 });
 
-test('calcola bonus cuneo ed ex Bonus Renzi', () => {
-  assert.equal(Math.round(calculateBonusCuneoFiscale(8000)), 568);
-  assert.equal(Math.round(calculateBonusCuneoFiscale(30000)), 1000);
-  assert.equal(calculateBonusCuneoFiscale(41000), 0);
+test('distingue somma e detrazione cuneo ed ex Bonus Renzi', () => {
+  assert.deepEqual(calculateTaxWedgeSupport(8000), { cashAmount: 568, taxDeduction: 0 });
+  assert.deepEqual(calculateTaxWedgeSupport(12000), { cashAmount: 636, taxDeduction: 0 });
+  assert.deepEqual(calculateTaxWedgeSupport(18000), { cashAmount: 864, taxDeduction: 0 });
+  assert.deepEqual(calculateTaxWedgeSupport(30000), { cashAmount: 0, taxDeduction: 1000 });
+  assert.deepEqual(calculateTaxWedgeSupport(36000), { cashAmount: 0, taxDeduction: 500 });
+  assert.deepEqual(calculateTaxWedgeSupport(41000), { cashAmount: 0, taxDeduction: 0 });
   assert.equal(calculateTrattamentoIntegrativo({
-    reddito: 12000,
-    impostaLorda: 1000,
+    redditoComplessivo: 12000,
+    impostaLordaLavoro: 1000,
+    impostaLordaComplessiva: 1000,
     detrazioniLavoro: 900
   }), 1200);
+});
+
+test('il trattamento fino a 15.000 euro usa solo l IRPEF lorda da lavoro', () => {
+  const mixedIncome = calculateTaxComparison({
+    reddito: 6000,
+    altriRedditi: 6000,
+    investimento: 0,
+    quotaDatoreFp: 0,
+    contributiInpsPerc: 0
+  });
+  const workOnly = calculateTaxComparison({
+    reddito: 12000,
+    altriRedditi: 0,
+    investimento: 0,
+    quotaDatoreFp: 0,
+    contributiInpsPerc: 0
+  });
+
+  assert.equal(mixedIncome.before.supplementaryTreatmentTotalGrossTax, 2760);
+  assert.equal(mixedIncome.before.supplementaryTreatmentWorkGrossTax, 1380);
+  assert.equal(mixedIncome.before.supplementaryTreatment, 0);
+  assert.equal(workOnly.before.supplementaryTreatmentWorkGrossTax, 2760);
+  assert.equal(workOnly.before.supplementaryTreatment, 1200);
+});
+
+test('rispetta i confini tra somma, detrazione piena e décalage del cuneo', () => {
+  assert.deepEqual(calculateTaxWedgeSupport(20000), { cashAmount: 960, taxDeduction: 0 });
+  assert.deepEqual(calculateTaxWedgeSupport(20000.01), { cashAmount: 0, taxDeduction: 1000 });
+  assert.deepEqual(calculateTaxWedgeSupport(32000), { cashAmount: 0, taxDeduction: 1000 });
+  assert.ok(calculateTaxWedgeSupport(32000.01).taxDeduction < 1000);
+  assert.deepEqual(calculateTaxWedgeSupport(40000), { cashAmount: 0, taxDeduction: 0 });
+});
+
+test('limita la detrazione cuneo alla capienza prima delle addizionali', () => {
+  const comparison = calculateTaxComparison({
+    reddito: 25000,
+    investimento: 0,
+    quotaDatoreFp: 0,
+    contributiInpsPerc: 0,
+    detrazioniOrdinarie: 3500,
+    localTaxRules: [{ rate: 0.02 }]
+  });
+
+  assert.equal(comparison.before.taxWedgeCashAmount, 0);
+  assert.equal(comparison.before.taxWedgeDeduction, 1000);
+  assert.ok(comparison.before.taxWedgeDeductionUsed > 0);
+  assert.ok(comparison.before.taxWedgeDeductionUsed < 1);
+  assert.equal(comparison.before.irpefNetTax, 0);
+  assert.equal(comparison.before.localTaxes, 0);
+  assert.equal(comparison.before.netTax, 0);
+  assert.equal(comparison.before.fiscalCost, 0);
+});
+
+test('la somma cuneo sotto 20.000 euro non è limitata dalla capienza', () => {
+  const comparison = calculateTaxComparison({
+    reddito: 18000,
+    investimento: 0,
+    quotaDatoreFp: 0,
+    contributiInpsPerc: 0,
+    detrazioniOrdinarie: 10000
+  });
+
+  assert.equal(comparison.before.irpefNetTax, 0);
+  assert.equal(comparison.before.taxWedgeCashAmount, 864);
+  assert.equal(comparison.before.taxWedgeDeduction, 0);
+  assert.equal(comparison.before.taxWedgeBonus, 864);
+  assert.ok(comparison.before.fiscalCost < 0);
+});
+
+test('solo le detrazioni rilevanti concorrono al trattamento integrativo', () => {
+  const inputs = {
+    reddito: 20000,
+    investimento: 0,
+    quotaDatoreFp: 0,
+    contributiInpsPerc: 0
+  };
+  const ordinary = calculateTaxComparison({
+    ...inputs,
+    detrazioniOrdinarie: 2500
+  });
+  const relevant = calculateTaxComparison({
+    ...inputs,
+    detrazioniTrattamentoIntegrativo: 2500
+  });
+
+  // Entrambe abbattono allo stesso modo l'IRPEF.
+  assert.equal(ordinary.before.irpefNetTax, relevant.before.irpefNetTax);
+  assert.equal(ordinary.before.irpefNetTax, 0);
+  // Solo il secondo gruppo entra nella formula speciale 15.000-28.000 €.
+  assert.equal(ordinary.before.supplementaryTreatment, 0);
+  assert.ok(relevant.before.supplementaryTreatment > 500);
+  assert.equal(ordinary.before.ordinaryDeductions, 2500);
+  assert.equal(relevant.before.supplementaryTreatmentDeductions, 2500);
 });
 
 test('calcola split versamento FP e risparmio fiscale', () => {
@@ -49,15 +146,33 @@ test('calcola split versamento FP e risparmio fiscale', () => {
     reddito: 30000,
     investimento: 3000,
     quotaDatoreFp: 450,
-    addizionaliPerc: 0.02,
+    localTaxRules: [{ rate: 0.02 }],
     quotaMinAderente: 300,
     modalitaVersamentoFp: 'quotaMinimaBusta'
   })), 777);
 });
 
+test('ricalcola le addizionali su ogni imponibile e intercetta le esenzioni', () => {
+  const comparison = calculateTaxComparison({
+    reddito: 27000,
+    investimento: 5000,
+    quotaDatoreFp: 0,
+    contributiInpsPerc: 0,
+    modalitaVersamentoFp: 'tuttoBonifico',
+    localTaxRules: [
+      { rate: 0.015, exemption: 0 },
+      { rate: 0.008, exemption: 23000 }
+    ]
+  });
+
+  assert.equal(comparison.before.localTaxes, 621);
+  assert.equal(comparison.after.localTaxes, 330);
+  assert.equal(comparison.before.localTaxes - comparison.after.localTaxes, 291);
+});
+
 test('sterilizza il taglio IRPEF riducendo le detrazioni, con soglia sul reddito complessivo', () => {
   // RAL 213.900 → imponibile ≈ 202.000 (INPS al massimale), appena sopra soglia.
-  const inputs = { reddito: 213900, investimento: 5300, quotaDatoreFp: 0, ulterioriDetrazioni: 1000 };
+  const inputs = { reddito: 213900, investimento: 5300, quotaDatoreFp: 0, detrazioniOrdinarie: 1000 };
 
   // Il bonifico è onere deducibile: non abbassa il reddito complessivo,
   // la sterilizzazione resta e il beneficio è il solo 43% marginale.
@@ -73,7 +188,7 @@ test('sterilizza il taglio IRPEF riducendo le detrazioni, con soglia sul reddito
   assert.equal(Math.round(busta.saving), 2719);
 
   // Senza detrazioni da ridurre la sterilizzazione è incapiente.
-  const incapiente = calculateTaxComparison({ ...inputs, ulterioriDetrazioni: 0, modalitaVersamentoFp: 'tuttoBusta' });
+  const incapiente = calculateTaxComparison({ ...inputs, detrazioniOrdinarie: 0, modalitaVersamentoFp: 'tuttoBusta' });
   assert.equal(Math.round(incapiente.saving), 2279);
 });
 
@@ -83,8 +198,8 @@ test('espone il confronto fiscale completo senza FP e con FP', () => {
     investimento: 3000,
     quotaDatoreFp: 450,
     contributiInpsPerc: 0.0919,
-    addizionaliPerc: 0.02,
-    ulterioriDetrazioni: 4600,
+    localTaxRules: [{ rate: 0.02 }],
+    detrazioniOrdinarie: 4600,
     quotaMinAderente: 1500,
     quotaBustaFp: 3000
   });

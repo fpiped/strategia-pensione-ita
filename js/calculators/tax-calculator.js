@@ -1,5 +1,6 @@
 import { FINANCIAL_CONSTANTS } from '../constants/financial-constants.js';
 import { CURRENT_FISCAL_RULES } from '../constants/fiscal-rules.js';
+import { calculateLocalTaxes } from './local-tax-calculator.js';
 
 const { irpef } = CURRENT_FISCAL_RULES;
 
@@ -22,7 +23,11 @@ export function calculateTaxComparison({
   massimaleContributivoInps = FINANCIAL_CONSTANTS.MASSIMALE_CONTRIBUTIVO_INPS,
   sogliaIvsAggiuntivo = FINANCIAL_CONSTANTS.SOGLIA_IVS_AGGIUNTIVO,
   aliquotaIvsAggiuntivaPerc = FINANCIAL_CONSTANTS.ALIQUOTA_IVS_AGGIUNTIVO,
-  addizionaliPerc = 0,
+  localTaxRules = [],
+  detrazioniOrdinarie = null,
+  detrazioniTrattamentoIntegrativo = 0,
+  // Compatibilità per chiamate costruite prima della separazione dei campi:
+  // il vecchio importo resta prudenzialmente una detrazione solo ordinaria.
   ulterioriDetrazioni = 0,
   quotaMinAderente = 0,
   modalitaVersamentoFp = 'quotaMinimaBusta',
@@ -31,7 +36,7 @@ export function calculateTaxComparison({
 }) {
   // Il reddito da lavoro (RAL e premi) paga l'INPS; gli altri redditi
   // entrano solo nell'imponibile IRPEF. Le due basi restano distinte per
-  // bonus cuneo (percentuale sul lavoro, soglie sul complessivo).
+  // misure sul cuneo (percentuale sul lavoro, soglie sul complessivo).
   const imponibileLavoro = calculateIrpefTaxableIncome({
     reddito,
     contributiInpsPerc,
@@ -47,86 +52,97 @@ export function calculateTaxComparison({
     ? quotaBustaFp
     : splitVersamento.quotaBusta;
   const quotaBusta = Math.min(Math.max(quotaBustaRichiesta, 0), investimento, deduzione);
-
-  const redditoComplessivoCuneo = redditoImponibile;
-  const redditoComplessivoCuneoDedotto = Math.max(redditoComplessivoCuneo - quotaBusta, 0);
-  const bonusCuneo = calculateBonusCuneoFiscale(redditoComplessivoCuneo, imponibileLavoro);
-  const bonusCuneoDedotto = calculateBonusCuneoFiscale(
-    redditoComplessivoCuneoDedotto,
-    Math.max(imponibileLavoro - quotaBusta, 0)
-  );
-
-  const impostaLorda = calculateIncomeTax(redditoImponibile);
-  const addizionali = redditoImponibile * addizionaliPerc;
-  const detrazione = calculateEmployeeDeduction(redditoImponibile);
-  const trattamentoIntegrativo = calculateTrattamentoIntegrativo({
-    reddito: redditoImponibile,
-    impostaLorda,
-    detrazioniLavoro: detrazione,
-    ulterioriDetrazioni
-  });
-  // La soglia dei redditi alti si valuta sul reddito complessivo (qui pari
-  // all'imponibile: nessun onere deducibile è ancora applicato). La
-  // riduzione colpisce solo le detrazioni per oneri (art. 16-ter TUIR),
-  // qui rappresentate da ulterioriDetrazioni: mai la detrazione lavoro.
-  const riduzioneDetrazioni = calculateHighIncomeDetrazioniCut(redditoImponibile);
-  const { addizionaliDovute, impostaNetta } = calculateNetTaxDue({
-    impostaLorda,
-    addizionali,
-    detrazioni: detrazione + Math.max(ulterioriDetrazioni - riduzioneDetrazioni, 0)
-  });
-  const costoFiscaleNetto = impostaNetta - trattamentoIntegrativo - bonusCuneo;
+  const effectiveLocalTaxRules = Array.isArray(localTaxRules) ? localTaxRules : [];
+  const ordinaryDeductions = Math.max(detrazioniOrdinarie ?? ulterioriDetrazioni, 0);
+  const supplementaryTreatmentDeductions = Math.max(detrazioniTrattamentoIntegrativo, 0);
 
   const redditoDedotto = Math.max(redditoImponibile - deduzione, 0);
   const redditoDetrazioniDedotto = Math.max(redditoImponibile - quotaBusta, 0);
-  const impostaLordaDedotta = calculateIncomeTax(redditoDedotto);
-  const addizionaliDedotte = redditoDedotto * addizionaliPerc;
-  const detrazioneDedotta = calculateEmployeeDeduction(redditoDetrazioniDedotto);
-  const trattamentoIntegrativoDedotto = calculateTrattamentoIntegrativo({
-    reddito: redditoDetrazioniDedotto,
-    impostaLorda: calculateIncomeTax(redditoDetrazioniDedotto),
-    detrazioniLavoro: detrazioneDedotta,
-    ulterioriDetrazioni
+  const before = calculateTaxPosition({
+    taxableIncome: redditoImponibile,
+    personalIncome: redditoImponibile,
+    workIncome: imponibileLavoro,
+    localTaxRules: effectiveLocalTaxRules,
+    detrazioniOrdinarie: ordinaryDeductions,
+    detrazioniTrattamentoIntegrativo: supplementaryTreatmentDeductions
   });
-  // Con FP il reddito complessivo scende solo della quota in busta: il
-  // bonifico è onere deducibile e non sposta la soglia dei redditi alti.
-  const riduzioneDetrazioniDedotta = calculateHighIncomeDetrazioniCut(redditoDetrazioniDedotto);
-  const { addizionaliDovute: addizionaliDovuteDedotte, impostaNetta: impostaNettaDedotta } = calculateNetTaxDue({
-    impostaLorda: impostaLordaDedotta,
-    addizionali: addizionaliDedotte,
-    detrazioni: detrazioneDedotta + Math.max(ulterioriDetrazioni - riduzioneDetrazioniDedotta, 0)
+  const after = calculateTaxPosition({
+    taxableIncome: redditoDedotto,
+    // Solo la quota in busta riduce le basi personali usate da detrazione
+    // lavoro, trattamento integrativo, cuneo e soglia redditi elevati.
+    personalIncome: redditoDetrazioniDedotto,
+    workIncome: Math.max(imponibileLavoro - quotaBusta, 0),
+    localTaxRules: effectiveLocalTaxRules,
+    detrazioniOrdinarie: ordinaryDeductions,
+    detrazioniTrattamentoIntegrativo: supplementaryTreatmentDeductions
   });
-  const costoFiscaleNettoDedotto = impostaNettaDedotta - trattamentoIntegrativoDedotto - bonusCuneoDedotto;
 
   return {
     deduction: deduzione,
     payrollContribution: quotaBusta,
-    before: {
-      taxableIncome: redditoImponibile,
-      grossIncomeTax: impostaLorda,
-      localTaxes: addizionaliDovute,
-      employeeDeduction: detrazione,
-      otherDeductions: ulterioriDetrazioni,
-      highIncomeDeductionsCut: riduzioneDetrazioni,
-      netTax: impostaNetta,
-      supplementaryTreatment: trattamentoIntegrativo,
-      taxWedgeBonus: bonusCuneo,
-      fiscalCost: costoFiscaleNetto
-    },
-    after: {
-      taxableIncome: redditoDedotto,
-      employeeDeductionIncome: redditoDetrazioniDedotto,
-      grossIncomeTax: impostaLordaDedotta,
-      localTaxes: addizionaliDovuteDedotte,
-      employeeDeduction: detrazioneDedotta,
-      otherDeductions: ulterioriDetrazioni,
-      highIncomeDeductionsCut: riduzioneDetrazioniDedotta,
-      netTax: impostaNettaDedotta,
-      supplementaryTreatment: trattamentoIntegrativoDedotto,
-      taxWedgeBonus: bonusCuneoDedotto,
-      fiscalCost: costoFiscaleNettoDedotto
-    },
-    saving: costoFiscaleNetto - costoFiscaleNettoDedotto
+    before,
+    after,
+    saving: before.fiscalCost - after.fiscalCost
+  };
+}
+
+function calculateTaxPosition({
+  taxableIncome,
+  personalIncome,
+  workIncome,
+  localTaxRules,
+  detrazioniOrdinarie,
+  detrazioniTrattamentoIntegrativo
+}) {
+  const grossIncomeTax = calculateIncomeTax(taxableIncome);
+  const employeeDeduction = calculateEmployeeDeduction(personalIncome);
+  const highIncomeDeductionsCut = calculateHighIncomeDetrazioniCut(personalIncome);
+  const otherDeductions = detrazioniOrdinarie + detrazioniTrattamentoIntegrativo;
+  const usableOtherDeductions = Math.max(otherDeductions - highIncomeDeductionsCut, 0);
+  const taxWedge = calculateTaxWedgeSupport(personalIncome, workIncome);
+  const capacityBeforeTaxWedge = Math.max(
+    grossIncomeTax - employeeDeduction - usableOtherDeductions,
+    0
+  );
+  const taxWedgeDeductionUsed = Math.min(taxWedge.taxDeduction, capacityBeforeTaxWedge);
+  const localTaxes = calculateLocalTaxes(taxableIncome, localTaxRules);
+  const { irpefNetta, addizionaliDovute, impostaNetta } = calculateNetTaxDue({
+    impostaLorda: grossIncomeTax,
+    addizionali: localTaxes,
+    detrazioni: employeeDeduction + usableOtherDeductions + taxWedge.taxDeduction
+  });
+  const supplementaryTreatmentWorkGrossTax = calculateIncomeTax(workIncome);
+  const supplementaryTreatmentTotalGrossTax = calculateIncomeTax(personalIncome);
+  const supplementaryTreatment = calculateTrattamentoIntegrativo({
+    redditoComplessivo: personalIncome,
+    impostaLordaLavoro: supplementaryTreatmentWorkGrossTax,
+    impostaLordaComplessiva: supplementaryTreatmentTotalGrossTax,
+    detrazioniLavoro: employeeDeduction,
+    detrazioniRilevanti: detrazioniTrattamentoIntegrativo
+  });
+
+  return {
+    taxableIncome,
+    employeeDeductionIncome: personalIncome,
+    taxWedgeTotalIncome: personalIncome,
+    taxWedgeWorkIncome: workIncome,
+    grossIncomeTax,
+    localTaxes: addizionaliDovute,
+    employeeDeduction,
+    ordinaryDeductions: detrazioniOrdinarie,
+    supplementaryTreatmentDeductions: detrazioniTrattamentoIntegrativo,
+    otherDeductions,
+    highIncomeDeductionsCut,
+    irpefNetTax: irpefNetta,
+    netTax: impostaNetta,
+    supplementaryTreatmentWorkGrossTax,
+    supplementaryTreatmentTotalGrossTax,
+    supplementaryTreatment,
+    taxWedgeCashAmount: taxWedge.cashAmount,
+    taxWedgeDeduction: taxWedge.taxDeduction,
+    taxWedgeDeductionUsed,
+    taxWedgeBonus: taxWedge.cashAmount + taxWedgeDeductionUsed,
+    fiscalCost: impostaNetta - supplementaryTreatment - taxWedge.cashAmount
   };
 }
 
@@ -164,19 +180,26 @@ export function splitFpPayment(quotaFp, quotaMinAderente = 0, modalitaVersamento
 }
 
 export function calculateTrattamentoIntegrativo({
-  reddito,
-  impostaLorda = 0,
+  redditoComplessivo = null,
+  impostaLordaLavoro = null,
+  impostaLordaComplessiva = null,
   detrazioniLavoro = 0,
-  ulterioriDetrazioni = 0
+  detrazioniRilevanti = 0,
+  // Alias mantenuti per compatibilità con chiamate precedenti.
+  reddito = 0,
+  impostaLorda = 0
 }) {
-  const safeReddito = Math.max(reddito, 0);
+  const safeReddito = Math.max(redditoComplessivo ?? reddito, 0);
+  const safeImpostaLordaLavoro = Math.max(impostaLordaLavoro ?? impostaLorda, 0);
+  const safeImpostaLordaComplessiva = Math.max(impostaLordaComplessiva ?? impostaLorda, 0);
   const importo = FINANCIAL_CONSTANTS.TRATTAMENTO_INTEGRATIVO_IMPORTO;
 
-  // Capienza ex L. 207/2024: la detrazione lavoro si confronta ridotta di 75€,
-  // per non negare il beneficio a chi era capiente prima dell'aumento a 1.955€.
+  // Fino a 15.000€ la capienza usa esclusivamente l'imposta lorda generata
+  // dai redditi di lavoro ammessi. La detrazione lavoro si confronta ridotta
+  // di 75€ per neutralizzare l'aumento da 1.880€ a 1.955€.
   if (
     safeReddito <= FINANCIAL_CONSTANTS.TRATTAMENTO_INTEGRATIVO_SOGLIA_PIENA &&
-    impostaLorda > detrazioniLavoro - FINANCIAL_CONSTANTS.TRATTAMENTO_INTEGRATIVO_RIDUZIONE_DETRAZIONE
+    safeImpostaLordaLavoro > detrazioniLavoro - FINANCIAL_CONSTANTS.TRATTAMENTO_INTEGRATIVO_RIDUZIONE_DETRAZIONE
   ) {
     return importo;
   }
@@ -185,7 +208,9 @@ export function calculateTrattamentoIntegrativo({
     safeReddito > FINANCIAL_CONSTANTS.TRATTAMENTO_INTEGRATIVO_SOGLIA_PIENA &&
     safeReddito <= FINANCIAL_CONSTANTS.TRATTAMENTO_INTEGRATIVO_SOGLIA_MAX
   ) {
-    const incapienzaDetrazioni = detrazioniLavoro + Math.max(ulterioriDetrazioni, 0) - impostaLorda;
+    const incapienzaDetrazioni = detrazioniLavoro
+      + Math.max(detrazioniRilevanti, 0)
+      - safeImpostaLordaComplessiva;
     return Math.max(Math.min(importo, incapienzaDetrazioni), 0);
   }
 
@@ -193,15 +218,14 @@ export function calculateTrattamentoIntegrativo({
 }
 
 /**
- * Bonus cuneo L. 207/2024: la somma integrativa (fino a 20.000€) è una
- * percentuale del reddito di lavoro dipendente, mentre le soglie di accesso
- * e il décalage 20-40k si valutano sul reddito complessivo. Con un solo
- * reddito da lavoro le due basi coincidono (default).
+ * Cuneo L. 207/2024: fino a 20.000€ è una somma esente, quindi non dipende
+ * dalla capienza IRPEF; tra 20.000€ e 40.000€ è una detrazione dall'imposta
+ * lorda e sarà limitata alla capienza nel calcolo della posizione fiscale.
  */
-export function calculateBonusCuneoFiscale(redditoComplessivo, redditoLavoro = redditoComplessivo) {
+export function calculateTaxWedgeSupport(redditoComplessivo, redditoLavoro = redditoComplessivo) {
   const reddito = Math.max(redditoComplessivo, 0);
   const lavoro = Math.max(redditoLavoro, 0);
-  if (lavoro <= 0) return 0;
+  if (lavoro <= 0) return { cashAmount: 0, taxDeduction: 0 };
 
   if (reddito <= FINANCIAL_CONSTANTS.BONUS_CUNEO_SOGLIA_3) {
     const aliquota = lavoro <= FINANCIAL_CONSTANTS.BONUS_CUNEO_SOGLIA_1
@@ -209,18 +233,24 @@ export function calculateBonusCuneoFiscale(redditoComplessivo, redditoLavoro = r
       : lavoro <= FINANCIAL_CONSTANTS.BONUS_CUNEO_SOGLIA_2
         ? FINANCIAL_CONSTANTS.BONUS_CUNEO_ALIQUOTA_2
         : FINANCIAL_CONSTANTS.BONUS_CUNEO_ALIQUOTA_3;
-    return lavoro * aliquota;
+    return { cashAmount: lavoro * aliquota, taxDeduction: 0 };
   }
   if (reddito <= FINANCIAL_CONSTANTS.BONUS_CUNEO_SOGLIA_4) {
-    return FINANCIAL_CONSTANTS.BONUS_CUNEO_DETRAZIONE_PIENA;
+    return {
+      cashAmount: 0,
+      taxDeduction: FINANCIAL_CONSTANTS.BONUS_CUNEO_DETRAZIONE_PIENA
+    };
   }
   if (reddito <= FINANCIAL_CONSTANTS.BONUS_CUNEO_SOGLIA_5) {
-    return FINANCIAL_CONSTANTS.BONUS_CUNEO_DETRAZIONE_PIENA *
-      (FINANCIAL_CONSTANTS.BONUS_CUNEO_SOGLIA_5 - reddito) /
-      (FINANCIAL_CONSTANTS.BONUS_CUNEO_SOGLIA_5 - FINANCIAL_CONSTANTS.BONUS_CUNEO_SOGLIA_4);
+    return {
+      cashAmount: 0,
+      taxDeduction: FINANCIAL_CONSTANTS.BONUS_CUNEO_DETRAZIONE_PIENA *
+        (FINANCIAL_CONSTANTS.BONUS_CUNEO_SOGLIA_5 - reddito) /
+        (FINANCIAL_CONSTANTS.BONUS_CUNEO_SOGLIA_5 - FINANCIAL_CONSTANTS.BONUS_CUNEO_SOGLIA_4)
+    };
   }
 
-  return 0;
+  return { cashAmount: 0, taxDeduction: 0 };
 }
 
 export function calculateIrpefTaxableIncome({
