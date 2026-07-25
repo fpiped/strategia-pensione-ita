@@ -1155,6 +1155,47 @@ body.modal-open {
     overflow-wrap: anywhere;
 }
 
+.model-limit-note {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 0.625rem;
+    margin-top: 1rem;
+    padding: 0.75rem 0.875rem;
+    color: var(--ds-warning-text);
+    background: var(--ds-surface-warning);
+    border: 1px solid var(--ds-warning-border);
+    border-radius: var(--radius-sm);
+}
+
+.model-limit-note.compact {
+    margin-top: 0.75rem;
+    padding: 0.625rem 0.75rem;
+}
+
+.model-limit-note .icon {
+    margin-top: 0.125rem;
+    color: var(--ds-warning);
+}
+
+.model-limit-note strong,
+.model-limit-note p {
+    display: block;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.model-limit-note strong {
+    font-size: 0.8125rem;
+}
+
+.model-limit-note p {
+    margin: 0.2rem 0 0;
+    color: inherit;
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
 /* Toggle Switch */
 /* Section Divider */
 .section-divider {

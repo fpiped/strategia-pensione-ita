@@ -116,7 +116,7 @@ export const HELP_CONTENT = {
             title: 'Aliquota INPS lavoratore',
             dove: 'Busta paga: di solito 9,19% per il dipendente ordinario, 9,49% l\'aliquota ordinaria maggiorata.',
             come: 'Dedotta dal reddito lordo prima di calcolare l\'IRPEF.',
-            effetto: 'Incide su imponibile e risparmio fiscale. Cambia il default 9,19% solo se la tua busta paga riporta un\'aliquota diversa.'
+            effetto: 'Incide su imponibile e risparmio fiscale. Cambia il default 9,19% solo se la tua busta paga riporta un\'aliquota diversa. Il modello applica il massimale INPS a tutti come approssimazione, anche se nella realtà dipende dalla posizione contributiva.'
         },
         contributiInpsPercManuale: {
             title: 'Aliquota manuale INPS',
@@ -146,13 +146,13 @@ export const HELP_CONTENT = {
             title: 'Detrazioni ordinarie',
             dove: 'Dichiarazione dei redditi: inserisci qui le detrazioni che riducono l’IRPEF ma non concorrono al trattamento integrativo tra 15.000 € e 28.000 €.',
             come: 'Esempi: spese sanitarie correnti, spese scolastiche, assicurazioni e altre detrazioni non comprese nell’elenco speciale del trattamento integrativo. Inserisci l’importo della detrazione, non la spesa sostenuta.',
-            effetto: 'Riducono l’IRPEF entro la capienza, ma non possono aumentare il trattamento integrativo.'
+            effetto: 'Riducono l’IRPEF entro la capienza, ma non possono aumentare il trattamento integrativo. Oltre 200.000 €, la riduzione di 440 € è applicata all’importo aggregato senza distinguere le categorie escluse.'
         },
         detrazioniTrattamentoIntegrativo: {
             title: 'Detrazioni rilevanti per il trattamento integrativo',
             dove: 'Dichiarazione dei redditi: usa questo campo solo per le categorie ammesse dalla disciplina del trattamento integrativo.',
             come: 'Comprendono le detrazioni familiari previste, determinati interessi su mutui e le rate residue di specifiche spese sanitarie, edilizie o previste da altre norme sostenute entro il 31 dicembre 2021. Inserisci l’importo della detrazione, senza ripeterlo tra le ordinarie.',
-            effetto: 'Riducono l’IRPEF e, soltanto tra 15.000 € e 28.000 €, possono far maturare trattamento integrativo fino a 1.200 €.'
+            effetto: 'Riducono l’IRPEF e, soltanto tra 15.000 € e 28.000 €, possono far maturare trattamento integrativo fino a 1.200 €. Oltre 200.000 €, la riduzione di 440 € è applicata all’importo aggregato senza distinguere le categorie escluse.'
         },
         modalitaVersamentoFp: {
             title: 'Versamento della quota FP extra',
@@ -169,8 +169,8 @@ export const HELP_CONTENT = {
         rendimentoAnnualeFpPerc: {
             title: 'Rendimento fondo pensione ipotizzato',
             dove: 'Rendimenti storici del comparto: scheda del fondo e confronti COVIP. Non sono previsioni.',
-            come: 'Rendimento annuo usato nella simulazione FP: con Netto è usato così com\'è, con Lordo il modello sottrae costi annui e tassazione annuale.',
-            effetto: 'Piccole differenze di rendimento cambiano molto il risultato su orizzonti lunghi.'
+            come: 'Rendimento annuo non negativo usato nella simulazione FP: con Netto è usato così com\'è, con Lordo il modello sottrae costi annui e tassazione annuale.',
+            effetto: 'Piccole differenze cambiano molto il risultato su orizzonti lunghi. Perdite di mercato e relativo riporto fiscale non sono simulati.'
         },
         rendimentoFpMode: {
             title: 'Tipo rendimento FP',
@@ -188,7 +188,7 @@ export const HELP_CONTENT = {
             title: 'Costi annui EUR FP',
             dove: 'Scheda costi del fondo: quota associativa, spese amministrative o altre commissioni espresse in euro.',
             come: 'Importo sottratto una volta per ogni anno in cui il FP è attivo. Si applica solo con rendimento Lordo.',
-            effetto: 'Pesa soprattutto sui montanti piccoli, può eroderli fino a zero ed è condiviso da tutti i versamenti già presenti nel FP. Non inserirlo se è incluso nel rendimento netto.'
+            effetto: 'Pesa soprattutto sui montanti piccoli, può eroderli fino a zero ed è condiviso da tutti i versamenti già presenti nel FP. L’ottimizzazione annuale non anticipa l’ammortamento prodotto da versamenti futuri. Non inserirlo se è incluso nel rendimento netto.'
         },
         quotaAgevolataFpPerc: {
             title: 'Quota FP agevolata 12,5%',
@@ -199,8 +199,8 @@ export const HELP_CONTENT = {
         rendimentoAnnualePacPerc: {
             title: 'Rendimento ETF ipotizzato',
             dove: 'Dati storici dell\'indice o KID dell\'ETF, con ipotesi prudente. Non è una previsione.',
-            come: 'Rendimento annuo usato nella simulazione PAC: con Netto è usato così com\'è, con Lordo il modello sottrae costi annui e tassa le plusvalenze alla exit.',
-            effetto: 'È la leva che più spesso decide il confronto con il FP.'
+            come: 'Rendimento annuo non negativo usato nella simulazione PAC: con Netto è usato così com\'è, con Lordo il modello sottrae costi annui e tassa le plusvalenze alla exit.',
+            effetto: 'È la leva che più spesso decide il confronto con il FP. Perdite di mercato, minusvalenze e compensazioni non sono simulate.'
         },
         rendimentoPacMode: {
             title: 'Tipo rendimento PAC',
@@ -218,7 +218,7 @@ export const HELP_CONTENT = {
             title: 'Costi annui EUR PAC',
             dove: 'Canone del broker, commissioni minime e altri costi ricorrenti espressi in euro.',
             come: 'Importo sottratto una volta per ogni anno in cui il PAC è attivo. Si applica con rendimento Lordo; nel costo percentuale includi invece TER, bollo e altri costi proporzionali.',
-            effetto: 'Pesa soprattutto sui PAC piccoli, può eroderli fino a zero ed è condiviso dall’intero conto: non viene moltiplicato per il numero di versamenti. Non inserirlo se è già incluso nel rendimento netto.'
+            effetto: 'Pesa soprattutto sui PAC piccoli, può eroderli fino a zero ed è condiviso dall’intero conto: non viene moltiplicato per il numero di versamenti. L’ottimizzazione annuale non anticipa l’ammortamento prodotto da versamenti futuri. Non inserirlo se è già incluso nel rendimento netto.'
         },
         quotaAgevolataPacPerc: {
             title: 'Quota PAC agevolata 12,5%',

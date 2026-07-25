@@ -26,6 +26,16 @@ Il risultato finale mostra il valore netto stimato, la sequenza annuale delle sc
 
 La logica e pensata per lavoratori dipendenti. Non include il TFR e non modella casi previdenziali individuali complessi.
 
+### Limite deliberato sui rendimenti negativi
+
+Il modello accetta per FP e PAC soltanto rendimenti annui pari o superiori a 0%. Questa è una scelta esplicita di perimetro: la simulazione non considera anni di perdita sui mercati, il riporto fiscale delle perdite del fondo pensione, minusvalenze o compensazioni del PAC. Le eventuali erosioni del montante rappresentate dall'app derivano esclusivamente dai costi inseriti.
+
+### Altre approssimazioni deliberate
+
+- Il massimale contributivo INPS 2026 viene applicato a tutti gli scenari, anche se nella realtà dipende dalla posizione contributiva individuale.
+- Oltre 200.000 euro, la riduzione di 440 euro viene applicata alle detrazioni aggregate inserite, senza distinguere gli oneri interessati e le categorie escluse.
+- L’allocazione viene ottimizzata sequenzialmente anno per anno: ogni quota è proiettata fino all’orizzonte residuo, ma senza anticipare i versamenti futuri. Nel perimetro attuale questo limite riguarda soprattutto i costi fissi annui di FP e PAC, che i versamenti successivi potrebbero ammortizzare; non è quindi garantito l’ottimo globale dell’intero piano.
+
 ## Avvio locale
 
 Prerequisiti:
