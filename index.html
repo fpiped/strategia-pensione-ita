@@ -382,6 +382,13 @@
                                                 <div class="control-field"><input type="number" id="contributiInpsPerc" class="form-control" value="9.19" min="0" max="20" step="0.1"><span class="unit">%</span></div>
                                             </div>
                                         </div>
+                                        <div class="model-limit-note compact" id="inps-ceiling-assumption" role="note">
+                                            <span data-lucide="circle-alert" class="icon" aria-hidden="true"></span>
+                                            <div>
+                                                <strong>Approssimazione: massimale INPS generalizzato</strong>
+                                                <p>Il modello applica il massimale contributivo 2026 a tutti gli scenari. Nella realtà vale solo per specifiche posizioni contributive; sopra il massimale verifica il tuo caso personale.</p>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div class="control-subgroup">
@@ -501,6 +508,13 @@
                                                 <div class="control-field"><input type="number" id="detrazioniTrattamentoIntegrativo" class="form-control" value="0" min="0" step="100"><span class="unit">EUR</span></div>
                                             </div>
                                         </div>
+                                        <div class="model-limit-note compact" id="high-income-deductions-assumption" role="note">
+                                            <span data-lucide="circle-alert" class="icon" aria-hidden="true"></span>
+                                            <div>
+                                                <strong>Approssimazione: riduzione di 440 € aggregata</strong>
+                                                <p>Oltre 200.000 € il modello riduce l’insieme delle detrazioni inserite, senza distinguere gli oneri soggetti alla riduzione dalle categorie escluse.</p>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div class="control-subgroup">
@@ -608,6 +622,20 @@
                                             </div>
                                         </div>
                                         <span data-return-net-note="pac" hidden></span>
+                                    </div>
+                                    <div class="model-limit-note" id="return-loss-assumption" role="note">
+                                        <span data-lucide="circle-alert" class="icon" aria-hidden="true"></span>
+                                        <div>
+                                            <strong>Limite del modello: rendimenti negativi esclusi</strong>
+                                            <p>FP e PAC usano rendimenti annui pari o superiori a 0%. La simulazione non considera perdite di mercato, riporto fiscale delle perdite FP, minusvalenze o compensazioni PAC. Un’eventuale erosione del montante può derivare soltanto dai costi inseriti.</p>
+                                        </div>
+                                    </div>
+                                    <div class="model-limit-note compact" id="fixed-cost-optimization-assumption" role="note">
+                                        <span data-lucide="circle-alert" class="icon" aria-hidden="true"></span>
+                                        <div>
+                                            <strong>Approssimazione: costi fissi e ottimo pluriennale</strong>
+                                            <p>Ogni quota annuale è proiettata fino all’orizzonte residuo, ma viene scelta senza includere i versamenti futuri. I costi fissi FP e PAC potrebbero essere ammortizzati da quei versamenti: la sequenza non garantisce quindi l’ottimo globale dell’intero piano.</p>
+                                        </div>
                                     </div>
                                 </div>
                             </section>
@@ -720,6 +748,13 @@
                             <div class="annual-input"><span>Imponibili accessori</span><strong id="annual-extra-income-value">-</strong><p>Premi e altri redditi inclusi nella fiscalità.</p></div>
                             <div class="annual-input"><span id="annual-budget-label">Investimento netto indicato</span><strong id="annual-budget-value">-</strong><p id="annual-budget-copy">Quanto vuoi che la strategia costi realmente nell’anno.</p></div>
                             <div class="annual-input"><span>Rendimenti netti</span><strong id="annual-returns-value">-</strong><p>FP e PAC dopo costi e imposte.</p></div>
+                        </div>
+                        <div class="model-limit-note compact" id="annual-loss-assumption" role="note">
+                            <span data-lucide="circle-alert" class="icon" aria-hidden="true"></span>
+                            <div>
+                                <strong>Questa esplorazione non include anni di rendimento negativo</strong>
+                                <p>Non sono modellati riporto fiscale delle perdite FP, minusvalenze o compensazioni PAC; le sole erosioni visibili dipendono dai costi.</p>
+                            </div>
                         </div>
                         <details class="fiscal-thresholds" open>
                             <summary class="fiscal-thresholds-summary">
@@ -1280,6 +1315,13 @@
                                 </div>
                             </div>
                             <div class="guided-note" data-help-note="detrazioniOrdinarie detrazioniTrattamentoIntegrativo"></div>
+                            <div class="model-limit-note compact" id="guided-high-income-deductions-assumption" role="note">
+                                <span data-lucide="circle-alert" class="icon" aria-hidden="true"></span>
+                                <div>
+                                    <strong>Riduzione di 440 € semplificata</strong>
+                                    <p>Oltre 200.000 € viene applicata alle detrazioni aggregate, senza distinguere le categorie escluse.</p>
+                                </div>
+                            </div>
                         </section>
                         <section class="guided-step" data-guided-step="11">
                             <div class="guided-step-head">
@@ -1307,6 +1349,13 @@
                                 </div>
                             </div>
                             <div class="guided-note" data-help-note="contributiInpsPerc"></div>
+                            <div class="model-limit-note compact" id="guided-inps-ceiling-assumption" role="note">
+                                <span data-lucide="circle-alert" class="icon" aria-hidden="true"></span>
+                                <div>
+                                    <strong>Massimale INPS generalizzato</strong>
+                                    <p>Il modello lo applica a tutti; nella realtà dipende dalla posizione contributiva individuale.</p>
+                                </div>
+                            </div>
                         </section>
                         <section class="guided-step" data-guided-step="13">
                             <div class="guided-step-head">
@@ -1352,6 +1401,13 @@
                                 </div>
                             </div>
                             <div class="guided-note" data-help-note="rendimentoAnnualeFpPerc rendimentoFpMode costiAnnuiFpPerc costiFissiFp quotaAgevolataFpPerc"></div>
+                            <div class="model-limit-note compact" id="guided-fp-loss-assumption" role="note">
+                                <span data-lucide="circle-alert" class="icon" aria-hidden="true"></span>
+                                <div>
+                                    <strong>Rendimenti FP negativi non simulati</strong>
+                                    <p>Il rendimento minimo è 0%; perdite di mercato e relativo riporto fiscale restano fuori dal modello.</p>
+                                </div>
+                            </div>
                         </section>
                         <section class="guided-step" data-guided-step="14">
                             <div class="guided-step-head">
@@ -1397,6 +1453,13 @@
                                 </div>
                             </div>
                             <div class="guided-note" data-help-note="rendimentoAnnualePacPerc rendimentoPacMode costiAnnuiPacPerc costiFissiPac quotaAgevolataPacPerc"></div>
+                            <div class="model-limit-note compact" id="guided-pac-loss-assumption" role="note">
+                                <span data-lucide="circle-alert" class="icon" aria-hidden="true"></span>
+                                <div>
+                                    <strong>Rendimenti PAC negativi non simulati</strong>
+                                    <p>Il rendimento minimo è 0%; perdite di mercato, minusvalenze e compensazioni restano fuori dal modello.</p>
+                                </div>
+                            </div>
                         </section>
                     </div>
                     <div class="guided-footer">
@@ -1680,7 +1743,7 @@ Investimento lordo + contributo datore = totale messo al lavoro</pre>
                         <h3>Rendimenti, rischio e costi</h3>
                         <ul>
                             <li>I rendimenti sono ipotesi costanti: non vengono simulate volatilità, crisi, ordine dei rendimenti o probabilità.</li>
-                            <li>L’interfaccia non costruisce anni di rendimento negativo; le perdite rappresentate possono derivare dall’erosione causata dai costi rispetto al capitale versato.</li>
+                            <li><strong>Scelta esplicita di perimetro:</strong> l’interfaccia accetta soltanto rendimenti annui pari o superiori a 0% per FP e PAC. Non simula perdite di mercato; le erosioni rappresentate possono derivare soltanto dai costi rispetto al capitale versato.</li>
                             <li>In modalità Netto, rendimento, costi e fiscalità devono essere già coerenti nella percentuale inserita.</li>
                             <li>In modalità Lordo, il modello applica costi percentuali e annui in euro e la fiscalità configurata.</li>
                             <li>I costi fissi sono condivisi dal montante dello strumento: vengono applicati una volta per anno attivo, non a ogni singolo versamento.</li>
@@ -1692,6 +1755,7 @@ Investimento lordo + contributo datore = totale messo al lavoro</pre>
                             <li>La quota FP personale totale è cercata a incrementi di 1 €, oltre alle soglie esatte rilevanti; il residuo tecnico è inferiore all’euro.</li>
                             <li>Ogni nuovo versamento viene valutato usando lo stato già accumulato e assumendo nessun ulteriore versamento futuro; la modalità Ogni anno ripete questa regola sullo stato aggiornato.</li>
                             <li>La sequenza pluriennale non è una dimostrazione di ottimo globale con perfetta conoscenza di tutti i flussi futuri.</li>
+                            <li><strong>Approssimazione sui costi fissi:</strong> nel perimetro attuale, la possibile differenza rispetto all’ottimo globale riguarda soprattutto i costi annui in euro di FP e PAC. La decisione corrente non anticipa che i versamenti futuri potrebbero ammortizzarli sullo stesso conto; rendimenti e costi percentuali restano invece proporzionali.</li>
                             <li>La modalità automatica busta/bonifico confronta le due alternative previste dal modello, non tutte le ripartizioni intermedie.</li>
                         </ul>
 
@@ -1700,9 +1764,11 @@ Investimento lordo + contributo datore = totale messo al lavoro</pre>
                             <li>Addizionali locali, detrazioni e sostegni al reddito sono stime; casi particolari possono produrre risultati diversi.</li>
                             <li>Incapienza, soglie e décalage sono ricalcolati per ciascun candidato e possono rendere il beneficio molto diverso dall’aliquota marginale.</li>
                             <li>L’aliquota INPS predefinita è modificabile e non può rappresentare ogni categoria di lavoratore.</li>
+                            <li><strong>Approssimazione INPS:</strong> il massimale contributivo 2026 è applicato a tutti gli scenari, anche se nella realtà riguarda specifiche posizioni contributive, come gli iscritti successivamente al 31 dicembre 1995 e chi opta per il sistema contributivo.</li>
+                            <li><strong>Approssimazione redditi elevati:</strong> oltre 200.000 € il modello sottrae 440 € dalle detrazioni aggregate inserite, senza distinguere gli oneri interessati dalla riduzione e le categorie escluse.</li>
                             <li>L’exit FP è un equivalente economico netto per il confronto: non riproduce integralmente vincoli tra capitale, rendita, anticipazioni e modalità concrete di erogazione.</li>
                             <li>Gli eventuali contributi non dedotti sono esclusi dalla base imponibile finale assumendo che siano stati correttamente comunicati al fondo pensione.</li>
-                            <li>Le perdite non generano crediti fiscali riportabili o compensabili con altri strumenti: il modello si limita a non tassare risultati e plusvalenze non positivi.</li>
+                            <li>Di conseguenza non vengono modellati il riporto fiscale delle perdite FP, le minusvalenze PAC o le relative compensazioni. Il modello si limita a non tassare risultati e plusvalenze non positivi eventualmente prodotti dall’erosione dei costi.</li>
                             <li>La modalità “riscatto anticipato” applica l’aliquota configurata a un’uscita totale semplificata; non simula tutte le causali previste dalla normativa.</li>
                         </ul>
 

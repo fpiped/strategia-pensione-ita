@@ -51,6 +51,33 @@ test('spiega ricalcolo annuale, salti fiscali, incapienza e perdite', () => {
   assert.ok(html.includes('una sola volta per strumento e per anno attivo'));
 });
 
+test('segnala nei calcoli e nella compilazione che i rendimenti negativi sono fuori perimetro', () => {
+  assert.ok(html.includes('id="return-loss-assumption"'));
+  assert.ok(html.includes('id="annual-loss-assumption"'));
+  assert.ok(html.includes('id="guided-fp-loss-assumption"'));
+  assert.ok(html.includes('id="guided-pac-loss-assumption"'));
+  assert.ok(html.includes('riporto fiscale delle perdite FP'));
+  assert.ok(html.includes('minusvalenze o compensazioni PAC'));
+  assert.match(styles, /\.model-limit-note\s*\{[^}]*var\(--ds-surface-warning\)/s);
+});
+
+test('dichiara le approssimazioni su massimale INPS e riduzione detrazioni', () => {
+  assert.ok(html.includes('id="inps-ceiling-assumption"'));
+  assert.ok(html.includes('id="high-income-deductions-assumption"'));
+  assert.ok(html.includes('id="guided-inps-ceiling-assumption"'));
+  assert.ok(html.includes('id="guided-high-income-deductions-assumption"'));
+  assert.ok(html.includes('il massimale contributivo 2026 è applicato a tutti gli scenari'));
+  assert.ok(html.includes('senza distinguere gli oneri interessati dalla riduzione e le categorie escluse'));
+});
+
+test('dichiara l approssimazione pluriennale dovuta ai costi fissi', () => {
+  assert.ok(html.includes('id="fixed-cost-optimization-assumption"'));
+  assert.ok(html.includes('Ogni quota annuale è proiettata fino all’orizzonte residuo'));
+  assert.ok(html.includes('senza includere i versamenti futuri'));
+  assert.ok(html.includes('i versamenti futuri potrebbero ammortizzarli sullo stesso conto'));
+  assert.ok(html.includes('rendimenti e costi percentuali restano invece proporzionali'));
+});
+
 test('rende progressivo e compatto il dettaglio annuale', () => {
   const explorerStart = html.indexOf('class="workspace-section annual-explorer-section"');
   const explorerEnd = html.indexOf('<!-- Chart -->', explorerStart);

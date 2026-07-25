@@ -123,6 +123,54 @@ try {
     JSON.stringify(pacDefaults)
   );
 
+  const lossAssumptions = await pageA.evaluate(() => {
+    const inspect = (id) => {
+      const element = document.getElementById(id);
+      return {
+        visible: Boolean(element && element.getBoundingClientRect().height > 0),
+        text: element?.textContent.replace(/\s+/g, ' ').trim() || ''
+      };
+    };
+    return {
+      returns: inspect('return-loss-assumption'),
+      explorer: inspect('annual-loss-assumption'),
+      inps: inspect('inps-ceiling-assumption'),
+      deductions: inspect('high-income-deductions-assumption'),
+      fixedCosts: inspect('fixed-cost-optimization-assumption')
+    };
+  });
+  check('rendimenti: limite sulle perdite visibile nel pannello',
+    lossAssumptions.returns.visible
+      && lossAssumptions.returns.text.includes('rendimenti negativi esclusi')
+      && lossAssumptions.returns.text.includes('compensazioni PAC'),
+    JSON.stringify(lossAssumptions.returns)
+  );
+  check('esploratore: limite sulle perdite visibile',
+    lossAssumptions.explorer.visible
+      && lossAssumptions.explorer.text.includes('non include anni di rendimento negativo')
+      && lossAssumptions.explorer.text.includes('riporto fiscale'),
+    JSON.stringify(lossAssumptions.explorer)
+  );
+  check('fiscalità: approssimazione massimale INPS visibile',
+    lossAssumptions.inps.visible
+      && lossAssumptions.inps.text.includes('massimale contributivo 2026')
+      && lossAssumptions.inps.text.includes('specifiche posizioni contributive'),
+    JSON.stringify(lossAssumptions.inps)
+  );
+  check('fiscalità: approssimazione riduzione detrazioni visibile',
+    lossAssumptions.deductions.visible
+      && lossAssumptions.deductions.text.includes('riduzione di 440 €')
+      && lossAssumptions.deductions.text.includes('categorie escluse'),
+    JSON.stringify(lossAssumptions.deductions)
+  );
+  check('ottimizzazione: approssimazione costi fissi pluriennali visibile',
+    lossAssumptions.fixedCosts.visible
+      && lossAssumptions.fixedCosts.text.includes('orizzonte residuo')
+      && lossAssumptions.fixedCosts.text.includes('versamenti futuri')
+      && lossAssumptions.fixedCosts.text.includes('ottimo globale'),
+    JSON.stringify(lossAssumptions.fixedCosts)
+  );
+
   const deductionDefaults = await pageA.evaluate(() => ({
     ordinary: document.getElementById('detrazioniOrdinarie')?.value,
     treatment: document.getElementById('detrazioniTrattamentoIntegrativo')?.value,
