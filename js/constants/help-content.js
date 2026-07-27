@@ -12,9 +12,9 @@ export const HELP_CONTENT = {
         },
         premiStraordinari: {
             title: 'Premi, straordinari e bonus',
-            dove: 'Voci imponibili separate in busta paga o nella Certificazione Unica.',
+            dove: 'Voci assoggettate a IRPEF ordinaria, separate in busta paga o nella Certificazione Unica.',
             come: 'Aumentano reddito fiscale e previdenziale, ma non la base su cui si calcolano quota minima FP e contributo datore.',
-            effetto: 'Alzano l\'aliquota marginale, quindi possono aumentare il risparmio fiscale della deduzione.'
+            effetto: 'Alzano l\'aliquota marginale, quindi possono aumentare il risparmio fiscale della deduzione. Non inserire premi di risultato soggetti a imposta sostitutiva: quel regime non è modellato.'
         },
         altriRedditi: {
             title: 'Altri redditi imponibili IRPEF',
@@ -42,14 +42,14 @@ export const HELP_CONTENT = {
         },
         durata: {
             title: 'Durata simulazione',
-            dove: 'Quanti anni mancano al momento in cui prevedi di ritirare il capitale (da 1 a 100).',
+            dove: 'Quanti anni mancano al momento in cui prevedi di ritirare il capitale (da 1 a 60).',
             come: 'Definisce l\'orizzonte della simulazione anno per anno.',
             effetto: 'Più è lunga, più pesano interesse composto e riduzione della tassazione FP in uscita (dal 15% verso il 9% dopo 15 anni di partecipazione).'
         },
         investimento: {
             title: 'Investimento netto',
             dove: 'Quanto vuoi che la strategia ti costi realmente per ciascun versamento, dopo il beneficio fiscale e con TFR e contributo datore esclusi.',
-            come: 'Prova la quota FP personale totale euro per euro, ricalcola l’intera fiscalità e ricava il PAC residuo: FP personale + PAC − beneficio = investimento netto.',
+            come: 'Prova la quota FP personale totale euro per euro finché la fiscalità può cambiare, aggiunge le soglie esatte e ricava il PAC residuo: FP personale + PAC − beneficio = investimento netto.',
             effetto: 'Con Ogni anno simula nuovi ricalcoli sullo stato accumulato; con Solo anno 1 ottimizza il versamento iniziale e segue solo quello. Il beneficio può finanziare altro FP oppure PAC ed è già incluso nel lordo.'
         },
         variazioneInvestimento: {

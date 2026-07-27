@@ -98,6 +98,64 @@ try {
   await waitBoot(pageA);
 
   check('boot: nessuno scenario salvato al primo accesso', (await storedScenario(pageA)) === null);
+  const structuralAccessibility = await pageA.evaluate(() => {
+    const ids = [...document.querySelectorAll('[id]')].map((element) => element.id);
+    const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
+    const unnamed = [...document.querySelectorAll('input, select, textarea, button')]
+      .filter((element) => element.getClientRects().length > 0 && !element.disabled)
+      .filter((element) => {
+        if (element.getAttribute('aria-label') || element.getAttribute('aria-labelledby')) return false;
+        if (element.id && document.querySelector(`label[for="${CSS.escape(element.id)}"]`)) return false;
+        if (element.closest('label')) return false;
+        return element.tagName !== 'BUTTON' || !element.textContent.trim();
+      })
+      .map((element) => element.id || element.outerHTML.slice(0, 80));
+    return { duplicates: [...new Set(duplicates)], unnamed };
+  });
+  check('accessibilità: nessun id duplicato', structuralAccessibility.duplicates.length === 0, structuralAccessibility.duplicates.join(', '));
+  check('accessibilità: controlli visibili con nome', structuralAccessibility.unnamed.length === 0, structuralAccessibility.unnamed.join(' | '));
+
+  const firstHelpTrigger = pageA.locator('.help-trigger').first();
+  await firstHelpTrigger.focus();
+  await pageA.keyboard.press('Enter');
+  check('accessibilità: aiuto apribile da tastiera come dialog', await pageA.evaluate(() => {
+    const modal = document.querySelector('.help-modal');
+    return modal?.classList.contains('active')
+      && modal.getAttribute('role') === 'dialog'
+      && modal.getAttribute('aria-modal') === 'true'
+      && modal.getAttribute('aria-hidden') === 'false'
+      && document.activeElement === modal.querySelector('.help-modal-close');
+  }));
+  await pageA.keyboard.press('Tab');
+  check('accessibilità: focus confinato nell’aiuto', await pageA.evaluate(() =>
+    document.querySelector('.help-modal')?.contains(document.activeElement)
+  ));
+  await pageA.keyboard.press('Escape');
+  check('accessibilità: chiusura aiuto ripristina il focus', await pageA.evaluate(() =>
+    document.activeElement === document.querySelector('.help-trigger')
+      && document.querySelector('.help-modal')?.getAttribute('aria-hidden') === 'true'
+  ));
+
+  await pageA.click('#open-guided-mode');
+  const guidedTrap = await pageA.evaluate(() => {
+    const modal = document.getElementById('guided-modal');
+    const focusable = [...modal.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )].filter((element) => element.getClientRects().length > 0);
+    focusable.at(-1)?.focus();
+    return focusable[0]?.id || focusable[0]?.getAttribute('aria-label') || '';
+  });
+  await pageA.keyboard.press('Tab');
+  check('accessibilità: focus confinato nella compilazione guidata', await pageA.evaluate((expected) => {
+    const active = document.activeElement;
+    const name = active?.id || active?.getAttribute('aria-label') || '';
+    return document.getElementById('guided-modal')?.contains(active) && name === expected;
+  }, guidedTrap));
+  await pageA.keyboard.press('Escape');
+  check('accessibilità: Escape chiude la guidata e ripristina il focus', await pageA.evaluate(() =>
+    document.getElementById('guided-modal')?.getAttribute('aria-hidden') === 'true'
+      && document.activeElement === document.getElementById('open-guided-mode')
+  ));
 
   const pacDefaults = await pageA.evaluate(() => ({
     fpReturn: document.getElementById('rendimentoAnnualeFpPerc')?.value,
@@ -191,6 +249,11 @@ try {
   await setNumber(pageA, 'detrazioniOrdinarie', 0);
   await setNumber(pageA, 'detrazioniTrattamentoIntegrativo', 0);
 
+  // Il click di chiusura della guidata ripristina il focus sul CTA e può
+  // lasciare anche il puntatore sopra di esso: il confronto riguarda i
+  // colori a riposo, non lo stato hover intenzionalmente più marcato.
+  await pageA.mouse.move(0, 0);
+  await pageA.waitForTimeout(400);
   const frequencyControl = await pageA.evaluate(() => {
     const select = document.getElementById('frequenzaInvestimento');
     const buttons = [...document.querySelectorAll('.investment-frequency-buttons button')];
@@ -286,6 +349,14 @@ try {
   check('strategie: ottimale selezionato in partenza', await pageA.evaluate(() =>
     document.querySelector('[data-strategy="optimized"]')?.getAttribute('aria-checked') === 'true'
   ));
+  await pageA.focus('[data-strategy="optimized"]');
+  await pageA.keyboard.press('ArrowRight');
+  check('accessibilità: strategie navigabili come gruppo radio', await pageA.evaluate(() =>
+    document.getElementById('strategy-comparison-grid')?.getAttribute('role') === 'radiogroup'
+      && document.querySelector('[data-strategy="all-pac"]')?.getAttribute('aria-checked') === 'true'
+      && document.activeElement === document.querySelector('[data-strategy="all-pac"]')
+  ));
+  await pageA.click('[data-strategy="optimized"]');
   await pageA.hover('[data-strategy="all-pac"]');
   await pageA.evaluate(() => {
     window.__allPacCardBeforeSelection = document.querySelector('[data-strategy="all-pac"]');
@@ -391,6 +462,13 @@ try {
   await pageA.evaluate(() => document.querySelector('#output-table tbody tr:nth-child(5)').click());
   await pageA.waitForTimeout(200);
   check('esploratore: click su riga seleziona anno', (await fieldValue(pageA, 'annual-explorer-year')) === '5');
+  await pageA.focus('#output-table tbody tr:nth-child(6) .table-year-button');
+  await pageA.keyboard.press('Enter');
+  await pageA.waitForFunction(() => document.getElementById('annual-explorer-year')?.value === '6');
+  check('accessibilità: anno della tabella attivabile da tastiera', await pageA.evaluate(() =>
+    document.querySelector('#output-table tbody tr:nth-child(6) .table-year-button')
+      ?.getAttribute('aria-current') === 'true'
+  ));
   check('esploratore: confronto fiscale prima/dopo', await pageA.evaluate(() =>
     document.getElementById('annual-fiscal-cost-before-after-value')?.textContent.includes('→')
   ));
@@ -455,6 +533,11 @@ try {
   await waitBoot(pageC);
   check('link corrotto: app funzionante con predefiniti', (await fieldValue(pageC, 'durata')) === '30');
   check('link corrotto: nessun errore JS', corruptErrors.length === 0, corruptErrors.join(' | '));
+
+  await pageC.goto(BASE + '#s=' + 'A'.repeat(16_385));
+  await waitBoot(pageC);
+  check('link enorme: rifiutato senza bloccare il browser', (await fieldValue(pageC, 'durata')) === '30');
+  check('link enorme: nessun errore JS', corruptErrors.length === 0, corruptErrors.join(' | '));
 
   await setNumber(pageC, 'durata', 1);
   await setNumber(pageC, 'reddito', 6000);
@@ -529,7 +612,7 @@ try {
     };
   });
   check('fonti: valore deduzione presente', fiscalSourceDetails.text.includes('5.300 €'), fiscalSourceDetails.text);
-  check('fonti: riferimenti deduzione presenti', fiscalSourceDetails.links === 2, String(fiscalSourceDetails.links));
+  check('fonti: riferimenti deduzione presenti', fiscalSourceDetails.links === 3, String(fiscalSourceDetails.links));
   check('metodologia: decisioni di calcolo versionate e renderizzate', await pageE.evaluate(() => {
     const container = document.getElementById('calculation-methodology-list');
     const text = container?.textContent || '';
@@ -622,6 +705,30 @@ try {
     check('temi: specularità light/dark (stessi binding)', brokenPairs.length === 0, brokenPairs.slice(0, 5).join(' · '));
     await pageE.keyboard.press('Escape');
   }
+
+  // --- 12. Viewport mobile stretto: nessun overflow della pagina.
+  const ctxF = await browser.newContext({ viewport: { width: 320, height: 800 } });
+  const pageF = await ctxF.newPage();
+  const mobileErrors = [];
+  pageF.on('pageerror', (err) => mobileErrors.push(String(err)));
+  await pageF.goto(BASE);
+  await waitBoot(pageF);
+  const mobileLayout = await pageF.evaluate(() => ({
+    documentWidth: document.documentElement.scrollWidth,
+    viewportWidth: document.documentElement.clientWidth,
+    tableScrollable: document.querySelector('.table-container')?.scrollWidth
+      >= document.querySelector('.table-container')?.clientWidth,
+    controlsOverflow: [...document.querySelectorAll('.control-field')]
+      .some((element) => element.scrollWidth > element.clientWidth + 1)
+  }));
+  check('mobile 320px: pagina senza overflow orizzontale',
+    mobileLayout.documentWidth <= mobileLayout.viewportWidth,
+    JSON.stringify(mobileLayout)
+  );
+  check('mobile 320px: tabella confinata nel proprio scroller', mobileLayout.tableScrollable, JSON.stringify(mobileLayout));
+  check('mobile 320px: controlli senza overflow', !mobileLayout.controlsOverflow, JSON.stringify(mobileLayout));
+  check('mobile 320px: nessun errore JS', mobileErrors.length === 0, mobileErrors.join(' | '));
+  await ctxF.close();
 
   check('nessun errore JS nella sessione principale', pageErrors.length === 0, pageErrors.join(' | '));
 } finally {

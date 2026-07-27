@@ -177,10 +177,31 @@ export class FinancialController {
       window.addEventListener('pagehide', () => this.persistNow());
 
       byId('open-guided-mode').addEventListener('click', () => this.openGuidedMode());
-      // Escape chiude la guidata (come backdrop e X).
+      // Escape chiude la guidata; Tab resta confinato nel dialog.
       document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && byId('guided-modal')?.classList.contains('is-open')) {
+        const modal = byId('guided-modal');
+        if (!modal?.classList.contains('is-open') || document.querySelector('.help-modal.active')) return;
+        if (event.key === 'Escape') {
+          event.preventDefault();
           this.closeGuidedMode();
+          return;
+        }
+        if (event.key !== 'Tab') return;
+        const focusable = [...modal.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )].filter((element) => element.getClientRects().length > 0);
+        if (!focusable.length) {
+          event.preventDefault();
+          return;
+        }
+        const first = focusable[0];
+        const last = focusable.at(-1);
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
         }
       });
       document.querySelectorAll('[data-guided-close]').forEach((element) => {

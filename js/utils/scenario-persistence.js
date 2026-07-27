@@ -23,6 +23,8 @@ const SHARE_PREFIX = '#s=';
 // v3 identifica gli scenari basati sull'investimento personale netto.
 const PAYLOAD_VERSION = 3;
 const MAX_TEXT_LENGTH = 200;
+const MAX_ENCODED_PAYLOAD_LENGTH = 16_384;
+const MAX_STORED_PAYLOAD_LENGTH = 32_768;
 
 const EXTRA_KEYS = ['localTaxMode', 'municipalityLabel'];
 
@@ -114,7 +116,11 @@ export function encodeScenario(diff) {
 
 /** @returns {Object|null} payload decodificato, o null se corrotto o di versione ignota */
 export function decodeScenario(encoded) {
-  if (typeof encoded !== 'string' || !encoded) return null;
+  if (
+    typeof encoded !== 'string'
+    || !encoded
+    || encoded.length > MAX_ENCODED_PAYLOAD_LENGTH
+  ) return null;
   try {
     const payload = JSON.parse(fromBase64Url(encoded));
     if (!payload || typeof payload !== 'object' || payload.v !== PAYLOAD_VERSION) return null;
@@ -178,7 +184,7 @@ export function saveScenario(state, defaults) {
 export function loadSavedScenario(defaults) {
   try {
     const json = localStorage.getItem(STORAGE_KEY);
-    if (!json) return null;
+    if (!json || json.length > MAX_STORED_PAYLOAD_LENGTH) return null;
     const payload = JSON.parse(json);
     if (!payload || typeof payload !== 'object' || payload.v !== PAYLOAD_VERSION) return null;
     return sanitizeScenario(payload, defaults);

@@ -314,12 +314,16 @@ function setupMobileTooltips() {
     // Crea modal
     const modal = document.createElement('div');
     modal.className = 'help-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-hidden', 'true');
+    modal.setAttribute('aria-labelledby', 'help-modal-title');
     modal.innerHTML = `
         <div class="help-modal-backdrop"></div>
         <div class="help-modal-content">
                 <div class="help-modal-header">
                 <div class="help-modal-icon"><span data-lucide="info" class="icon" aria-hidden="true"></span></div>
-                <div class="help-modal-title"></div>
+                <div class="help-modal-title" id="help-modal-title"></div>
                 <button type="button" class="help-modal-close" aria-label="Chiudi">
                     <span data-lucide="x" class="icon" aria-hidden="true"></span>
                 </button>
@@ -332,36 +336,82 @@ function setupMobileTooltips() {
 
     const modalTitle = modal.querySelector('.help-modal-title');
     const modalText = modal.querySelector('.help-modal-text');
+    const closeButton = modal.querySelector('.help-modal-close');
+    let openingTrigger = null;
 
     function closeModal() {
+        if (!modal.classList.contains('active')) return;
         modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        if (!document.getElementById('guided-modal')?.classList.contains('is-open')) {
+            document.body.classList.remove('modal-open');
+        }
+        openingTrigger?.focus({ preventScroll: true });
+        openingTrigger = null;
     }
 
-    function openModal(helpId) {
+    function openModal(helpId, trigger) {
         const help = helpContent[helpId];
         if (!help) return;
 
+        openingTrigger = trigger || document.activeElement;
         modalTitle.textContent = help.title;
         modalText.replaceChildren(buildHelpSections(help));
         modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('modal-open');
+        closeButton.focus({ preventScroll: true });
     }
 
     // Click su .help-trigger (solo il testo)
     document.querySelectorAll('.help-trigger').forEach(trigger => {
+        trigger.setAttribute('role', 'button');
+        trigger.setAttribute('tabindex', '0');
+        trigger.setAttribute('aria-haspopup', 'dialog');
+        trigger.setAttribute('aria-label', `Informazioni: ${trigger.textContent.trim()}`);
         trigger.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             const helpId = this.getAttribute('data-help');
-            openModal(helpId);
+            openModal(helpId, this);
+        });
+        trigger.addEventListener('keydown', function(e) {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            e.preventDefault();
+            e.stopPropagation();
+            openModal(this.getAttribute('data-help'), this);
         });
     });
 
     // Chiudi modal cliccando fuori
     modal.querySelector('.help-modal-backdrop').addEventListener('click', closeModal);
-    modal.querySelector('.help-modal-close').addEventListener('click', closeModal);
+    closeButton.addEventListener('click', closeModal);
 
-    // Chiudi con ESC
+    // Chiudi con ESC e mantieni il focus nel dialog.
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeModal();
+        if (!modal.classList.contains('active')) return;
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            closeModal();
+            return;
+        }
+        if (e.key !== 'Tab') return;
+        const focusable = [...modal.querySelectorAll(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )].filter(element => element.getClientRects().length > 0);
+        if (!focusable.length) {
+            e.preventDefault();
+            return;
+        }
+        const first = focusable[0];
+        const last = focusable.at(-1);
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+        }
     });
 }

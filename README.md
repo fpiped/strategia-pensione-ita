@@ -39,6 +39,8 @@ Il modello accetta per FP e PAC soltanto rendimenti annui pari o superiori a 0%.
 - Oltre 200.000 euro, la riduzione di 440 euro viene applicata alle detrazioni aggregate inserite, senza distinguere gli oneri interessati e le categorie escluse.
 - L’allocazione viene ottimizzata sequenzialmente anno per anno: ogni quota è proiettata fino all’orizzonte residuo, ma senza anticipare i versamenti futuri. Nel perimetro attuale questo limite riguarda soprattutto i costi fissi annui di FP e PAC, che i versamenti successivi potrebbero ammortizzare; non è quindi garantito l’ottimo globale dell’intero piano.
 - La liquidità residua del benchmark massimo FP è mantenuta nominale e non produce rendimento.
+- Premi, straordinari e bonus sono trattati come reddito soggetto a IRPEF ordinaria; non sono modellati premi di risultato o altre somme soggette a imposta sostitutiva.
+- Il limite FP è quello ordinario di 5.300 € dal 2026; non è modellata la maggiore deducibilità prevista, a determinate condizioni, per i lavoratori di prima occupazione successiva al 1° gennaio 2007.
 
 ## Avvio locale
 

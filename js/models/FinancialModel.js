@@ -942,11 +942,11 @@ export class FinancialModel {
     }
 
     /**
-     * Cerca la quota FP personale totale euro per euro. Scelta quella quota,
-     * il PAC non è una seconda variabile: è il residuo imposto dall'identità
-     * quota FP personale + quota PAC - beneficio = investimento netto.
-     * La ricerca copre quindi direttamente anche le combinazioni composte da
-     * FP deducibile, FP non dedotto e PAC.
+     * Cerca la quota FP personale totale euro per euro nel tratto in cui la
+     * fiscalità può cambiare. Oltre il plafond e le soglie contrattuali il
+     * beneficio resta costante e il valore è affine: bastano gli estremi
+     * esatti, evitando che budget molto grandi blocchino il browser.
+     * Scelta qFP, il PAC riconcilia l'identità di budget.
      */
     _optimizeAllocation({
       netInvestmentTarget,
@@ -1093,6 +1093,13 @@ export class FinancialModel {
       let candidateData = null;
       const getCandidateData = () => {
         if (candidateData) return candidateData;
+        const addIntegerNeighborhood = (set, value) => {
+          if (!Number.isFinite(value)) return;
+          const floor = Math.max(Math.floor(value), 0);
+          for (let delta = -2; delta <= 2; delta++) {
+            set.add(Math.max(floor + delta, 0));
+          }
+        };
         const fiscalCandidates = new Set([
           0,
           maxWithoutEmployer,
@@ -1107,15 +1114,42 @@ export class FinancialModel {
           maxTaxSaving = Math.max(maxTaxSaving, getFiscalAllocation(candidate).risparmio);
         }
         const maxGrossInvestment = Math.max(target + maxTaxSaving, 0);
-        const candidates = new Set([
+        const candidates = new Set(fiscalCandidates);
+        [
           0,
           maxGrossInvestment,
           maxWithoutEmployer,
           maxWithEmployer,
           Math.max(quotaMinAderente, 0)
-        ]);
-        for (let amount = 0; amount <= Math.floor(maxGrossInvestment); amount++) {
-          candidates.add(amount);
+        ].forEach((value) => addIntegerNeighborhood(candidates, value));
+
+        // In ciascun regime fiscale la quota che azzera il PAC soddisfa
+        // qFP = budget + beneficio(qFP). L'iterazione converge subito nei
+        // tratti a beneficio costante; tutte le soglie restano comunque
+        // presenti esplicitamente nel set.
+        const endpointAnchors = [
+          0,
+          maxWithoutEmployer,
+          maxWithoutEmployer + 1,
+          maxWithEmployer,
+          maxWithEmployer + 1,
+          Math.max(quotaMinAderente - 0.01, 0),
+          Math.max(quotaMinAderente, 0),
+          Math.max(quotaMinAderente + 0.01, 0),
+          maxGrossInvestment
+        ];
+        for (const anchor of endpointAnchors) {
+          let endpoint = Math.min(Math.max(anchor, 0), maxGrossInvestment);
+          for (let iteration = 0; iteration < 8; iteration++) {
+            addIntegerNeighborhood(candidates, endpoint);
+            const next = Math.min(
+              Math.max(target + getFiscalAllocation(endpoint).risparmio, 0),
+              maxGrossInvestment
+            );
+            if (Math.abs(next - endpoint) < 1e-9) break;
+            endpoint = next;
+          }
+          addIntegerNeighborhood(candidates, endpoint);
         }
         const sortedCandidates = [...candidates]
           .filter((candidate) => candidate <= maxGrossInvestment + 0.005)
