@@ -62,12 +62,23 @@ export function calculateLocalTaxRate({ reddito, regionId, municipalityCode }) {
   const [regionalRule, municipalRule] = rules;
   const regionalTax = calculateLocalTaxAmount(taxableIncome, regionalRule);
   const municipalTax = calculateLocalTaxAmount(taxableIncome, municipalRule);
+  const regionalMarginalRate = calculateLocalTaxMarginalRate(taxableIncome, regionalRule);
+  const municipalMarginalRate = calculateLocalTaxMarginalRate(taxableIncome, municipalRule);
+  const regionalBreakdown = buildLocalTaxBreakdown(taxableIncome, regionalRule);
+  const municipalBreakdown = buildLocalTaxBreakdown(taxableIncome, municipalRule);
 
   if (taxableIncome <= 0) {
     return {
+      taxableIncome,
+      regionalTax,
+      municipalTax,
       totalRate: 0,
       regionalRate: 0,
       municipalRate: 0,
+      regionalMarginalRate,
+      municipalMarginalRate,
+      regionalBreakdown,
+      municipalBreakdown,
       region,
       municipality,
       rules
@@ -75,13 +86,58 @@ export function calculateLocalTaxRate({ reddito, regionId, municipalityCode }) {
   }
 
   return {
+    taxableIncome,
+    regionalTax,
+    municipalTax,
     totalRate: (regionalTax + municipalTax) / taxableIncome,
     regionalRate: regionalTax / taxableIncome,
     municipalRate: municipalTax / taxableIncome,
+    regionalMarginalRate,
+    municipalMarginalRate,
+    regionalBreakdown,
+    municipalBreakdown,
     region,
     municipality,
     rules
   };
+}
+
+function calculateLocalTaxMarginalRate(taxableIncome, rule) {
+  const income = Math.max(Number(taxableIncome) || 0, 0);
+  if (!rule || income <= 0 || income <= (rule.exemption || 0)) return 0;
+  if (Number.isFinite(rule.rate)) return Math.max(rule.rate, 0);
+  return (rule.brackets || []).find((bracket) => income <= bracket.upTo)?.rate || 0;
+}
+
+function buildLocalTaxBreakdown(taxableIncome, rule) {
+  const income = Math.max(Number(taxableIncome) || 0, 0);
+  const exemption = Math.max(rule?.exemption || 0, 0);
+  if (!rule || income <= 0) {
+    return { exempt: false, exemption, slices: [] };
+  }
+  if (income <= exemption) {
+    return { exempt: true, exemption, slices: [] };
+  }
+  if (Number.isFinite(rule.rate)) {
+    return {
+      exempt: false,
+      exemption,
+      slices: [{ taxableAmount: income, rate: Math.max(rule.rate, 0) }]
+    };
+  }
+
+  let previousLimit = 0;
+  const slices = [];
+  for (const bracket of rule.brackets || []) {
+    const upperLimit = Number.isFinite(bracket.upTo) ? bracket.upTo : Infinity;
+    const taxableAmount = Math.max(Math.min(income, upperLimit) - previousLimit, 0);
+    if (taxableAmount > 0) {
+      slices.push({ taxableAmount, rate: Math.max(bracket.rate || 0, 0) });
+    }
+    previousLimit = upperLimit;
+    if (income <= upperLimit) break;
+  }
+  return { exempt: false, exemption, slices };
 }
 
 export function resolveLocalTaxRules({ regionId, municipalityCode }) {

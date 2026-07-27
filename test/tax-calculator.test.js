@@ -168,6 +168,8 @@ test('ricalcola le addizionali su ogni imponibile e intercetta le esenzioni', ()
   assert.equal(comparison.before.localTaxes, 621);
   assert.equal(comparison.after.localTaxes, 330);
   assert.equal(comparison.before.localTaxes - comparison.after.localTaxes, 291);
+  assert.deepEqual(comparison.before.localTaxComponents, [405, 216]);
+  assert.deepEqual(comparison.after.localTaxComponents, [330, 0]);
 });
 
 test('sterilizza il taglio IRPEF riducendo le detrazioni, con soglia sul reddito complessivo', () => {

@@ -1,6 +1,6 @@
 import { FINANCIAL_CONSTANTS } from '../constants/financial-constants.js';
 import { CURRENT_FISCAL_RULES } from '../constants/fiscal-rules.js';
-import { calculateLocalTaxes } from './local-tax-calculator.js';
+import { calculateLocalTaxAmount } from './local-tax-calculator.js';
 
 const { irpef } = CURRENT_FISCAL_RULES;
 
@@ -105,7 +105,10 @@ function calculateTaxPosition({
     0
   );
   const taxWedgeDeductionUsed = Math.min(taxWedge.taxDeduction, capacityBeforeTaxWedge);
-  const localTaxes = calculateLocalTaxes(taxableIncome, localTaxRules);
+  const estimatedLocalTaxComponents = localTaxRules.map(
+    (rule) => calculateLocalTaxAmount(taxableIncome, rule)
+  );
+  const localTaxes = estimatedLocalTaxComponents.reduce((sum, value) => sum + value, 0);
   const { irpefNetta, addizionaliDovute, impostaNetta } = calculateNetTaxDue({
     impostaLorda: grossIncomeTax,
     addizionali: localTaxes,
@@ -128,6 +131,9 @@ function calculateTaxPosition({
     taxWedgeWorkIncome: workIncome,
     grossIncomeTax,
     localTaxes: addizionaliDovute,
+    localTaxComponents: addizionaliDovute > 0
+      ? estimatedLocalTaxComponents
+      : estimatedLocalTaxComponents.map(() => 0),
     employeeDeduction,
     ordinaryDeductions: detrazioniOrdinarie,
     supplementaryTreatmentDeductions: detrazioniTrattamentoIntegrativo,
