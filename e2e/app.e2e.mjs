@@ -197,6 +197,8 @@ try {
     const selectRect = select.getBoundingClientRect();
     const activeStyle = getComputedStyle(buttons[0]);
     const inactiveStyle = getComputedStyle(buttons[1]);
+    const primaryStyle = getComputedStyle(document.getElementById('open-guided-mode'));
+    const logoStyle = getComputedStyle(document.querySelector('.logo-mark'));
     return {
       selectWidth: selectRect.width,
       selectHeight: selectRect.height,
@@ -204,6 +206,8 @@ try {
       buttonDisplay: getComputedStyle(buttons[0]).display,
       activeBackground: activeStyle.backgroundColor,
       inactiveBackground: inactiveStyle.backgroundColor,
+      primaryBackground: primaryStyle.backgroundColor,
+      logoBackground: logoStyle.backgroundColor,
       controlRect: document.querySelector('.investment-frequency-control').getBoundingClientRect().toJSON(),
       firstCardRect: document.querySelector('.params-grid > .param-card').getBoundingClientRect().toJSON(),
       secondCardRect: document.querySelectorAll('.params-grid > .param-card')[1].getBoundingClientRect().toJSON(),
@@ -213,6 +217,11 @@ try {
   });
   check('hero: select tecnico nascosto', frequencyControl.selectDisplay === 'none' && frequencyControl.selectWidth === 0 && frequencyControl.selectHeight === 0, JSON.stringify(frequencyControl));
   check('hero: pulsanti modalità stilizzati', frequencyControl.buttonDisplay === 'grid' && frequencyControl.activeBackground !== frequencyControl.inactiveBackground, JSON.stringify(frequencyControl));
+  check('palette: logo e compilazione guidata usano lo stesso verde di ogni anno',
+    frequencyControl.activeBackground === frequencyControl.primaryBackground
+      && frequencyControl.activeBackground === frequencyControl.logoBackground,
+    JSON.stringify(frequencyControl)
+  );
   check('pannello: controllo modalità senza overflow', !frequencyControl.overflows, JSON.stringify(frequencyControl));
   check('pannello: modalità prima delle sottosezioni e su entrambe le colonne',
     frequencyControl.controlRect.bottom < frequencyControl.firstCardRect.top
@@ -260,6 +269,100 @@ try {
   check('tabella: celle valorizzate', table.celle.length > 3 && table.celle.every((c) => c !== '' && c !== 'undefined'), table.celle.join('|'));
   check('risultati: sequenza scelte presente', table.sequenza.length > 0, table.sequenza);
   check('risultati: valore ottimale monetario', /€/.test(table.valoreOttimale), table.valoreOttimale);
+  const strategyComparison = await pageA.evaluate(() => ({
+    ids: [...document.querySelectorAll('#strategy-comparison-grid .strategy-card')]
+      .map((card) => card.dataset.strategy),
+    text: document.getElementById('strategy-comparison-grid')?.textContent || '',
+    criticalPoints: document.querySelectorAll('#allocation-critical-points button').length,
+    frontierYear: document.getElementById('allocation-frontier-year')?.textContent || '',
+    frontierMax: Number(document.getElementById('allocation-frontier-range')?.max)
+  }));
+  check('strategie: quattro benchmark renderizzati',
+    strategyComparison.ids.join(',') === 'optimized,all-pac,minimum-employer,maximum-fp'
+      && strategyComparison.text.includes('Liquidità residua')
+      && !/NaN|undefined/.test(strategyComparison.text),
+    JSON.stringify(strategyComparison)
+  );
+  check('strategie: ottimale selezionato in partenza', await pageA.evaluate(() =>
+    document.querySelector('[data-strategy="optimized"]')?.getAttribute('aria-checked') === 'true'
+  ));
+  await pageA.hover('[data-strategy="all-pac"]');
+  await pageA.evaluate(() => {
+    window.__allPacCardBeforeSelection = document.querySelector('[data-strategy="all-pac"]');
+    window.__allPacHoverBackground = getComputedStyle(window.__allPacCardBeforeSelection).backgroundColor;
+  });
+  await pageA.click('[data-strategy="all-pac"]');
+  await pageA.waitForFunction(() =>
+    document.querySelector('[data-strategy="all-pac"]')?.getAttribute('aria-checked') === 'true'
+    && document.getElementById('annual-explorer-title')?.textContent.includes('Tutto PAC')
+  );
+  const allPacDetail = await pageA.evaluate(() => {
+    const table = document.getElementById('output-table');
+    const headers = [...table.tHead.rows[0].cells].map((cell) => cell.textContent);
+    const values = [...table.tBodies[0].rows[0].cells].map((cell) => cell.textContent);
+    return {
+      fp: values[headers.indexOf('Quota FP')],
+      pac: values[headers.indexOf('Quota PAC')],
+      title: document.getElementById('toggle-results')?.textContent || '',
+      explorerTitle: document.getElementById('annual-explorer-title')?.textContent || ''
+    };
+  });
+  check('strategie: tutto PAC alimenta tabella ed esploratore',
+    allPacDetail.fp === '0 €'
+      && allPacDetail.pac === '8.000 €'
+      && allPacDetail.title.includes('Tutto PAC')
+      && allPacDetail.explorerTitle.includes('Tutto PAC'),
+    JSON.stringify(allPacDetail)
+  );
+  const stableStrategySelection = await pageA.evaluate(() => {
+    const card = document.querySelector('[data-strategy="all-pac"]');
+    const style = getComputedStyle(card);
+    return {
+      sameNode: window.__allPacCardBeforeSelection === card,
+      sameBackgroundAsHover: window.__allPacHoverBackground === style.backgroundColor,
+      boxShadow: style.boxShadow,
+      transitionDuration: style.transitionDuration
+    };
+  });
+  check('strategie: selezione stabile senza ricostruzione o bordino superiore',
+    stableStrategySelection.sameNode
+      && stableStrategySelection.sameBackgroundAsHover
+      && stableStrategySelection.boxShadow === 'none'
+      && stableStrategySelection.transitionDuration === '0s',
+    JSON.stringify(stableStrategySelection)
+  );
+  await pageA.click('[data-strategy="maximum-fp"]');
+  await pageA.waitForFunction(() =>
+    document.querySelector('[data-strategy="maximum-fp"]')?.getAttribute('aria-checked') === 'true'
+  );
+  check('strategie: massimo FP alimenta il dettaglio senza PAC', await pageA.evaluate(() => {
+    const table = document.getElementById('output-table');
+    const headers = [...table.tHead.rows[0].cells].map((cell) => cell.textContent);
+    const values = [...table.tBodies[0].rows[0].cells].map((cell) => cell.textContent);
+    return values[headers.indexOf('Quota PAC')] === '0 €'
+      && document.getElementById('annual-explorer-title')?.textContent.includes('Massimo FP');
+  }));
+  await pageA.click('[data-strategy="optimized"]');
+  await pageA.waitForFunction(() =>
+    document.querySelector('[data-strategy="optimized"]')?.getAttribute('aria-checked') === 'true'
+  );
+  check('frontiera: punti critici e intervallo FP disponibili',
+    strategyComparison.criticalPoints === 4
+      && strategyComparison.frontierYear === 'Anno 1'
+      && strategyComparison.frontierMax > 0,
+    JSON.stringify(strategyComparison)
+  );
+  await pageA.click('[data-point="all-pac"]');
+  await pageA.waitForFunction(() => document.getElementById('allocation-frontier-range')?.value === '0');
+  check('frontiera: tutto PAC selezionabile', await pageA.evaluate(() =>
+    document.getElementById('allocation-frontier-metrics')?.textContent.includes('PAC derivato')
+    && document.getElementById('allocation-frontier-status')?.textContent.includes('Quota sostenibile')
+  ));
+  await pageA.click('#allocation-frontier-plus');
+  await pageA.waitForFunction(() => document.getElementById('allocation-frontier-range')?.value === '1');
+  await pageA.click('#allocation-frontier-minus');
+  await pageA.waitForFunction(() => document.getElementById('allocation-frontier-range')?.value === '0');
+  check('frontiera: pulsanti più e meno avanzano di 1 euro', true);
 
   await pageA.click('[data-select-target="frequenzaInvestimento"][data-select-value="singolo"]');
   await pageA.waitForFunction(() => document.querySelector('#output-table tbody tr:nth-child(2)')?.cells[1]?.textContent === '0 €');
@@ -276,7 +379,7 @@ try {
   check('solo anno 1: allocazione compatta in tabella', singlePayment.secondYear.includes('N/A'), singlePayment.secondYear.join('|'));
   check('solo anno 1: spiegazione coerente senza rinominare il campo',
     singlePayment.description.includes('soltanto il versamento')
-      && singlePayment.label === 'Investimento netto annuo');
+      && singlePayment.label === 'Budget annuo a tuo carico');
   check('solo anno 1: controlli andamento nascosti', singlePayment.variationControlsHidden && singlePayment.variationFieldsHidden, JSON.stringify(singlePayment));
   await pageA.click('[data-select-target="frequenzaInvestimento"][data-select-value="annuale"]');
   await pageA.waitForFunction(() => document.querySelector('#output-table tbody tr:nth-child(2)')?.cells[1]?.textContent === '8.000 €');
@@ -302,9 +405,10 @@ try {
   check('esploratore: dettaglio progressivo senza griglia a vuoti', await pageA.evaluate(() => {
     const steps = [...document.querySelectorAll('.annual-explorer-section details.calc-step')];
     const openSteps = steps.filter((step) => step.open);
+    const thresholds = document.querySelector('.annual-explorer-section details.fiscal-thresholds');
     return steps.length === 7
-      && openSteps.length === 1
-      && openSteps[0]?.textContent.includes('4 · Allocazione');
+      && openSteps.length === 0
+      && thresholds?.open === true;
   }));
   check('esploratore: soglie fiscali contestuali renderizzate', await pageA.evaluate(() => {
     const cards = [...document.querySelectorAll('#annual-tax-thresholds .fiscal-threshold-card')];
@@ -426,6 +530,14 @@ try {
   });
   check('fonti: valore deduzione presente', fiscalSourceDetails.text.includes('5.300 €'), fiscalSourceDetails.text);
   check('fonti: riferimenti deduzione presenti', fiscalSourceDetails.links === 2, String(fiscalSourceDetails.links));
+  check('metodologia: decisioni di calcolo versionate e renderizzate', await pageE.evaluate(() => {
+    const container = document.getElementById('calculation-methodology-list');
+    const text = container?.textContent || '';
+    return Boolean(container?.dataset.methodologyVersion)
+      && container.querySelectorAll('[data-calculation-method]').length >= 18
+      && text.includes('Decisione')
+      && text.includes('Assunzioni / approssimazioni');
+  }));
 
   // --- 11. Specularità dei temi: un solo set di binding, due palette.
   // Per ogni coppia di entità e proprietà deve valere:

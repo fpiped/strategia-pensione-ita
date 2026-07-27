@@ -65,7 +65,15 @@
     <header>
         <div class="header-content">
             <a class="logo" href="./" aria-label="Strategia Pensione - home">
-                <img src="favicon.svg" alt="" class="logo-mark" width="36" height="36">
+                <span class="logo-mark" aria-hidden="true">
+                    <svg viewBox="0 0 54 54" focusable="false">
+                        <rect x="10" y="29" width="7" height="13" rx="2" fill="currentColor"></rect>
+                        <rect x="23" y="22" width="7" height="20" rx="2" fill="currentColor"></rect>
+                        <rect x="36" y="14" width="7" height="28" rx="2" fill="currentColor"></rect>
+                        <path d="M10 20l10 4 10-10 13-4" fill="none" stroke="currentColor" stroke-width="3.5"
+                            stroke-linecap="round" stroke-linejoin="round" opacity="0.55"></path>
+                    </svg>
+                </span>
                 <h1>Strategia Pensione</h1>
             </a>
             <div class="header-side">
@@ -191,7 +199,7 @@
                                     <div class="control-subgroup">
                                         <div class="form-row">
                                             <div class="form-group">
-                                                <label for="investimento"><span class="help-trigger" data-help="investimento" id="investment-amount-label">Investimento netto annuo</span></label>
+                                                <label for="investimento"><span class="help-trigger" data-help="investimento" id="investment-amount-label">Budget annuo a tuo carico</span></label>
                                                 <div class="control-field"><input type="number" id="investimento" class="form-control" value="3000" min="0" step="100"><span class="unit">EUR</span></div>
                                             </div>
                                             <div class="form-group" id="investment-variation-control">
@@ -689,6 +697,39 @@
                     </div>
                 </section>
 
+                <section class="workspace-section strategy-comparison-section" aria-labelledby="strategy-comparison-title">
+                    <div class="strategy-comparison-header">
+                        <div>
+                            <span class="section-kicker">Stesso esborso personale</span>
+                            <h3 id="strategy-comparison-title">Confronta strategie</h3>
+                            <p>Ogni scenario usa lo stesso budget annuo a tuo carico. Se un importo tutto FP non esiste a causa di un salto fiscale, la differenza resta liquidità a rendimento zero.</p>
+                        </div>
+                    </div>
+                    <div class="strategy-comparison-grid" id="strategy-comparison-grid" aria-live="polite"></div>
+                    <p class="strategy-comparison-note">Il confronto isola l’effetto dell’allocazione; non misura rischio, volatilità, liquidabilità o garanzie dei singoli strumenti.</p>
+                    <div class="allocation-frontier" aria-labelledby="allocation-frontier-title">
+                        <div class="allocation-frontier-header">
+                            <div>
+                                <h4 id="allocation-frontier-title">Prova una quota FP nell’anno selezionato</h4>
+                                <p>Il PAC viene ricavato dal budget. Il valore finale usa il patrimonio già accumulato e non presume altri versamenti futuri.</p>
+                            </div>
+                            <strong id="allocation-frontier-year">Anno -</strong>
+                        </div>
+                        <label class="allocation-frontier-control" for="allocation-frontier-range">
+                            <span>Quota FP personale</span>
+                            <span class="allocation-frontier-stepper">
+                                <button type="button" id="allocation-frontier-minus" aria-label="Riduci la quota FP di 1 euro">−</button>
+                                <input id="allocation-frontier-range" type="range" min="0" max="0" step="0.01" value="0">
+                                <button type="button" id="allocation-frontier-plus" aria-label="Aumenta la quota FP di 1 euro">+</button>
+                            </span>
+                            <output id="allocation-frontier-fp-value" for="allocation-frontier-range">-</output>
+                        </label>
+                        <div class="allocation-critical-points" id="allocation-critical-points" aria-label="Punti di allocazione rilevanti"></div>
+                        <div class="allocation-frontier-metrics" id="allocation-frontier-metrics" aria-live="polite"></div>
+                        <p class="allocation-frontier-status" id="allocation-frontier-status"></p>
+                    </div>
+                </section>
+
                 <!-- Results Table -->
                 <section class="workspace-section results-section detail-workspace">
                     <h3 class="results-title" id="toggle-results">Esplora il dettaglio annuale</h3>
@@ -831,7 +872,7 @@
                                     </div>
                                 </div>
                             </details>
-                            <details class="calc-step" open>
+                            <details class="calc-step">
                                 <summary class="calc-step-summary">
                                     <span class="calc-step-heading"><span class="step-meta">4 · Allocazione</span><span class="calc-step-name">Perché FP, PAC o entrambi</span></span>
                                     <strong id="annual-fp-step-value">-</strong>
@@ -904,6 +945,7 @@
                                         <div class="step-row"><div><span>Contributi FP dedotti cumulati</span><b>Base soggetta alla tassazione finale</b></div><strong id="annual-fp-deductible-total-value">-</strong></div>
                                         <div class="step-row"><div><span>Contributi FP non dedotti cumulati</span><b>Esclusi dalla tassazione finale assumendo la comunicazione al fondo</b></div><strong id="annual-fp-nondeductible-total-value">-</strong></div>
                                         <div class="step-row"><div><span>Montante PAC lordo</span><b>Versamenti + rendimenti prima dell'imposta finale</b></div><strong id="annual-montante-pac-value">-</strong></div>
+                                        <div class="step-row"><div><span>Liquidità accumulata</span><b>Residui non investiti, a rendimento zero</b></div><strong id="annual-cash-value">-</strong></div>
                                         <div class="step-row"><div><span>Rendimento maturato nell'anno</span><b>FP + PAC sui montanti iniziali</b></div><strong id="annual-growth-value">-</strong></div>
                                         <div class="step-row"><div><span>Costi annui EUR</span><b>Una volta per ogni strumento attivo</b></div><strong id="annual-fixed-costs-value">-</strong></div>
                                         <div class="step-row"><div><span>Tassazione uscita FP</span><b id="annual-exit-fp-tax-label">Sui contributi dedotti</b></div><strong id="annual-exit-fp-tax-value">-</strong></div>
@@ -923,7 +965,7 @@
                     <div class="chart-content">
                         <div class="chart-container">
                             <div class="chart-canvas-holder">
-                                <canvas id="results-chart" role="img" aria-label="Grafico dell'andamento del capitale netto dell'allocazione ottimale; gli stessi dati sono nella tabella Esplora il dettaglio annuale"></canvas>
+                                <canvas id="results-chart" role="img" aria-label="Grafico comparativo dell'andamento del valore netto delle quattro strategie"></canvas>
                             </div>
                         </div>
                     </div>
@@ -1013,11 +1055,11 @@
                         </section>
                         <section class="guided-step" data-guided-step="3">
                             <div class="guided-step-head">
-                                <h3 id="guided-investment-step-title">Investimento annuo</h3>
+                                <h3 id="guided-investment-step-title">Budget di investimento</h3>
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="guided-investimento" id="guided-investment-amount-label">Investimento netto annuo</label>
+                                    <label for="guided-investimento" id="guided-investment-amount-label">Budget annuo a tuo carico</label>
                                     <div class="control-field"><input type="number" id="guided-investimento" class="form-control" min="0" step="100"><span class="unit">EUR</span></div>
                                 </div>
                                 <div class="form-group" id="guided-investment-variation-control">
@@ -1775,6 +1817,10 @@ Investimento lordo + contributo datore = totale messo al lavoro</pre>
                         <h3>Fonti normative per nucleo di calcolo</h3>
                         <p>Per ogni regola sono indicati valore usato, fonte e decorrenza. Le fonti sono ordinate nello stesso percorso del calcolo annuale.</p>
                         <div class="docs-source-list" id="fiscal-source-list"></div>
+
+                        <h3>Registro delle decisioni di calcolo</h3>
+                        <p>Ogni nucleo del modello ha un identificativo stabile, una formula, la decisione presa, il motivo, le fonti collegate e le eventuali approssimazioni. Il registro è versionato e viene richiamato anche dalla traccia tecnica dei risultati.</p>
+                        <div class="docs-source-list" id="calculation-methodology-list"></div>
 
                         <h3>Rendimenti e strumenti</h3>
                         <p>Per i fondi pensione puoi usare i rendimenti e i costi pubblicati da <a href="https://www.covip.it/" target="_blank" rel="noopener">COVIP</a> e dalla documentazione del singolo fondo. Per il PAC devi costruire un’ipotesi coerente con indice, composizione, costi e fiscalità dello strumento scelto. I dati storici non sono rendimenti futuri garantiti e il sito non propone specifici ETF come raccomandazione.</p>

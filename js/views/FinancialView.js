@@ -47,6 +47,7 @@ export class FinancialView {
         { key: 'quotaFpConsigliata', label: 'Quota FP' },
         { key: 'quotaFpNonDeducibile', label: 'FP non deducibile' },
         { key: 'quotaPacConsigliata', label: 'Quota PAC' },
+        { key: 'liquiditaResidua', label: 'Liquidità' },
         { key: 'quotaDatore', label: 'Datore' },
         { key: 'risparmioFiscale', label: 'Beneficio fiscale' },
         { key: 'exitOttimale', label: 'Exit netta' }
@@ -365,6 +366,173 @@ export class FinancialView {
       renderSiteIcons();
     }
 
+    updateStrategyComparison(strategies = [], selectedStrategyId = 'optimized') {
+      const container = document.getElementById('strategy-comparison-grid');
+      if (!container) return;
+      container.replaceChildren();
+      if (!strategies.length) return;
+
+      const allPacExit = strategies.find((strategy) => strategy.id === 'all-pac')?.exit || 0;
+      const formatTir = (value) => Number.isFinite(value)
+        ? `${(value * 100).toLocaleString('it-IT', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })}%`
+        : 'n.d.';
+
+      strategies.forEach((strategy) => {
+        const card = document.createElement('article');
+        card.className = 'strategy-card';
+        card.dataset.strategy = strategy.id;
+        card.tabIndex = 0;
+        card.setAttribute('role', 'radio');
+        card.setAttribute('aria-checked', String(strategy.id === selectedStrategyId));
+        card.setAttribute('aria-label', `Mostra il dettaglio della strategia ${strategy.label}`);
+        card.classList.toggle('selected', strategy.id === selectedStrategyId);
+        if (strategy.id === 'optimized') card.classList.add('recommended');
+        const selectStrategy = () => {
+          container.dispatchEvent(new CustomEvent('strategyselect', {
+            bubbles: true,
+            detail: { strategyId: strategy.id }
+          }));
+        };
+        card.addEventListener('click', selectStrategy);
+        card.addEventListener('keydown', (event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          selectStrategy();
+        });
+
+        const header = document.createElement('div');
+        header.className = 'strategy-card-header';
+        const heading = document.createElement('h4');
+        heading.textContent = strategy.label;
+        const badge = document.createElement('span');
+        badge.className = 'strategy-badge';
+        badge.textContent = strategy.id === 'optimized'
+          ? 'Calcolata'
+          : strategy.feasible
+            ? 'Benchmark'
+            : 'Minimo non sostenibile';
+        header.append(heading, badge);
+
+        const description = document.createElement('p');
+        description.className = 'strategy-description';
+        description.textContent = strategy.description;
+
+        const exit = document.createElement('strong');
+        exit.className = 'strategy-exit';
+        exit.textContent = this.formatMoney(Math.round(strategy.exit));
+        const exitLabel = document.createElement('span');
+        exitLabel.className = 'strategy-exit-label';
+        exitLabel.textContent = 'Valore netto finale';
+
+        const delta = strategy.exit - allPacExit;
+        const deltaText = document.createElement('p');
+        deltaText.className = 'strategy-delta';
+        deltaText.textContent = strategy.id === 'all-pac'
+          ? 'Base di confronto'
+          : `${delta >= 0 ? '+' : '−'}${this.formatMoney(Math.abs(Math.round(delta)))} rispetto a tutto PAC`;
+
+        const metrics = document.createElement('dl');
+        metrics.className = 'strategy-metrics';
+        const items = [
+          ['TIR', formatTir(strategy.tir)],
+          ['FP personale', this.formatMoney(Math.round(strategy.totals.fpPersonale))],
+          ['PAC', this.formatMoney(Math.round(strategy.totals.pac))],
+          ['Datore', this.formatMoney(Math.round(strategy.totals.datore))],
+          ['Beneficio fiscale', this.formatMoney(Math.round(strategy.totals.beneficioFiscale))],
+          ['Liquidità residua', this.formatMoney(Math.round(strategy.totals.liquidita))]
+        ];
+        items.forEach(([label, value]) => {
+          const wrapper = document.createElement('div');
+          const term = document.createElement('dt');
+          term.textContent = label;
+          const detail = document.createElement('dd');
+          detail.textContent = value;
+          wrapper.append(term, detail);
+          metrics.append(wrapper);
+        });
+
+        card.append(header, description, exitLabel, exit, deltaText, metrics);
+        container.append(card);
+      });
+    }
+
+    setSelectedStrategy(strategyId) {
+      document.querySelectorAll('#strategy-comparison-grid .strategy-card').forEach((card) => {
+        const selected = card.dataset.strategy === strategyId;
+        card.classList.toggle('selected', selected);
+        card.setAttribute('aria-checked', String(selected));
+      });
+    }
+
+    updateSelectedStrategyContext(strategy) {
+      if (!strategy) return;
+      const tableTitle = document.getElementById('toggle-results');
+      const explorerTitle = document.getElementById('annual-explorer-title');
+      if (tableTitle) tableTitle.textContent = `Dettaglio annuale · ${strategy.label}`;
+      if (explorerTitle) explorerTitle.textContent = `Calcoli esplorabili · ${strategy.label}`;
+    }
+
+    updateAllocationFrontier(data) {
+      if (!data) return;
+      const range = document.getElementById('allocation-frontier-range');
+      const minus = document.getElementById('allocation-frontier-minus');
+      const plus = document.getElementById('allocation-frontier-plus');
+      const value = document.getElementById('allocation-frontier-fp-value');
+      const year = document.getElementById('allocation-frontier-year');
+      const points = document.getElementById('allocation-critical-points');
+      const metrics = document.getElementById('allocation-frontier-metrics');
+      const status = document.getElementById('allocation-frontier-status');
+      if (!range || !minus || !plus || !value || !year || !points || !metrics || !status) return;
+
+      range.min = String(data.minQuotaFp);
+      range.max = String(Math.max(data.maxQuotaFp, 0));
+      range.value = String(Math.min(data.selected.quotaFp, data.maxQuotaFp));
+      minus.disabled = data.selected.quotaFp <= data.minQuotaFp;
+      plus.disabled = data.selected.quotaFp >= data.maxQuotaFp;
+      value.textContent = this.formatMoney(Math.round(data.selected.quotaFp));
+      year.textContent = `Anno ${data.anno}`;
+
+      points.replaceChildren();
+      data.criticalPoints.forEach((point) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'allocation-critical-button';
+        button.disabled = !point.feasible;
+        button.dataset.point = point.id;
+        button.textContent = `${point.label} · ${this.formatMoney(Math.round(point.quotaFp))}`;
+        button.addEventListener('click', () => {
+          range.value = String(point.quotaFp);
+          range.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+        points.append(button);
+      });
+
+      metrics.replaceChildren();
+      const selectedMetrics = [
+        ['PAC derivato', data.selected.feasible ? this.formatMoney(Math.round(data.selected.quotaPac)) : 'non sostenibile'],
+        ['Beneficio fiscale', data.selected.feasible ? this.formatMoney(Math.round(data.selected.beneficioFiscale)) : '-'],
+        ['Contributo datore', data.selected.feasible ? this.formatMoney(Math.round(data.selected.quotaDatore)) : '-'],
+        ['Valore finale proiettato', data.selected.feasible ? this.formatMoney(Math.round(data.selected.projectedExit)) : '-']
+      ];
+      selectedMetrics.forEach(([label, metricValue]) => {
+        const item = document.createElement('div');
+        const span = document.createElement('span');
+        span.textContent = label;
+        const strong = document.createElement('strong');
+        strong.textContent = metricValue;
+        item.append(span, strong);
+        metrics.append(item);
+      });
+
+      status.textContent = data.selected.feasible
+        ? `Quota sostenibile con il budget dell’anno. Orizzonte residuo: ${data.anniResidui} ${data.anniResidui === 1 ? 'anno' : 'anni'}.`
+        : 'Questa quota non è sostenibile: dopo il salto fiscale il suo costo netto supera il budget.';
+      status.classList.toggle('warning', !data.selected.feasible);
+    }
+
     renderFiscalThresholdInsights(insights = []) {
       const grid = document.getElementById('annual-tax-thresholds');
       if (!grid) return;
@@ -446,7 +614,13 @@ export class FinancialView {
       grid.replaceChildren(...cards);
     }
 
-    updateAnnualExplorer(results, config, selectedYear = 1, explorer = null) {
+    updateAnnualExplorer(
+      results,
+      config,
+      selectedYear = 1,
+      explorer = null,
+      strategy = null
+    ) {
       const yearSelect = document.getElementById('annual-explorer-year');
       if (!yearSelect || !results.length || !config) return;
 
@@ -553,22 +727,29 @@ export class FinancialView {
       const employerReason = datore > 0
         ? `${money(e.quotaMinimaStimata)} nel FP sbloccano ${money(datore)} del datore. `
         : '';
-      const allocationReason = choice === 'FP'
+      const policyReasons = {
+        'all-pac': 'La strategia selezionata destina per definizione l’intero budget investibile al PAC.',
+        'minimum-employer': 'La strategia selezionata versa al FP soltanto il minimo sostenibile necessario al datore e assegna il residuo al PAC.',
+        'maximum-fp': 'La strategia selezionata usa la massima quota FP sostenibile; l’eventuale residuo non investibile resta liquidità.'
+      };
+      const allocationReason = policyReasons[strategy?.id] || (choice === 'FP'
         ? `Il modello assegna al FP tutta la quota disponibile confrontandone il valore netto a scadenza con il PAC.`
         : choice === 'PAC'
           ? `Il modello assegna il budget al PAC perché produce il valore netto prospettico più alto con queste ipotesi.`
           : choice === 'NESSUNO'
             ? `Non viene aggiunto nuovo capitale: questo anno mostra soltanto l’evoluzione del versamento effettuato nell’anno 1.`
-            : `Dopo la quota minima, il modello divide il resto tra FP e PAC scegliendo euro per euro il valore netto più alto a scadenza.`;
+            : `Dopo la quota minima, il modello divide il resto tra FP e PAC scegliendo euro per euro il valore netto più alto a scadenza.`);
       setText('annual-fp-step-value', money(presentedAllocation.fp));
-      const investimentoNettoEsatto = (exactAllocation.investimentoLordo ?? e.investimentoPersonaleAnno ?? 0)
-        - (exactAllocation.beneficioFiscale ?? e.beneficioInvestitoAnno ?? 0);
       const investimentoLordoEsatto = exactAllocation.investimentoLordo ?? e.investimentoPersonaleAnno ?? 0;
       const beneficioEsatto = exactAllocation.beneficioFiscale ?? e.beneficioInvestitoAnno ?? 0;
+      const liquiditaAnnoEsatta = exactAllocation.liquiditaResidua ?? row.liquiditaResidua ?? 0;
+      const capitaleDisponibileEsatto = investimentoLordoEsatto + liquiditaAnnoEsatta;
+      const investimentoNettoEsatto = capitaleDisponibileEsatto - beneficioEsatto;
       const allocationFormula = pacResidualTechnical
         ? `${money(presentedAllocation.fp)} FP mostrati`
-        : `${moneyExact(quotaFp)} FP + ${moneyExact(quotaPac)} PAC`;
-      setText('annual-fp-formula', `${moneyExact(investimentoNettoEsatto)} investimento netto + ${moneyExact(beneficioEsatto)} beneficio = ${moneyExact(investimentoLordoEsatto)} investimento lordo = ${allocationFormula}. ${employerReason}${allocationReason} Orizzonte: ${yearsLeft} anni; rendimenti netti FP/PAC: ${percent((config.rendimentoNettoFpEffettivo || 0) * 100)} / ${percent((config.rendimentoNettoPacEffettivo || 0) * 100)}.`);
+        : `${moneyExact(quotaFp)} FP + ${moneyExact(quotaPac)} PAC`
+          + (liquiditaAnnoEsatta > 0 ? ` + ${moneyExact(liquiditaAnnoEsatta)} liquidità` : '');
+      setText('annual-fp-formula', `${moneyExact(investimentoNettoEsatto)} budget netto + ${moneyExact(beneficioEsatto)} beneficio = ${moneyExact(capitaleDisponibileEsatto)} disponibile = ${allocationFormula}. ${employerReason}${allocationReason} Orizzonte: ${yearsLeft} anni; rendimenti netti FP/PAC: ${percent((config.rendimentoNettoFpEffettivo || 0) * 100)} / ${percent((config.rendimentoNettoPacEffettivo || 0) * 100)}.`);
       setText('annual-within-min-value', money(e.quotaEntroMinima));
       setText('annual-above-min-value', money(e.quotaExtraMinima));
       setText('annual-effective-expense-value', money(e.spesaEffettivaAnno));
@@ -608,13 +789,15 @@ export class FinancialView {
 
       // Step 6 - Riconciliazione completa dell'exit.
       const exitEsatta = (e.montanteFp || 0) + (e.montantePac || 0)
+        + (e.liquiditaAccumulata || 0)
         - (e.impostaUscitaFp || 0) - (e.impostaUscitaPac || 0);
       setText('annual-exit-step-value', money(exitOttimale));
-      setText('annual-exit-formula', `${moneyExact(e.montanteFp)} FP + ${moneyExact(e.montantePac)} PAC - ${moneyExact(e.impostaUscitaFp)} imposta FP - ${moneyExact(e.impostaUscitaPac)} imposta PAC = ${moneyExact(exitEsatta)} netto. Il beneficio fiscale ha già finanziato i versamenti dell'anno.`);
+      setText('annual-exit-formula', `${moneyExact(e.montanteFp)} FP + ${moneyExact(e.montantePac)} PAC + ${moneyExact(e.liquiditaAccumulata)} liquidità - ${moneyExact(e.impostaUscitaFp)} imposta FP - ${moneyExact(e.impostaUscitaPac)} imposta PAC = ${moneyExact(exitEsatta)} netto. Il beneficio fiscale ha già finanziato i versamenti dell'anno.`);
       setText('annual-montante-fp-value', `${money(e.montanteFp)} (${money(e.versatoFp)} versati)`);
       setText('annual-fp-deductible-total-value', money(e.versatoFpDeducibile));
       setText('annual-fp-nondeductible-total-value', money(e.versatoFpNonDeducibile));
       setText('annual-montante-pac-value', `${money(e.montantePac)} (${money(e.versatoPac)} versati)`);
+      setText('annual-cash-value', money(e.liquiditaAccumulata));
       setText('annual-growth-value', `+${money((e.rendimentoFpAnno || 0) + (e.rendimentoPacAnno || 0))}`);
       setText('annual-fixed-costs-value', `-${money((e.costoFissoFpAnno || 0) + (e.costoFissoPacAnno || 0))} (FP ${money(e.costoFissoFpAnno || 0)} · PAC ${money(e.costoFissoPacAnno || 0)})`);
       setText('annual-exit-fp-tax-label', config.riscattoAnticipato
@@ -666,22 +849,32 @@ export class FinancialView {
      * solo orizzontale.
      * @param {Array} results - Risultati dei calcoli
      */
-    updateChart(results) {
+    updateChart(results, strategies = []) {
       if (!results.length) return;
 
       const ctx = document.getElementById('results-chart');
       if (!ctx) return;
 
       const labels = results.map(r => `Anno ${r.anno}`);
-      const exitOttimale = results.map(r => r.exitOttimale || 0);
-
       const styles = getComputedStyle(document.documentElement);
       const textColor = styles.getPropertyValue('--color-text-secondary').trim() || '#4b5563';
       const gridColor = styles.getPropertyValue('--color-border-soft').trim() || '#e2e7de';
       const fontSans = styles.getPropertyValue('--font-sans').trim() || 'Inter, sans-serif';
       const fontMono = styles.getPropertyValue('--font-mono').trim() || 'monospace';
 
-      const optimalColor = styles.getPropertyValue('--color-metric-mix').trim() || '#0E7C6B';
+      const strategyColors = ['#0E7C6B', '#4C78A8', '#D18B2C', '#8A5A9E'];
+      const chartStrategies = strategies.length
+        ? strategies
+        : [{
+          label: 'Allocazione ottimale',
+          results
+        }];
+      const datasets = chartStrategies.map((strategy, index) => ({
+        label: strategy.label,
+        data: strategy.results.map((row) => row.exitOttimale || 0),
+        backgroundColor: strategyColors[index % strategyColors.length],
+        maxBarThickness: strategies.length > 1 ? 11 : 24
+      }));
       const formatMoney = (value) => this.formatMoney(value);
       const withAlpha = (hex, alpha) => {
         const value = hex.replace('#', '');
@@ -698,14 +891,7 @@ export class FinancialView {
         type: 'bar',
         data: {
           labels: labels,
-          datasets: [
-            {
-              label: 'Allocazione ottimale',
-              data: exitOttimale,
-              backgroundColor: optimalColor,
-              maxBarThickness: 24
-            }
-          ]
+          datasets
         },
         options: {
           responsive: true,

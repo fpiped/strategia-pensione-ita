@@ -83,6 +83,8 @@ export class FinancialController {
         this.latestResults = null;
         this.guidedStep = 0;
         this.annualExplorerYear = 1;
+        this.allocationExplorerFp = null;
+        this.selectedStrategyId = 'optimized';
         this.updateResultsTimer = null;
         this.persistTimer = null;
         this.shareFeedbackTimer = null;
@@ -194,10 +196,34 @@ export class FinancialController {
       annualExplorerSelect?.addEventListener('change', (event) => {
         event.stopPropagation();
         this.annualExplorerYear = parseInt(event.target.value, 10) || 1;
+        this.allocationExplorerFp = null;
         if (this.latestResults?.config) {
           this.renderAnnualExplorer();
         }
         this.view.highlightTableYear(this.annualExplorerYear);
+      });
+      byId('allocation-frontier-range')?.addEventListener('change', (event) => {
+        this.allocationExplorerFp = Number(event.target.value);
+        this.renderAllocationFrontier();
+      });
+      const stepAllocationFrontier = (direction) => {
+        const range = byId('allocation-frontier-range');
+        if (!range) return;
+        const current = Number(range.value) || 0;
+        const minimum = Number(range.min) || 0;
+        const maximum = Number(range.max) || 0;
+        const next = Math.min(Math.max(current + direction, minimum), maximum);
+        range.value = String(next);
+        range.dispatchEvent(new Event('change', { bubbles: true }));
+      };
+      byId('allocation-frontier-minus')?.addEventListener('click', () => {
+        stepAllocationFrontier(-1);
+      });
+      byId('allocation-frontier-plus')?.addEventListener('click', () => {
+        stepAllocationFrontier(1);
+      });
+      byId('strategy-comparison-grid')?.addEventListener('strategyselect', (event) => {
+        this.selectStrategy(event.detail?.strategyId);
       });
       byId('grid-div')?.addEventListener('click', (event) => {
         const row = event.target.closest('tr[data-anno]');
@@ -205,6 +231,7 @@ export class FinancialController {
         const year = parseInt(row.dataset.anno, 10);
         if (!Number.isFinite(year)) return;
         this.annualExplorerYear = year;
+        this.allocationExplorerFp = null;
         const yearSelect = byId('annual-explorer-year');
         if (yearSelect) yearSelect.value = String(year);
         if (this.latestResults?.config) {
@@ -314,8 +341,8 @@ export class FinancialController {
       setText('investment-frequency-description', singlePayment
         ? 'Ottimizza soltanto il versamento dell’anno 1 e segue quel capitale fino alla fine.'
         : 'Simula ogni anno un nuovo investimento netto e lo ottimizza usando lo stato accumulato.');
-      setText(['investment-amount-label', 'guided-investment-amount-label'], 'Investimento netto annuo');
-      setText('guided-investment-step-title', singlePayment ? 'Investimento anno 1' : 'Investimento annuo');
+      setText(['investment-amount-label', 'guided-investment-amount-label'], 'Budget annuo a tuo carico');
+      setText('guided-investment-step-title', singlePayment ? 'Budget anno 1' : 'Budget di investimento');
 
       document.querySelectorAll('select[data-variation-fields]').forEach((select) => {
         const control = select.closest('.form-group');
@@ -335,11 +362,56 @@ export class FinancialController {
       if (!config) return;
       const rows = this.getResultRows();
       const explorer = this.model.buildAnnualExplorerData(config, rows, year);
-      this.view.updateAnnualExplorer(rows, config, year, explorer);
+      this.view.updateAnnualExplorer(
+        rows,
+        config,
+        year,
+        explorer,
+        this.getSelectedStrategy()
+      );
+      this.renderAllocationFrontier(year);
+    }
+
+    renderAllocationFrontier(year = this.annualExplorerYear) {
+      const config = this.latestResults?.config;
+      const rows = this.getResultRows();
+      if (!config || !rows.length) return;
+      const data = this.model.buildAllocationFrontier(
+        config,
+        rows,
+        year,
+        this.allocationExplorerFp,
+        this.selectedStrategyId
+      );
+      this.view.updateAllocationFrontier(data);
     }
 
     getResultRows() {
-      return this.latestResults?.results || [];
+      const selected = this.latestResults?.strategies?.find(
+        (strategy) => strategy.id === this.selectedStrategyId
+      );
+      return selected?.results || this.latestResults?.results || [];
+    }
+
+    getSelectedStrategy() {
+      return this.latestResults?.strategies?.find(
+        (strategy) => strategy.id === this.selectedStrategyId
+      ) || this.latestResults?.strategies?.[0] || null;
+    }
+
+    selectStrategy(strategyId) {
+      const strategy = this.latestResults?.strategies?.find(
+        (candidate) => candidate.id === strategyId
+      );
+      if (!strategy) return;
+      this.selectedStrategyId = strategy.id;
+      this.allocationExplorerFp = null;
+      this.view.setSelectedStrategy(strategy.id);
+      this.view.updateSelectedStrategyContext(strategy);
+      this.view.createTable(strategy.results);
+      this.view.highlightTableYear(this.annualExplorerYear);
+      this.renderAnnualExplorer();
+      this.csvContent = this.model.convertToCSV(strategy.results);
     }
 
     scheduleResultsUpdate(delay = 200) {
@@ -381,6 +453,8 @@ export class FinancialController {
     resetScenario() {
       if (!window.confirm('Ripristinare i valori predefiniti? I parametri attuali andranno persi.')) return;
       clearSavedScenario();
+      this.selectedStrategyId = 'optimized';
+      this.allocationExplorerFp = null;
       this.store.set({ ...this.defaultState });
     }
 
@@ -496,6 +570,10 @@ export class FinancialController {
       // Calcola i risultati usando il model
       const results = this.model.calculateResults(config);
       this.latestResults = { ...results, config };
+      if (!results.strategies.some((strategy) => strategy.id === this.selectedStrategyId)) {
+        this.selectedStrategyId = 'optimized';
+      }
+      const selectedStrategy = this.getSelectedStrategy();
 
       // Aggiorna la view
       this.view.createTable(this.getResultRows());
@@ -503,15 +581,17 @@ export class FinancialController {
       this.view.updateMetricsDashboard(results.results, results.tir);
       this.view.updateChoiceSequence(results.results);
       this.view.updateResultExplanation(results.results);
+      this.view.updateStrategyComparison(results.strategies, this.selectedStrategyId);
+      this.view.updateSelectedStrategyContext(selectedStrategy);
       this.renderAnnualExplorer();
       this.view.updateInputWarnings(buildInputWarnings(config));
-      this.view.updateChart(results.results);
+      this.view.updateChart(results.results, results.strategies);
 
       this.updateInvestmentModeSummary(config, results.results);
       this.updateFpSplitCards(results.results, config);
 
       // Aggiorna il contenuto CSV per il download
-      this.csvContent = this.model.convertToCSV(results.results);
+      this.csvContent = this.model.convertToCSV(this.getResultRows());
     }
 
     /**
@@ -809,8 +889,9 @@ export class FinancialController {
      * piano ottimizzato e mostrate identiche nel pannello e nella guidata.
      */
     updateFpSplitCards(results, config) {
-      // Stesso piano mostrato in tabella ed esploratore: un'unica storia.
-      const row = this.getResultRows()?.[0] || results?.[0];
+      // Le card del pannello descrivono sempre la raccomandazione ottimale;
+      // il selettore strategie cambia soltanto tabella ed esploratore.
+      const row = results?.[0];
       if (!row) return;
 
       const money = (value) => `${Math.round(value).toLocaleString('it-IT')} €`;

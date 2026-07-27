@@ -24,7 +24,12 @@ test('calcola lo scenario cumulativo predefinito', () => {
   assert.equal(result.results.length, 30);
   assert.equal(result.quotaDatoreFp, 450);
   assert.equal(result.risparmioImposta, 11244);
-  assert.equal('strategies' in result, false);
+  assert.deepEqual(result.strategies.map((strategy) => strategy.id), [
+    'optimized',
+    'all-pac',
+    'minimum-employer',
+    'maximum-fp'
+  ]);
   assert.ok(Number.isFinite(result.tir.optimal));
 
   const first = result.results[0];
@@ -862,16 +867,119 @@ test('ammette FP non deducibile per raggiungere la quota minima e ottenere il da
   assert.equal(row._state.contributiFpNonDeducibili, 700);
 });
 
-test('espone una sola strategia ottimizzata senza benchmark separati', () => {
+test('espone benchmark confrontabili allo stesso budget personale', () => {
   const model = new FinancialModel();
   const result = model.calculateResults({
     ...baseConfig,
     durata: 1,
     investimento: 8000
   });
-  assert.equal('strategies' in result, false);
+  assert.deepEqual(result.strategies.map((strategy) => strategy.id), [
+    'optimized',
+    'all-pac',
+    'minimum-employer',
+    'maximum-fp'
+  ]);
   assert.deepEqual(Object.keys(result.tir), ['optimal']);
   assert.equal('breakeven' in result, false);
+
+  for (const strategy of result.strategies) {
+    assert.equal(strategy.results.length, 1);
+    assert.equal(strategy.totals.budgetNetto, 8000);
+    assert.ok(Number.isFinite(strategy.exit));
+    assert.ok(strategy._audit.methodologyIds.length > 0);
+    for (const row of strategy.results) {
+      assert.ok(Math.abs(row._allocation.budgetDifference) < 1e-7);
+      assert.ok(row._audit.methodologyIds.includes('budget.net-identity'));
+    }
+  }
+
+  const allPac = result.strategies.find((strategy) => strategy.id === 'all-pac');
+  assert.equal(allPac.totals.fpPersonale, 0);
+  assert.equal(allPac.totals.pac, 8000);
+  assert.equal(allPac.totals.datore, 0);
+  assert.equal(allPac.totals.beneficioFiscale, 0);
+
+  const maximumFp = result.strategies.find((strategy) => strategy.id === 'maximum-fp');
+  assert.equal(maximumFp.totals.pac, 0);
+  assert.ok(maximumFp.totals.fpPersonale > 8000);
+});
+
+test('massimo FP conserva in liquidita un budget non invertibile per un salto fiscale', () => {
+  const model = new FinancialModel();
+  const result = model.calculateResults({
+    ...baseConfig,
+    durata: 1,
+    reddito: 27650,
+    investimento: 100,
+    quotaDatoreFpPerc: 0.015,
+    quotaMinAderentePerc: 0.01,
+    rendimentoAnnualeFpPerc: 0,
+    rendimentoAnnualePacPerc: 0
+  });
+  const maximumFp = result.strategies.find((strategy) => strategy.id === 'maximum-fp');
+  const allocation = maximumFp.results[0]._allocation;
+
+  assert.equal(allocation.quotaPac, 0);
+  assert.equal(allocation.quotaFp, 108.96);
+  assert.ok(allocation.liquiditaResidua > 26);
+  assert.ok(Math.abs(
+    allocation.quotaFp
+      + allocation.liquiditaResidua
+      - allocation.beneficioFiscale
+      - 100
+  ) < 1e-7);
+  assert.ok(maximumFp._audit.methodologyIds.includes('budget.fiscal-cliffs'));
+  const explorer = model.buildAnnualExplorerData(
+    {
+      ...baseConfig,
+      durata: 1,
+      reddito: 27650,
+      investimento: 100,
+      quotaDatoreFpPerc: 0.015,
+      quotaMinAderentePerc: 0.01,
+      rendimentoAnnualeFpPerc: 0,
+      rendimentoAnnualePacPerc: 0
+    },
+    maximumFp.results,
+    1
+  );
+  assert.ok(explorer.liquiditaAccumulata > 26);
+  assert.equal(
+    Math.round(
+      explorer.montanteFp
+        + explorer.montantePac
+        + explorer.liquiditaAccumulata
+        - explorer.impostaUscitaFp
+        - explorer.impostaUscitaPac
+    ),
+    maximumFp.exit
+  );
+});
+
+test('la frontiera annuale usa lo stesso valutatore e presenta i punti critici', () => {
+  const model = new FinancialModel();
+  const config = { ...baseConfig, durata: 3 };
+  const result = model.calculateResults(config);
+  const frontier = model.buildAllocationFrontier(config, result.results, 1, 1000);
+
+  assert.equal(frontier.anno, 1);
+  assert.equal(frontier.budgetNetto, 3000);
+  assert.deepEqual(frontier.criticalPoints.map((point) => point.id), [
+    'all-pac',
+    'minimum-employer',
+    'current-strategy',
+    'maximum-fp'
+  ]);
+  assert.equal(frontier.selected.quotaFp, 1000);
+  assert.ok(frontier.selected.feasible);
+  assert.ok(Math.abs(
+    frontier.selected.quotaFp
+      + frontier.selected.quotaPac
+      - frontier.selected.beneficioFiscale
+      - frontier.budgetNetto
+  ) < 1e-7);
+  assert.ok(frontier.audit.methodologyIds.includes('allocation.annual-search'));
 });
 
 test('l ottimale puo versare oltre il plafond come FP non dedotto quando rende piu del PAC', () => {
@@ -987,8 +1095,8 @@ test('converte i risultati in CSV con intestazione coerente', () => {
 
   assert.equal(
     model.convertToCSV(result.results),
-    'Anno,Entro Min,Extra Min,Entro Ded,Extra Ded,Aderente,Datore,Risparmio,FP Cons,FP Deducibile,FP Non Deducibile,Datore Deducibile,PAC Cons,PAC Oltre Limite,FP Busta,FP Bonifico,Diff Busta,Scelta,Investimento Netto,Investimento Lordo,Exit Ottimale\r\n' +
-      '1,300,3632,3931,0,3932,450,932,3932,3931,1,450,0,0,300,3632,267,FP,3000,3932,3724\r\n'
+    'Anno,Entro Min,Extra Min,Entro Ded,Extra Ded,Aderente,Datore,Risparmio,FP Cons,FP Deducibile,FP Non Deducibile,Datore Deducibile,PAC Cons,PAC Oltre Limite,FP Busta,FP Bonifico,Diff Busta,Scelta,Investimento Netto,Investimento Lordo,Liquidita Residua,Exit Ottimale\r\n' +
+      '1,300,3632,3931,0,3932,450,932,3932,3931,1,450,0,0,300,3632,267,FP,3000,3932,0,3724\r\n'
   );
 });
 

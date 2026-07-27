@@ -19,6 +19,7 @@ test('la guida segue il percorso concettuale e non replica il catalogo controlli
 });
 
 test('rende espliciti investimento netto, timing e destinazione oltre deduzione', () => {
+  assert.ok(html.includes('Budget annuo a tuo carico'));
   assert.ok(html.includes('Investimento lordo = quota FP personale + quota PAC'));
   assert.ok(html.includes('Investimento netto = quota FP personale + quota PAC − beneficio fiscale'));
   assert.ok(html.includes('Investimento lordo = investimento netto + beneficio fiscale'));
@@ -29,6 +30,17 @@ test('rende espliciti investimento netto, timing e destinazione oltre deduzione'
   assert.ok(html.includes('non serve mostrarlo come strategia separata'));
   assert.ok(html.includes('Solo anno 1'));
   assert.ok(html.includes('senza aggiungere altri versamenti'));
+});
+
+test('espone confronto strategie, frontiera annuale e registro metodologico', () => {
+  assert.ok(html.includes('id="strategy-comparison-grid"'));
+  assert.ok(html.includes('Stesso esborso personale'));
+  assert.ok(html.includes('id="allocation-frontier-range"'));
+  assert.ok(html.includes('id="allocation-frontier-minus"'));
+  assert.ok(html.includes('id="allocation-frontier-plus"'));
+  assert.ok(html.includes('Punti di allocazione rilevanti'));
+  assert.ok(html.includes('id="calculation-methodology-list"'));
+  assert.ok(html.includes('Registro delle decisioni di calcolo'));
 });
 
 test('spiega ricalcolo annuale, salti fiscali, incapienza e perdite', () => {
@@ -88,7 +100,8 @@ test('rende progressivo e compatto il dettaglio annuale', () => {
   assert.ok(explorer.includes('Soglie fiscali dell’anno'));
   assert.ok(explorer.includes('annual-tax-thresholds'));
   assert.equal((explorer.match(/<details class="calc-step"/g) || []).length, 7);
-  assert.ok(explorer.includes('<details class="calc-step" open>'));
+  assert.ok(!explorer.includes('<details class="calc-step" open>'));
+  assert.ok(explorer.includes('<details class="fiscal-thresholds" open>'));
   assert.ok(explorer.includes('4 · Allocazione'));
   assert.match(styles, /\.calc-flow\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\)/s);
   assert.match(styles, /\.calc-step-summary\s*\{[^}]*display:\s*grid/s);
