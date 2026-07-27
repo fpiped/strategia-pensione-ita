@@ -14,15 +14,18 @@ Non e uno strumento di consulenza finanziaria, fiscale o previdenziale. Serve a 
 
 ## Come funziona
 
-Il calcolatore parte dagli input principali: durata, retribuzione, investimento annuo, quote di contribuzione, contributo del datore, addizionali, rendimenti, costi e tassazione.
+Il calcolatore parte dagli input principali: durata, retribuzione, budget annuo a carico dell'utente, quote di contribuzione, contributo del datore, addizionali, rendimenti, costi e tassazione.
 
-Per ogni anno simula tre strategie:
+L'allocazione consigliata viene confrontata a parità di budget personale con quattro strategie:
 
-- fondo pensione fino alla quota fiscalmente conveniente;
-- PAC;
-- allocazione ottimale tra fondo pensione e PAC.
+- allocazione ottimizzata sequenzialmente tra fondo pensione e PAC;
+- tutto PAC;
+- minimo fondo pensione necessario a ottenere il contributo del datore, poi PAC;
+- massimo fondo pensione senza PAC.
 
-Il risultato finale mostra il valore netto stimato, la sequenza annuale delle scelte e il dettaglio dei fattori che hanno inciso sul confronto.
+Il budget soddisfa sempre l'identità `FP personale + PAC + liquidità − beneficio fiscale = budget personale`. Poiché soglie e detrazioni possono rendere discontinua la funzione fiscale, non si presume che esista sempre una quota FP con costo netto esattamente uguale al budget: nel benchmark massimo FP viene scelta la massima quota sostenibile e l'eventuale residuo resta liquidità nominale a rendimento zero.
+
+Il risultato finale mostra il valore netto stimato, il TIR, la sequenza annuale delle scelte, i benchmark e il dettaglio dei fattori che hanno inciso sul confronto. Una frontiera annuale permette inoltre di provare una quota FP personale e osservare PAC derivato, beneficio, datore e valore proiettato.
 
 La logica e pensata per lavoratori dipendenti. Non include il TFR e non modella casi previdenziali individuali complessi.
 
@@ -35,6 +38,7 @@ Il modello accetta per FP e PAC soltanto rendimenti annui pari o superiori a 0%.
 - Il massimale contributivo INPS 2026 viene applicato a tutti gli scenari, anche se nella realtà dipende dalla posizione contributiva individuale.
 - Oltre 200.000 euro, la riduzione di 440 euro viene applicata alle detrazioni aggregate inserite, senza distinguere gli oneri interessati e le categorie escluse.
 - L’allocazione viene ottimizzata sequenzialmente anno per anno: ogni quota è proiettata fino all’orizzonte residuo, ma senza anticipare i versamenti futuri. Nel perimetro attuale questo limite riguarda soprattutto i costi fissi annui di FP e PAC, che i versamenti successivi potrebbero ammortizzare; non è quindi garantito l’ottimo globale dell’intero piano.
+- La liquidità residua del benchmark massimo FP è mantenuta nominale e non produce rendimento.
 
 ## Avvio locale
 
@@ -69,7 +73,7 @@ Non aprire direttamente `index.html` come file locale: l'app usa moduli ES e va 
 npm test
 ```
 
-I test usano il runner nativo di Node.js e coprono la logica principale di calcolo, inclusa la fiscalità dell'esploratore annuale (`buildAnnualExplorerData`).
+I test usano il runner nativo di Node.js e coprono la logica principale di calcolo, la fiscalità dell'esploratore annuale, i benchmark, i salti fiscali, la riconciliazione del budget e la completezza del registro metodologico.
 
 ### Test end-to-end
 
@@ -93,6 +97,8 @@ Il progetto e una single-page app statica in HTML, CSS e JavaScript vanilla.
 Chart.js e i font (Inter per l'interfaccia, IBM Plex Mono per i numeri) sono vendorizzati in `vendor/`; le icone sono un sottoinsieme di Lucide reso inline nel modulo `js/icons.js`; l'illustrazione vettoriale del masthead (`vendor/img/mascotte.svg`) usa colori con contrasto stabile nei due temi. La pagina non fa richieste a servizi o CDN esterni. Le aliquote regionali e comunali sono incluse come dataset locale normalizzato; le comunali (`js/constants/local-tax-data.js`, ~700 KB) si caricano con `import()` dinamico solo quando serve la modalità "Da località". Il repository non contiene una pipeline di import o scraping dei dati sorgente.
 
 Le regole fiscali nazionali sono centralizzate e versionate per anno in `js/constants/fiscal-rules.js`. La stessa configurazione alimenta formule, valori predefiniti e l'elenco delle fonti nella pagina Informazioni, evitando duplicazioni tra modello e documentazione.
+
+Le decisioni di modello sono separate dalle norme e raccolte nel registro versionato `js/constants/calculation-methodology.js`. Ogni nucleo dichiara ID stabile, formula, decisione, motivazione, fonti normative collegate, approssimazioni e punti di implementazione. Le righe annuali, le strategie e la frontiera espongono inoltre una traccia tecnica non enumerabile (`_audit`) che collega valori esatti e versione metodologica senza alterare CSV o link condivisi.
 
 ## Design system
 

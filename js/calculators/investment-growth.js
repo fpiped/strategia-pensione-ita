@@ -139,7 +139,7 @@ export function calculateStrategyExit(
   });
   const exitPAC = calculatePacExit(state.montantePAC, state.investimentoPAC, pacExitOptions);
 
-  return exitFP + exitPAC;
+  return exitFP + exitPAC + Math.max(state.liquidita || 0, 0);
 }
 
 /**

@@ -1,4 +1,9 @@
 import { CURRENT_FISCAL_RULES, CURRENT_FISCAL_YEAR } from '../constants/fiscal-rules.js';
+import {
+  CALCULATION_METHODS,
+  CALCULATION_METHODOLOGY_VERSION,
+  resolveCalculationMethod
+} from '../constants/calculation-methodology.js';
 
 const money = (value) => `${value.toLocaleString('it-IT', { useGrouping: 'always' })} €`;
 const percent = (value) => `${(value * 100).toLocaleString('it-IT', { maximumFractionDigits: 2 })}%`;
@@ -114,6 +119,67 @@ export function renderFiscalRulesDocumentation() {
     });
 
     addLabelledParagraph(article, 'Aggiornamento', `${item.effective}.`);
+      section.append(article);
+    }
+    container.append(section);
+  }
+
+  renderCalculationMethodology();
+}
+
+function renderCalculationMethodology() {
+  const container = document.getElementById('calculation-methodology-list');
+  if (!container) return;
+  container.replaceChildren();
+  container.dataset.methodologyVersion = CALCULATION_METHODOLOGY_VERSION;
+
+  const methodsByArea = new Map();
+  for (const method of CALCULATION_METHODS) {
+    const methods = methodsByArea.get(method.area) || [];
+    methods.push(resolveCalculationMethod(method.id));
+    methodsByArea.set(method.area, methods);
+  }
+
+  for (const [area, methods] of methodsByArea) {
+    const section = document.createElement('section');
+    section.className = 'docs-source-group';
+    const heading = document.createElement('h3');
+    heading.textContent = area;
+    section.append(heading);
+
+    for (const method of methods) {
+      const article = document.createElement('article');
+      article.className = 'docs-source-item';
+      article.dataset.calculationMethod = method.id;
+
+      const title = document.createElement('h4');
+      title.textContent = method.title;
+      article.append(title);
+      addLabelledParagraph(article, 'Decisione', method.decision);
+      addLabelledParagraph(article, 'Formula', method.formula);
+      addLabelledParagraph(article, 'Perché', method.rationale);
+
+      if (method.approximations.length > 0) {
+        addLabelledParagraph(article, 'Assunzioni / approssimazioni', method.approximations.join(' '));
+      }
+
+      if (method.sources.length > 0) {
+        const sourceParagraph = addLabelledParagraph(article, 'Fonti collegate', '');
+        method.sources.forEach((source, sourceIndex) => {
+          source.sources.forEach((linkSource, linkIndex) => {
+            if (sourceIndex > 0 || linkIndex > 0) sourceParagraph.append(' · ');
+            const link = document.createElement('a');
+            link.href = linkSource.url;
+            link.target = '_blank';
+            link.rel = 'noopener';
+            link.textContent = linkSource.label;
+            sourceParagraph.append(link);
+          });
+        });
+      } else {
+        addLabelledParagraph(article, 'Fonte', 'Decisione interna di modello, senza fonte normativa esterna.');
+      }
+
       section.append(article);
     }
     container.append(section);

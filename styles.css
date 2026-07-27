@@ -3951,6 +3951,7 @@ header {
 }
 
 .results-section,
+.strategy-comparison-section,
 .chart-section,
 .annual-explorer-section {
     margin-top: 0;
@@ -3959,6 +3960,287 @@ header {
     border: 1px solid var(--ds-border-soft);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
+}
+
+.strategy-comparison-section {
+    display: grid;
+    gap: 1rem;
+}
+
+.strategy-comparison-header h3 {
+    margin: 0.2rem 0 0.35rem;
+    font-size: 1.05rem;
+}
+
+.strategy-comparison-header p,
+.strategy-comparison-note {
+    margin: 0;
+    color: var(--ds-text-soft);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.strategy-comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.strategy-card {
+    display: grid;
+    gap: 0.55rem;
+    padding: 1rem;
+    background: var(--ds-surface-panel);
+    border: 1px solid var(--ds-border-soft);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    box-shadow: none;
+    transition: none;
+}
+
+.strategy-card:hover:not(.selected) {
+    background: var(--ds-surface-selected);
+}
+
+.strategy-card:focus-visible {
+    outline: 2px solid var(--ds-brand);
+    outline-offset: 2px;
+}
+
+.strategy-card.selected {
+    background: var(--ds-surface-selected);
+    border-color: var(--ds-brand);
+    box-shadow: none;
+}
+
+.strategy-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.strategy-card h4,
+.strategy-metrics dt,
+.strategy-metrics dd {
+    margin: 0;
+}
+
+.strategy-badge {
+    padding: 0.2rem 0.45rem;
+    color: var(--ds-text-soft);
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-border-soft);
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 800;
+}
+
+.strategy-description,
+.strategy-delta {
+    margin: 0;
+    color: var(--ds-text-soft);
+    font-size: 0.76rem;
+    line-height: 1.4;
+}
+
+.strategy-exit-label {
+    color: var(--ds-text-soft);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.strategy-exit {
+    font-family: var(--font-mono);
+    font-size: 1.55rem;
+}
+
+.strategy-delta {
+    color: var(--ds-brand);
+    font-weight: 750;
+}
+
+.strategy-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    margin: 0.25rem 0 0;
+    border-top: 1px solid var(--ds-border-soft);
+}
+
+.strategy-metrics > div {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.6rem 0.4rem 0.2rem 0;
+}
+
+.strategy-metrics dt {
+    color: var(--ds-text-soft);
+    font-size: 0.67rem;
+}
+
+.strategy-metrics dd {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.allocation-frontier {
+    display: grid;
+    gap: 0.85rem;
+    padding: 1rem;
+    background: var(--ds-page);
+    border: 1px solid var(--ds-border-soft);
+    border-radius: var(--radius-lg);
+}
+
+.allocation-frontier-header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.allocation-frontier-header h4,
+.allocation-frontier-header p,
+.allocation-frontier-status {
+    margin: 0;
+}
+
+.allocation-frontier-header p,
+.allocation-frontier-status {
+    color: var(--ds-text-soft);
+    font-size: 0.75rem;
+    line-height: 1.45;
+}
+
+.allocation-frontier-header > strong {
+    flex: 0 0 auto;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+}
+
+.allocation-frontier-control {
+    display: grid;
+    grid-template-columns: auto minmax(8rem, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.allocation-frontier-control output {
+    min-width: 0;
+    white-space: nowrap;
+    text-align: right;
+    font-family: var(--font-mono);
+}
+
+.allocation-frontier-stepper {
+    display: grid;
+    grid-template-columns: 2rem minmax(8rem, 1fr) 2rem;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.allocation-frontier-stepper button {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    color: var(--ds-text);
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.allocation-frontier-stepper button:hover {
+    color: var(--ds-brand);
+    border-color: var(--ds-brand);
+}
+
+.allocation-frontier-stepper button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.allocation-frontier-stepper button:disabled:hover {
+    color: var(--ds-text);
+    border-color: var(--ds-border);
+}
+
+.allocation-frontier-stepper button:focus-visible {
+    outline: 2px solid var(--ds-brand);
+    outline-offset: 2px;
+}
+
+.allocation-frontier-stepper input {
+    min-width: 0;
+    width: 100%;
+}
+
+.allocation-critical-points {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.allocation-critical-button {
+    padding: 0.4rem 0.6rem;
+    color: var(--ds-text);
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-border);
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.allocation-critical-button:hover:not(:disabled) {
+    color: var(--ds-brand);
+    border-color: var(--ds-brand);
+}
+
+.allocation-critical-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.allocation-frontier-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.65rem;
+}
+
+.allocation-frontier-metrics > div {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0.65rem;
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-border-soft);
+    border-radius: var(--radius-sm);
+}
+
+.allocation-frontier-metrics span {
+    color: var(--ds-text-soft);
+    font-size: 0.66rem;
+}
+
+.allocation-frontier-metrics strong {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+}
+
+.allocation-frontier-status.warning {
+    color: var(--ds-danger, #a33);
 }
 
 .annual-explorer-body {
@@ -4232,6 +4514,7 @@ td {
     .config-workspace #input-form,
     .results-body,
     .results-section,
+    .strategy-comparison-section,
     .chart-section,
     .annual-explorer-section {
         padding: 0.85rem;
@@ -4246,9 +4529,25 @@ td {
 #calculator-content .intro-section { order: 1; }
 #calculator-content .config-workspace { order: 2; }
 #calculator-content .results-workspace { order: 3; }
-#calculator-content .detail-workspace { order: 4; }
-#calculator-content .annual-explorer-section { order: 5; }
-#calculator-content .chart-section { order: 6; }
+#calculator-content .strategy-comparison-section { order: 4; }
+#calculator-content .detail-workspace { order: 5; }
+#calculator-content .annual-explorer-section { order: 6; }
+#calculator-content .chart-section { order: 7; }
+
+@media (max-width: 760px) {
+    .strategy-comparison-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .allocation-frontier-control,
+    .allocation-frontier-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .allocation-frontier-control output {
+        text-align: left;
+    }
+}
 
 .config-workspace #input-form {
     padding: 1.1rem;
@@ -5445,26 +5744,6 @@ html[data-active-tab="documentation"] .tab[data-tab="documentation"] {
     border-bottom-color: var(--ds-accent);
 }
 
-/* Card strategia selezionabili: pilotano tabella ed esploratore. */
-[data-strategy] {
-    cursor: pointer;
-    transition: outline-color var(--transition), box-shadow var(--transition), background-color var(--transition);
-}
-
-[data-strategy]:hover {
-    outline: 1px solid color-mix(in srgb, var(--ds-accent) 45%, transparent);
-    outline-offset: -1px;
-    box-shadow: 0 2px 10px color-mix(in srgb, var(--ds-accent) 12%, transparent);
-}
-
-.results-workspace [data-strategy].strategy-active,
-[data-strategy].strategy-active {
-    outline: 2px solid var(--ds-primary);
-    outline-offset: -2px;
-    background: var(--ds-surface-selected);
-    box-shadow: 0 4px 16px color-mix(in srgb, var(--ds-primary) 14%, transparent);
-}
-
 /* Guidata: i blocchi condizionali (es. rendimento lordo) spaziano le righe
    interne con lo stesso gap dello step. */
 .guided-dialog .conditional-grid {
@@ -5523,15 +5802,16 @@ html[data-active-tab="documentation"] .tab[data-tab="documentation"] {
     --ds-border-soft: #DBE3DF;
     --ds-border-strong: #0E7C6B;
 
-    /* Identità (bottoni pieni, stati selezionati, titoli forti) e
-       interazione (link, focus, toggle attivi) sono due token distinti. */
+    /* Identità e interazione. Il riempimento selezionato è l'unica tinta
+       usata da logo, azioni primarie e controlli attivi. */
     --ds-primary: #1D5C4D;
     --ds-primary-hover: #16473C;
-    /* Colore-firma condiviso dai due temi: riempimenti con testo
-       inchiostro sopra (9,9:1). Mai come testo su fondo chiaro. */
-    --ds-brand: #41E0B4;
-    --ds-brand-hover: #2BC89C;
+    --ds-brand: #4AAE96;
+    --ds-brand-hover: #3E9A84;
     --ds-text-on-brand: #10231C;
+    --ds-selected-fill: color-mix(in srgb, var(--ds-brand) 32%, var(--ds-surface));
+    --ds-selected-fill-hover: color-mix(in srgb, var(--ds-brand) 42%, var(--ds-surface));
+    --ds-selected-border: color-mix(in srgb, var(--ds-brand) 48%, var(--ds-border));
     --ds-accent: #0E7C6B;
     --ds-accent-hover: #0B6357;
     --ds-success: #2E7D43;
@@ -5547,7 +5827,7 @@ html[data-active-tab="documentation"] .tab[data-tab="documentation"] {
     --ds-metric-fp-text: #24489C;
     --ds-metric-pac: #C77414;
     --ds-metric-pac-text: #8F5407;
-    --ds-metric-mix: #41E0B4;
+    --ds-metric-mix: #4AAE96;
     --ds-metric-mix-text: #1D5C4D;
     --ds-metric-extra: #5F6E65;
 
@@ -5616,8 +5896,8 @@ html[data-theme="dark"] {
 
     --ds-primary: #4FB99F;
     --ds-primary-hover: #6FCDB6;
-    --ds-brand: #41E0B4;
-    --ds-brand-hover: #63E8C3;
+    --ds-brand: #4AAE96;
+    --ds-brand-hover: #5DB9A3;
     --ds-text-on-brand: #10231C;
     --ds-accent: #3FBFA8;
     --ds-accent-hover: #66CDB4;
@@ -5632,8 +5912,8 @@ html[data-theme="dark"] {
     --ds-metric-fp-text: #7C9FF2;
     --ds-metric-pac: #E5A44C;
     --ds-metric-pac-text: #E5A44C;
-    --ds-metric-mix: #41E0B4;
-    --ds-metric-mix-text: #41E0B4;
+    --ds-metric-mix: #4AAE96;
+    --ds-metric-mix-text: #4AAE96;
     --ds-metric-extra: #8FA095;
 
     --ds-hero: var(--ds-surface);
@@ -5884,15 +6164,15 @@ td,
 .control-shell .binary-toggle input[type="checkbox"]:checked ~ .binary-toggle-state span:last-child,
 .param-card .local-tax-mode-button.active,
 .explorer-strategy-select button.active {
-    background: var(--ds-brand);
-    border-color: var(--ds-brand);
-    color: var(--ds-text-on-brand);
+    background: var(--ds-selected-fill);
+    border-color: var(--ds-border);
+    color: var(--ds-text);
 }
 
 .btn-primary .icon,
 .intro-primary .icon,
 .go-to-top .icon {
-    color: var(--ds-text-on-brand);
+    color: var(--ds-text);
 }
 
 .btn-primary:hover,
@@ -5902,9 +6182,9 @@ td,
 .docs-index a:hover,
 .go-to-top:hover,
 .go-to-top:focus-visible {
-    background: var(--ds-brand-hover);
-    border-color: var(--ds-brand-hover);
-    color: var(--ds-text-on-brand);
+    background: var(--ds-selected-fill-hover);
+    border-color: var(--ds-border);
+    color: var(--ds-text);
 }
 
 .control-shell .segmented-control button,
@@ -6078,6 +6358,10 @@ td,
 
 .docs-source-group > p {
     margin-top: 0;
+}
+
+.docs-source-item + .docs-source-item {
+    margin-top: 0.75rem;
 }
 
 .control-shell .variation-grid[open] > .variation-header,
@@ -7777,11 +8061,22 @@ a.logo {
 }
 
 .logo-mark {
-    display: block;
+    display: grid;
+    place-items: center;
     width: 36px;
     height: 36px;
+    padding: 5px;
+    color: var(--ds-text);
+    background: var(--ds-selected-fill);
+    border: 1px solid var(--ds-border);
     border-radius: var(--radius-sm);
     flex: 0 0 auto;
+}
+
+.logo-mark svg {
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
 a.logo:hover h1 {
@@ -7930,7 +8225,8 @@ a.logo:hover h1 {
 .investment-frequency-buttons {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    flex: 0 0 auto;
+    flex: 0 1 24rem;
+    width: min(100%, 24rem);
     min-height: 2.75rem;
     padding: 0.18rem;
     background: var(--ds-surface-panel);
@@ -7946,7 +8242,7 @@ a.logo:hover h1 {
     appearance: none;
     display: grid;
     place-items: center;
-    min-width: 7.5rem;
+    min-width: 0;
     min-height: 2rem;
     margin: 0;
     padding: 0 0.75rem;
@@ -7963,8 +8259,20 @@ a.logo:hover h1 {
 }
 
 .investment-frequency-buttons button.active {
-    color: var(--ds-text-on-brand);
-    background: var(--ds-brand);
+    color: var(--ds-text);
+    background: var(--ds-selected-fill);
+    border-color: var(--ds-selected-border);
+}
+
+/* Un solo stato selezionato per tutti i controlli, speculare nei due temi. */
+.control-shell .variation-toggle label:has(input:checked),
+.control-shell .local-tax-mode-button.active,
+.control-shell .segmented-control button.active,
+.control-shell .binary-toggle input[type="checkbox"]:not(:checked) ~ .binary-toggle-state span:first-child,
+.control-shell .binary-toggle input[type="checkbox"]:checked ~ .binary-toggle-state span:last-child {
+    color: var(--ds-text);
+    background: var(--ds-selected-fill);
+    border-color: var(--ds-selected-border);
 }
 
 @media (max-width: 768px) {
