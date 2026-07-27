@@ -12,7 +12,17 @@
  */
 import { CURRENT_FISCAL_RULES } from './constants/fiscal-rules.js';
 
-const MONEY_MAX = 1000000;
+// Limiti UX volutamente ampi ma plausibili per un simulatore personale.
+// Non rappresentano soglie fiscali: impediscono soprattutto scenari
+// accidentali (zeri di troppo) difficili da leggere e costosi da calcolare.
+const MONEY_MAX = 500000;
+const ANNUAL_INVESTMENT_MAX = 250000;
+const DEDUCTIONS_MAX = 100000;
+const DURATION_MAX = 60;
+const VARIATION_RATE_MAX = 50;
+const CONTRIBUTION_RATE_MAX = 20;
+const RETURN_RATE_MAX = 30;
+const FIXED_COST_MAX = 5000;
 
 // Gruppo "aumento periodico": andamento, tipo (%/EUR), frequenza e valore.
 // Il tipo precede il valore perché i limiti del valore dipendono dal tipo
@@ -20,10 +30,10 @@ const MONEY_MAX = 1000000;
 const variationGroup = (panelBase, guidedBase) => [
   { key: `${panelBase}Andamento`, type: 'select', panel: `${panelBase}Andamento`, guided: `${guidedBase}-andamento` },
   { key: `${panelBase}Tipo`, type: 'radio', panel: `${panelBase}Tipo`, guided: `${guidedBase}-tipo`, fallback: 'percentuale' },
-  { key: `${panelBase}Frequenza`, type: 'number', panel: `${panelBase}Frequenza`, guided: `${guidedBase}-frequenza`, min: 0, max: 100 },
+  { key: `${panelBase}Frequenza`, type: 'number', panel: `${panelBase}Frequenza`, guided: `${guidedBase}-frequenza`, min: 0, max: DURATION_MAX },
   {
     key: `${panelBase}Valore`, type: 'number', panel: `${panelBase}Valore`, guided: `${guidedBase}-valore`, min: 0,
-    max: (state) => (state[`${panelBase}Tipo`] === 'euro' ? MONEY_MAX : 100),
+    max: (state) => (state[`${panelBase}Tipo`] === 'euro' ? MONEY_MAX : VARIATION_RATE_MAX),
     // Freccine coerenti con l'unità: 100 EUR o 0,1 punti percentuali.
     step: (state) => (state[`${panelBase}Tipo`] === 'euro' ? '100' : '0.1')
   }
@@ -31,14 +41,14 @@ const variationGroup = (panelBase, guidedBase) => [
 
 export const FIELDS = [
   { key: 'frequenzaInvestimento', type: 'select', panel: 'frequenzaInvestimento' },
-  { key: 'durata', type: 'number', panel: 'durata', guided: 'guided-durata', min: 1, max: 100 },
+  { key: 'durata', type: 'number', panel: 'durata', guided: 'guided-durata', min: 1, max: DURATION_MAX },
   { key: 'reddito', type: 'number', panel: 'reddito', guided: 'guided-reddito', min: 0, max: MONEY_MAX },
   { key: 'premiStraordinari', type: 'number', panel: 'premiStraordinari', guided: 'guided-premi', min: 0, max: MONEY_MAX },
   { key: 'altriRedditi', type: 'number', panel: 'altriRedditi', guided: 'guided-altri-redditi', min: 0, max: MONEY_MAX },
-  { key: 'investimento', type: 'number', panel: 'investimento', guided: 'guided-investimento', min: 0, max: MONEY_MAX },
+  { key: 'investimento', type: 'number', panel: 'investimento', guided: 'guided-investimento', min: 0, max: ANNUAL_INVESTMENT_MAX },
   { key: 'minimoRetributivoAnnuo', type: 'number', panel: 'minimoRetributivoAnnuo', guided: 'guided-minimo-retributivo', min: 0, max: MONEY_MAX },
-  { key: 'detrazioniOrdinarie', type: 'number', panel: 'detrazioniOrdinarie', guided: 'guided-detrazioni-ordinarie', min: 0, max: MONEY_MAX },
-  { key: 'detrazioniTrattamentoIntegrativo', type: 'number', panel: 'detrazioniTrattamentoIntegrativo', guided: 'guided-detrazioni-trattamento-integrativo', min: 0, max: MONEY_MAX },
+  { key: 'detrazioniOrdinarie', type: 'number', panel: 'detrazioniOrdinarie', guided: 'guided-detrazioni-ordinarie', min: 0, max: DEDUCTIONS_MAX },
+  { key: 'detrazioniTrattamentoIntegrativo', type: 'number', panel: 'detrazioniTrattamentoIntegrativo', guided: 'guided-detrazioni-trattamento-integrativo', min: 0, max: DEDUCTIONS_MAX },
 
   ...variationGroup('variazioneReddito', 'guided-variazione-reddito'),
   ...variationGroup('variazioneInvestimento', 'guided-variazione-investimento'),
@@ -50,21 +60,21 @@ export const FIELDS = [
   { key: 'baseDatoreFpTipo', type: 'select', panel: 'baseDatoreFpTipo', guided: 'guided-base-datore-tipo' },
   { key: 'modalitaVersamentoFp', type: 'select', panel: 'modalitaVersamentoFp', guided: 'guided-modalita-versamento' },
 
-  { key: 'quotaMinAderentePerc', type: 'number', panel: 'quotaMinAderentePerc', guided: 'guided-quota-min', min: 0, max: 100 },
-  { key: 'contribuzioneDatoreFpPerc', type: 'number', panel: 'contribuzioneDatoreFpPerc', guided: 'guided-datore-perc', min: 0, max: 100 },
+  { key: 'quotaMinAderentePerc', type: 'number', panel: 'quotaMinAderentePerc', guided: 'guided-quota-min', min: 0, max: CONTRIBUTION_RATE_MAX },
+  { key: 'contribuzioneDatoreFpPerc', type: 'number', panel: 'contribuzioneDatoreFpPerc', guided: 'guided-datore-perc', min: 0, max: CONTRIBUTION_RATE_MAX },
   { key: 'contributiInpsPerc', type: 'number', panel: 'contributiInpsPerc', guided: 'guided-contributi-inps', min: 0, max: 20 },
   { key: 'addizionaliPerc', type: 'number', panel: 'addizionaliPerc', guided: 'guided-addizionali', min: 0, max: 10 },
-  { key: 'anzianitaPregressaFp', type: 'number', panel: 'anzianitaPregressaFp', guided: 'guided-anzianita', min: 0, max: 50 },
+  { key: 'anzianitaPregressaFp', type: 'number', panel: 'anzianitaPregressaFp', guided: 'guided-anzianita', min: 0, max: DURATION_MAX },
   { key: 'riscattoAnticipato', type: 'checkbox', panel: 'riscattoAnticipato', guided: 'guided-riscatto-anticipato' },
 
-  { key: 'rendimentoAnnualeFpPerc', type: 'number', panel: 'rendimentoAnnualeFpPerc', guided: 'guided-rendimento-fp', min: 0, max: 100 },
-  { key: 'rendimentoAnnualePacPerc', type: 'number', panel: 'rendimentoAnnualePacPerc', guided: 'guided-rendimento-pac', min: 0, max: 100 },
+  { key: 'rendimentoAnnualeFpPerc', type: 'number', panel: 'rendimentoAnnualeFpPerc', guided: 'guided-rendimento-fp', min: 0, max: RETURN_RATE_MAX },
+  { key: 'rendimentoAnnualePacPerc', type: 'number', panel: 'rendimentoAnnualePacPerc', guided: 'guided-rendimento-pac', min: 0, max: RETURN_RATE_MAX },
   { key: 'rendimentoFpMode', type: 'select', panel: 'rendimentoFpMode', guided: 'guided-rendimento-fp-mode' },
   { key: 'rendimentoPacMode', type: 'select', panel: 'rendimentoPacMode', guided: 'guided-rendimento-pac-mode' },
   { key: 'costiAnnuiFpPerc', type: 'number', panel: 'costiAnnuiFpPerc', guided: 'guided-costi-fp', min: 0, max: 5 },
   { key: 'costiAnnuiPacPerc', type: 'number', panel: 'costiAnnuiPacPerc', guided: 'guided-costi-pac', min: 0, max: 5 },
-  { key: 'costiFissiFp', type: 'number', panel: 'costiFissiFp', guided: 'guided-costi-fissi-fp', min: 0, max: 10000 },
-  { key: 'costiFissiPac', type: 'number', panel: 'costiFissiPac', guided: 'guided-costi-fissi-pac', min: 0, max: 10000 },
+  { key: 'costiFissiFp', type: 'number', panel: 'costiFissiFp', guided: 'guided-costi-fissi-fp', min: 0, max: FIXED_COST_MAX },
+  { key: 'costiFissiPac', type: 'number', panel: 'costiFissiPac', guided: 'guided-costi-fissi-pac', min: 0, max: FIXED_COST_MAX },
   { key: 'quotaAgevolataFpPerc', type: 'number', panel: 'quotaAgevolataFpPerc', guided: 'guided-quota-agevolata-fp', min: 0, max: 100 },
   { key: 'quotaAgevolataPacPerc', type: 'number', panel: 'quotaAgevolataPacPerc', guided: 'guided-quota-agevolata-pac', min: 0, max: 100 },
 

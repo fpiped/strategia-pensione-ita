@@ -5,7 +5,7 @@ export const FISCAL_RULES = {
     meta: {
       year: 2026,
       effectiveFrom: '2026-01-01',
-      configurationUpdated: '2026-07-11'
+      configurationUpdated: '2026-07-27'
     },
     pensionFund: {
       deductionLimit: 5300,
@@ -84,10 +84,11 @@ export const FISCAL_RULES = {
       {
         id: 'pensionDeduction',
         title: 'Limite deduzione FP',
-        sourceNote: 'L. 199/2025 (Bilancio 2026), art. 1 c. 195-205, che modifica l’art. 8 c. 4 D.Lgs. 252/2005',
+        sourceNote: 'L. 199/2025 (Bilancio 2026), art. 1 c. 201, che modifica l’art. 8 c. 4 D.Lgs. 252/2005',
         sources: [
           { label: 'L. 199/2025', url: 'https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2025-12-30;199' },
-          { label: 'D.Lgs. 252/2005', url: 'https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2005-12-05;252' }
+          { label: 'D.Lgs. 252/2005', url: 'https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2005-12-05;252' },
+          { label: 'Ministero del Lavoro — FAQ previdenza complementare', url: 'https://www.lavoro.gov.it/previdenza-complementare/glossario-e-faq/faq' }
         ],
         effective: 'dal 1/1/2026, primo adeguamento dal 2007'
       },

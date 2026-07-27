@@ -96,7 +96,19 @@ export class FinancialView {
         newRow.dataset.anno = results[index].anno;
         for (const key in row) {
           const cell = document.createElement('td');
-          cell.textContent = row[key];
+          if (key === 'Anno') {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'table-year-button';
+            button.textContent = row[key];
+            button.setAttribute(
+              'aria-label',
+              `Esplora i calcoli dell’anno ${results[index].anno}`
+            );
+            cell.appendChild(button);
+          } else {
+            cell.textContent = row[key];
+          }
           newRow.appendChild(cell);
         }
         tbody.appendChild(newRow);
@@ -113,7 +125,14 @@ export class FinancialView {
 
     highlightTableYear(year) {
       document.querySelectorAll('#output-table tbody tr').forEach((row) => {
-        row.classList.toggle('active', Number(row.dataset.anno) === year);
+        const selected = Number(row.dataset.anno) === year;
+        row.classList.toggle('active', selected);
+        const button = row.querySelector('.table-year-button');
+        if (selected) {
+          button?.setAttribute('aria-current', 'true');
+        } else {
+          button?.removeAttribute('aria-current');
+        }
       });
     }
 
@@ -384,7 +403,7 @@ export class FinancialView {
         const card = document.createElement('article');
         card.className = 'strategy-card';
         card.dataset.strategy = strategy.id;
-        card.tabIndex = 0;
+        card.tabIndex = strategy.id === selectedStrategyId ? 0 : -1;
         card.setAttribute('role', 'radio');
         card.setAttribute('aria-checked', String(strategy.id === selectedStrategyId));
         card.setAttribute('aria-label', `Mostra il dettaglio della strategia ${strategy.label}`);
@@ -398,9 +417,27 @@ export class FinancialView {
         };
         card.addEventListener('click', selectStrategy);
         card.addEventListener('keydown', (event) => {
-          if (event.key !== 'Enter' && event.key !== ' ') return;
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            selectStrategy();
+            return;
+          }
+          const cards = [...container.querySelectorAll('.strategy-card')];
+          const current = cards.indexOf(card);
+          let next = null;
+          if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+            next = cards[(current + 1) % cards.length];
+          } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+            next = cards[(current - 1 + cards.length) % cards.length];
+          } else if (event.key === 'Home') {
+            next = cards[0];
+          } else if (event.key === 'End') {
+            next = cards.at(-1);
+          }
+          if (!next) return;
           event.preventDefault();
-          selectStrategy();
+          next.focus();
+          next.click();
         });
 
         const header = document.createElement('div');
@@ -464,6 +501,7 @@ export class FinancialView {
         const selected = card.dataset.strategy === strategyId;
         card.classList.toggle('selected', selected);
         card.setAttribute('aria-checked', String(selected));
+        card.tabIndex = selected ? 0 : -1;
       });
     }
 
@@ -738,7 +776,7 @@ export class FinancialView {
           ? `Il modello assegna il budget al PAC perché produce il valore netto prospettico più alto con queste ipotesi.`
           : choice === 'NESSUNO'
             ? `Non viene aggiunto nuovo capitale: questo anno mostra soltanto l’evoluzione del versamento effettuato nell’anno 1.`
-            : `Dopo la quota minima, il modello divide il resto tra FP e PAC scegliendo euro per euro il valore netto più alto a scadenza.`);
+            : `Dopo la quota minima, il modello confronta FP e PAC euro per euro dove la fiscalità cambia e usa gli estremi esatti nei tratti lineari.`);
       setText('annual-fp-step-value', money(presentedAllocation.fp));
       const investimentoLordoEsatto = exactAllocation.investimentoLordo ?? e.investimentoPersonaleAnno ?? 0;
       const beneficioEsatto = exactAllocation.beneficioFiscale ?? e.beneficioInvestitoAnno ?? 0;

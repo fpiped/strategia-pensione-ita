@@ -82,6 +82,11 @@ test('dichiara le approssimazioni su massimale INPS e riduzione detrazioni', () 
   assert.ok(html.includes('senza distinguere gli oneri interessati dalla riduzione e le categorie escluse'));
 });
 
+test('dichiara i casi fiscali personali non modellati', () => {
+  assert.ok(html.includes('premi di risultato e altre somme con imposta sostitutiva sono fuori perimetro'));
+  assert.ok(html.includes('lavoratori di prima occupazione successiva al 1° gennaio 2007'));
+});
+
 test('dichiara l approssimazione pluriennale dovuta ai costi fissi', () => {
   assert.ok(html.includes('id="fixed-cost-optimization-assumption"'));
   assert.ok(html.includes('Ogni quota annuale è proiettata fino all’orizzonte residuo'));

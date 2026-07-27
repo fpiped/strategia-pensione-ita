@@ -59,6 +59,10 @@ test('decodeScenario rifiuta payload corrotti o di versione ignota', () => {
   assert.equal(decodeScenario(encodeScenario({ v: 99 })), null);
 });
 
+test('decodeScenario rifiuta fragment sproporzionati prima di decodificarli', () => {
+  assert.equal(decodeScenario('A'.repeat(16_385)), null);
+});
+
 test('sanitizeScenario scarta chiavi sconosciute e tipi sbagliati', () => {
   const patch = sanitizeScenario({
     durata: 40,
@@ -74,7 +78,27 @@ test('sanitizeScenario scarta chiavi sconosciute e tipi sbagliati', () => {
 test('sanitizeScenario riporta i numeri nei limiti del campo', () => {
   const patch = sanitizeScenario({ durata: 5000, reddito: -100 }, DEFAULTS);
 
-  assert.deepEqual(patch, { durata: 100, reddito: 0 });
+  assert.deepEqual(patch, { durata: 60, reddito: 0 });
+});
+
+test('sanitizeScenario applica le forbici realistiche agli input pubblici', () => {
+  const patch = sanitizeScenario({
+    investimento: 1_000_000,
+    rendimentoAnnualeFpPerc: 100,
+    rendimentoAnnualePacPerc: 100,
+    quotaMinAderentePerc: 100,
+    contribuzioneDatoreFpPerc: 100,
+    costiFissiFp: 10000
+  }, DEFAULTS);
+
+  assert.deepEqual(patch, {
+    investimento: 250000,
+    quotaMinAderentePerc: 20,
+    contribuzioneDatoreFpPerc: 20,
+    rendimentoAnnualeFpPerc: 30,
+    rendimentoAnnualePacPerc: 30,
+    costiFissiFp: 5000
+  });
 });
 
 test('sanitizeScenario valuta i limiti dinamici con il tipo già applicato', () => {
@@ -88,7 +112,7 @@ test('sanitizeScenario valuta i limiti dinamici con il tipo già applicato', () 
   }, DEFAULTS);
 
   assert.equal(inEuro.variazioneRedditoValore, 1500);
-  assert.equal(inPercentuale.variazioneRedditoValore, 100);
+  assert.equal(inPercentuale.variazioneRedditoValore, 50);
 });
 
 test('sanitizeScenario restituisce null senza chiavi valide', () => {

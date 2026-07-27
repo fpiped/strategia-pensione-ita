@@ -4013,6 +4013,27 @@ header {
     box-shadow: none;
 }
 
+.table-year-button {
+    appearance: none;
+    padding: 0.2rem 0.35rem;
+    color: inherit;
+    font: inherit;
+    font-weight: inherit;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.table-year-button:hover {
+    background: var(--ds-surface-muted);
+}
+
+.table-year-button:focus-visible {
+    outline: 2px solid var(--ds-brand);
+    outline-offset: 2px;
+}
+
 .strategy-card-header {
     display: flex;
     align-items: center;

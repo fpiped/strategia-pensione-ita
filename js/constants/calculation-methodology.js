@@ -102,11 +102,11 @@ export const CALCULATION_METHODS = [
     id: 'allocation.annual-search',
     area: 'Allocazione',
     title: 'Ricerca annuale della quota FP',
-    decision: 'La quota FP è scandita a passi di 1 € includendo separatamente tutte le soglie esatte rilevanti; il PAC riconcilia il budget.',
+    decision: 'La quota FP è scandita a passi di 1 € nel tratto fiscalmente variabile, includendo tutte le soglie esatte; oltre il tratto, dove il beneficio è costante e il valore affine, si confrontano gli estremi esatti.',
     formula: 'qPAC = B + S(qFP) − qFP',
-    rationale: 'La scansione diretta resta valida anche con funzioni fiscali discontinue.',
+    rationale: 'Preserva la ricerca diretta presso le discontinuità fiscali senza far dipendere il tempo di calcolo dall’intero budget, che può essere molto grande.',
     sourceRuleIds: [],
-    approximations: ['La risoluzione ordinaria è 1 €; un residuo PAC fino a 1 € può essere assorbito nel FP non dedotto per non aprire uno strumento tecnico.'],
+    approximations: ['Nel tratto fiscalmente variabile la risoluzione ordinaria è 1 €; un residuo PAC fino a 1 € può essere assorbito nel FP non dedotto per non aprire uno strumento tecnico.'],
     implementation: ['FinancialModel._createAnnualAllocationEvaluator', 'FinancialModel._optimizeAllocation']
   },
   {
