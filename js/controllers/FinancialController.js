@@ -18,6 +18,7 @@ import {
 } from '../utils/input-helpers.js';
 import { createStore } from '../store.js';
 import { getPresentedAllocation } from '../utils/result-presentation.js';
+import { CalculationService } from '../utils/calculation-service.js';
 import { hydrateState, bindFields, dropUnknownChoices } from '../bindings.js';
 import {
   buildShareUrl,
@@ -42,6 +43,18 @@ const formatPercent = (value) => `${(value * 100).toLocaleString('it-IT', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2
 })}%`;
+
+const formatEuro = (value) => `${Math.round(Math.max(Number(value) || 0, 0)).toLocaleString('it-IT')} €`;
+
+const formatLocalTaxBreakdown = (breakdown, total) => {
+  if (breakdown?.exempt) {
+    return `Base entro l’esenzione di ${formatEuro(breakdown.exemption)}: ${formatEuro(0)}`;
+  }
+  const formula = (breakdown?.slices || [])
+    .map((slice) => `${formatEuro(slice.taxableAmount)} × ${formatPercent(slice.rate)}`)
+    .join(' + ');
+  return formula ? `${formula} = ${formatEuro(total)}` : formatEuro(total);
+};
 
 async function copyTextToClipboard(text) {
   try {
@@ -79,6 +92,9 @@ async function copyTextToClipboard(text) {
 export class FinancialController {
     constructor() {
         this.model = new FinancialModel();
+        this.calculationService = new CalculationService({
+          calculateSync: (config) => this.model.calculateResults(config)
+        });
         this.view = new FinancialView();
         this.latestResults = null;
         this.guidedStep = 0;
@@ -86,6 +102,10 @@ export class FinancialController {
         this.allocationExplorerFp = null;
         this.selectedStrategyId = 'optimized';
         this.updateResultsTimer = null;
+        this.resultsRevision = 0;
+        this.firstResultsReady = new Promise((resolve) => {
+          this.resolveFirstResults = resolve;
+        });
         this.persistTimer = null;
         this.shareFeedbackTimer = null;
         this.csvContent = '';
@@ -159,7 +179,11 @@ export class FinancialController {
       // Il ricalcolo è guidato dallo store (vedi subscribe nel costruttore):
       // qui restano solo i trigger che non passano dallo stato, come il
       // ridisegno del grafico al cambio tema.
-      window.addEventListener('strategia-theme-change', () => this.updateResults());
+      window.addEventListener('strategia-theme-change', () => {
+        if (this.latestResults) {
+          this.view.updateChart(this.latestResults.results, this.latestResults.strategies);
+        }
+      });
 
       document.querySelectorAll('[data-select-target]').forEach((button) => {
         button.addEventListener('click', () => {
@@ -437,9 +461,21 @@ export class FinancialController {
 
     scheduleResultsUpdate(delay = 200) {
       window.clearTimeout(this.updateResultsTimer);
+      this.calculationService.invalidate();
+      const revision = ++this.resultsRevision;
+      this.setCalculationBusy(true);
       this.updateResultsTimer = window.setTimeout(() => {
-        this.updateResults();
+        this.updateResults(revision);
       }, delay);
+    }
+
+    setCalculationBusy(isBusy) {
+      byId('calculator-content')?.setAttribute('aria-busy', String(isBusy));
+      setText('calculation-status', isBusy ? 'Aggiornamento…' : '');
+    }
+
+    whenFirstResultsReady() {
+      return this.firstResultsReady;
     }
 
     schedulePersist(delay = 300) {
@@ -515,8 +551,13 @@ export class FinancialController {
      * Funzione principale di calcolo: costruisce la config dallo store e
      * aggiorna i risultati.
      */
-    updateResults() {
+    async updateResults(scheduledRevision = null) {
       window.clearTimeout(this.updateResultsTimer);
+      const revision = scheduledRevision ?? ++this.resultsRevision;
+      if (scheduledRevision === null) {
+        this.calculationService.invalidate();
+      }
+      this.setCalculationBusy(true);
       const state = this.store.get();
       // Con andamento Costante gli aumenti non devono entrare nel modello.
       const variation = (andamentoKey, valueKey) => (
@@ -588,8 +629,23 @@ export class FinancialController {
         anzianitaPregressaFp: state.anzianitaPregressaFp
       };
 
-      // Calcola i risultati usando il model
-      const results = this.model.calculateResults(config);
+      let outcome;
+      try {
+        outcome = await this.calculationService.calculate(config);
+      } catch (error) {
+        if (revision === this.resultsRevision) {
+          this.setCalculationBusy(false);
+          this.resolveFirstResults?.(false);
+          this.resolveFirstResults = null;
+        }
+        console.error('Calcolo non riuscito', error);
+        return false;
+      }
+      if (outcome.status !== 'completed' || revision !== this.resultsRevision) {
+        return false;
+      }
+
+      const { results } = outcome;
       this.latestResults = { ...results, config };
       if (!results.strategies.some((strategy) => strategy.id === this.selectedStrategyId)) {
         this.selectedStrategyId = 'optimized';
@@ -613,6 +669,10 @@ export class FinancialController {
 
       // Aggiorna il contenuto CSV per il download
       this.csvContent = this.model.convertToCSV(this.getResultRows());
+      this.setCalculationBusy(false);
+      this.resolveFirstResults?.(true);
+      this.resolveFirstResults = null;
+      return true;
     }
 
     /**
@@ -791,17 +851,30 @@ export class FinancialController {
       const selected = isAuto ? this.getSelectedLocalTax(state) : null;
       const showCards = Boolean(selected?.municipality);
       [
-        ['local-tax-rate-cards', 'local-tax-region-title', 'local-tax-region-rate', 'local-tax-municipal-title', 'local-tax-municipal-rate'],
-        ['guided-local-tax-rate-cards', 'guided-local-tax-region-title', 'guided-local-tax-region-rate', 'guided-local-tax-municipal-title', 'guided-local-tax-municipal-rate']
-      ].forEach(([cardsId, regionTitleId, regionRateId, municipalTitleId, municipalRateId]) => {
+        ['local-tax-rate-cards', 'local-tax-region-title', 'local-tax-region-rate', 'local-tax-region-detail', 'local-tax-municipal-title', 'local-tax-municipal-rate', 'local-tax-municipal-detail', 'local-tax-rate-note'],
+        ['guided-local-tax-rate-cards', 'guided-local-tax-region-title', 'guided-local-tax-region-rate', 'guided-local-tax-region-detail', 'guided-local-tax-municipal-title', 'guided-local-tax-municipal-rate', 'guided-local-tax-municipal-detail', 'guided-local-tax-rate-note']
+      ].forEach(([cardsId, regionTitleId, regionRateId, regionDetailId, municipalTitleId, municipalRateId, municipalDetailId, noteId]) => {
         const cards = byId(cardsId);
         if (!cards) return;
         cards.setAttribute('aria-hidden', String(!showCards));
         if (!showCards) return;
-        setText(regionTitleId, `Aliquota regionale — ${selected.region?.name || '-'}`);
-        setText(regionRateId, `${(selected.regionalRate * 100).toFixed(2)}%`);
-        setText(municipalTitleId, `Aliquota comunale — ${selected.municipality.name}`);
-        setText(municipalRateId, `${(selected.municipalRate * 100).toFixed(2)}%`);
+
+        setText(regionTitleId, `Regionale — ${selected.region?.name || '-'}`);
+        setText(regionRateId, formatEuro(selected.regionalTax));
+        setText(
+          regionDetailId,
+          formatLocalTaxBreakdown(selected.regionalBreakdown, selected.regionalTax)
+        );
+        setText(municipalTitleId, `Comunale — ${selected.municipality.name}`);
+        setText(municipalRateId, formatEuro(selected.municipalTax));
+        setText(
+          municipalDetailId,
+          formatLocalTaxBreakdown(selected.municipalBreakdown, selected.municipalTax)
+        );
+        setText(
+          noteId,
+          `Base ${formatEuro(selected.taxableIncome)} dopo INPS e prima del FP. Il calcolo finale ricalcola entrambe le addizionali dopo la deduzione FP.`
+        );
       });
     }
 

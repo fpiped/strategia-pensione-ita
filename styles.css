@@ -4644,6 +4644,13 @@ td {
     margin-top: 0.75rem;
 }
 
+.local-tax-rate-note {
+    margin: 0.55rem 0 0;
+    color: var(--ds-text-soft);
+    font-size: 0.74rem;
+    line-height: 1.4;
+}
+
 .advanced-tax-options[open] {
     display: grid;
     gap: 0.85rem;
@@ -6922,6 +6929,24 @@ including dark-mode
 .workspace-header .results-title {
     margin: 0;
     width: 100%;
+}
+
+.results-workspace .workspace-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.results-workspace .workspace-header .results-title {
+    width: auto;
+}
+
+.calculation-status {
+    min-width: 7rem;
+    margin-left: auto;
+    color: var(--ds-text-muted);
+    font-size: 0.78rem;
+    text-align: right;
 }
 
 .btn-compact {

@@ -425,9 +425,10 @@
                                                 </div>
                                             </div>
                                             <div class="mini-metrics local-tax-info local-tax-auto-fields" id="local-tax-rate-cards" aria-hidden="true">
-                                                <div class="mini-metric output"><span id="local-tax-region-title">Aliquota regionale</span><strong id="local-tax-region-rate">-</strong></div>
-                                                <div class="mini-metric output"><span id="local-tax-municipal-title">Aliquota comunale</span><strong id="local-tax-municipal-rate">-</strong></div>
+                                                <div class="mini-metric output"><span id="local-tax-region-title">Regionale</span><strong id="local-tax-region-rate">-</strong><p id="local-tax-region-detail">-</p></div>
+                                                <div class="mini-metric output"><span id="local-tax-municipal-title">Comunale</span><strong id="local-tax-municipal-rate">-</strong><p id="local-tax-municipal-detail">-</p></div>
                                             </div>
+                                            <p class="local-tax-rate-note local-tax-auto-fields" id="local-tax-rate-note" aria-hidden="true"></p>
                                         </div>
                                     </div>
 
@@ -657,6 +658,7 @@
                 <section class="workspace-section results-workspace" aria-labelledby="toggle-summary">
                     <div class="workspace-header">
                         <h3 class="results-title" id="toggle-summary">Sintesi risultato</h3>
+                        <span class="calculation-status" id="calculation-status" role="status" aria-live="polite"></span>
                     </div>
                     <div class="results-body">
                         <section class="result-decision-panel" aria-label="Decisione della simulazione">
@@ -842,7 +844,7 @@
                                     <div class="step-rows">
                                         <div class="step-row"><div><span>IRPEF lorda</span><b>Scaglioni 23% · 33% · 43%</b></div><strong id="annual-irpef-value">-</strong></div>
                                         <div class="step-row"><div><span>IRPEF lorda da lavoro</span><b>Usata per il trattamento integrativo fino a 15.000 €</b></div><strong id="annual-work-irpef-value">-</strong></div>
-                                        <div class="step-row"><div><span>Addizionali</span><b>Regionale + comunale stimate</b></div><strong id="annual-addizionali-value">-</strong></div>
+                                        <div class="step-row"><div><span>Addizionali</span><b id="annual-addizionali-detail">Regionale + comunale stimate</b></div><strong id="annual-addizionali-value">-</strong></div>
                                         <div class="step-row"><div><span>Aliquota marginale</span><b>IRPEF sull'ultimo euro dedotto</b></div><strong id="annual-marginal-rate-value">-</strong></div>
                                         <div class="step-row"><div><span>Detrazione lavoro</span><b>Art. 13 TUIR sull'imponibile</b></div><strong id="annual-employee-deduction-value">-</strong></div>
                                         <div class="step-row"><div><span>Detrazioni ordinarie</span><b>Riducono l’IRPEF, non il trattamento integrativo</b></div><strong id="annual-ordinary-deductions-value">-</strong></div>
@@ -1257,9 +1259,10 @@
                                 </div>
                             </div>
                             <div class="mini-metrics guided-tax-auto-fields" id="guided-local-tax-rate-cards" aria-hidden="true">
-                                <div class="mini-metric output"><span id="guided-local-tax-region-title">Aliquota regionale</span><strong id="guided-local-tax-region-rate">-</strong></div>
-                                <div class="mini-metric output"><span id="guided-local-tax-municipal-title">Aliquota comunale</span><strong id="guided-local-tax-municipal-rate">-</strong></div>
+                                <div class="mini-metric output"><span id="guided-local-tax-region-title">Regionale</span><strong id="guided-local-tax-region-rate">-</strong><p id="guided-local-tax-region-detail">-</p></div>
+                                <div class="mini-metric output"><span id="guided-local-tax-municipal-title">Comunale</span><strong id="guided-local-tax-municipal-rate">-</strong><p id="guided-local-tax-municipal-detail">-</p></div>
                             </div>
+                            <p class="local-tax-rate-note guided-tax-auto-fields" id="guided-local-tax-rate-note" aria-hidden="true"></p>
                             <div class="guided-note" data-help-note="addizionaliPerc regioneAddizionali comuneAddizionali"></div>
                         </section>
                         <section class="guided-step" data-guided-step="8">

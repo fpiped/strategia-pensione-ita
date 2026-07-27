@@ -729,6 +729,10 @@ export class FinancialView {
       setText('annual-irpef-value', money(e.irpefLorda));
       setText('annual-work-irpef-value', money(e.irpefLordaLavoro));
       setText('annual-addizionali-value', money(e.addizionali));
+      const localTaxComponents = beforeTax.localTaxComponents || [];
+      setText('annual-addizionali-detail', Array.isArray(config.localTaxRules) && config.localTaxRules.length >= 2
+        ? `${money(localTaxComponents[0])} regionale + ${money(localTaxComponents[1])} comunale su ${money(beforeTax.taxableIncome)}`
+        : `Aliquota manuale sulla base di ${money(beforeTax.taxableIncome)}`);
       setText('annual-marginal-rate-value', `${e.aliquotaMarginale}%`);
       setText('annual-employee-deduction-value', `-${money(e.detrazioneLavoro)}`);
       setText('annual-ordinary-deductions-value', `-${money(e.detrazioniOrdinarie)}`);
