@@ -4477,6 +4477,18 @@ td {
     white-space: nowrap;
 }
 
+.step-row .step-row-calculation {
+    display: block;
+    max-width: 72ch;
+    margin-top: 0.22rem;
+    color: var(--ds-text-soft);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
 .chart-container {
     height: 360px;
     padding: 1rem;
@@ -8337,7 +8349,9 @@ a.logo:hover h1 {
     }
 
     .investment-frequency-buttons {
+        flex: 0 0 auto;
         width: 100%;
+        min-height: 2.75rem;
     }
 
     .investment-frequency-buttons button {
@@ -8364,6 +8378,83 @@ a.logo:hover h1 {
 .docs-index,
 .docs-collapsible {
     margin-bottom: 1.45rem;
+}
+
+/* =========================================================
+   Mobile density: preserve 44px touch targets without turning
+   every action and disclosure into a full-width vertical block.
+   ========================================================= */
+@media (max-width: 768px) {
+    /* The legacy mobile rule stacked the two wizard actions and made
+       both full width. Two visible actions fit comfortably side by side. */
+    .guided-dialog .guided-footer {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        flex-direction: initial;
+        gap: 0.5rem;
+        padding-top: 0.65rem;
+        padding-bottom: 0.65rem;
+    }
+
+    .guided-dialog .guided-footer .btn {
+        width: auto;
+        min-width: 0;
+        min-height: 2.75rem;
+        padding: 0.55rem 0.8rem;
+    }
+
+    /* Seven closed calculation steps previously consumed more than
+       28rem before any content was opened. Keep them readable and tappable,
+       but use the same compact rhythm as the rest of the controls. */
+    .calc-step-summary {
+        min-height: 3rem;
+        padding: 0.55rem 0.75rem;
+    }
+
+    .fiscal-thresholds-summary {
+        min-height: 3rem;
+        padding: 0.6rem 0.75rem;
+    }
+
+    .explorer-strategy-select button {
+        min-height: 2.75rem;
+        padding-inline: 0.65rem;
+    }
+
+    /* Six index actions remain scannable in three rows instead of
+       becoming a tall list of large pseudo-buttons. */
+    .docs-index {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.4rem;
+    }
+
+    .docs-index a,
+    .docs-index a:visited {
+        min-width: 0;
+        min-height: 2.75rem;
+        padding: 0.5rem 0.65rem;
+        font-size: 0.78rem;
+        line-height: 1.25;
+        text-align: center;
+        overflow-wrap: anywhere;
+    }
+}
+
+@media (max-width: 360px) {
+    .guided-dialog .guided-footer .btn {
+        padding-inline: 0.55rem;
+        font-size: 0.78rem;
+    }
+
+    .explorer-strategy-select {
+        gap: 0.35rem;
+    }
+
+    .explorer-strategy-select button {
+        padding-inline: 0.35rem;
+        font-size: 0.72rem;
+    }
 }
 
 .docs-section h2.docs-collapsible-title {

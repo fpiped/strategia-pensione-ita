@@ -212,4 +212,22 @@ test('espone il confronto fiscale completo senza FP e con FP', () => {
   assert.ok(comparison.before.taxableIncome > comparison.after.taxableIncome);
   assert.ok(Number.isFinite(comparison.before.taxWedgeBonus));
   assert.ok(Number.isFinite(comparison.after.employeeDeduction));
+  assert.equal(
+    comparison.before.grossIncomeTaxBreakdown.slices
+      .reduce((total, slice) => total + slice.tax, 0),
+    comparison.before.grossIncomeTax
+  );
+  assert.equal(
+    comparison.before.employeeDeductionBreakdown.total,
+    comparison.before.employeeDeduction
+  );
+  const estimatedLocalTaxes = comparison.before.localTaxBreakdowns
+    .reduce((total, breakdown) => total + breakdown.total, 0);
+  assert.ok(estimatedLocalTaxes > 0);
+  assert.equal(comparison.before.localTaxes, 0);
+  assert.deepEqual(comparison.before.localTaxComponents, [0]);
+  assert.equal(
+    comparison.before.supplementaryTreatmentBreakdown.total,
+    comparison.before.supplementaryTreatment
+  );
 });

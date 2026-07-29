@@ -38,22 +38,52 @@ export function createFlatLocalTaxRules(rate = 0) {
   return safeRate > 0 ? [{ exemption: 0, rate: safeRate }] : [];
 }
 
-/** Calcola l'importo dovuto per una singola regola già normalizzata. */
-export function calculateLocalTaxAmount(taxableIncome, rule) {
+/**
+ * Scompone una singola addizionale nelle stesse quote usate dal calcolo.
+ * La view può così mostrare una riconciliazione esatta senza replicare la
+ * logica fiscale.
+ */
+export function calculateLocalTaxBreakdown(taxableIncome, rule) {
   const income = Math.max(Number(taxableIncome) || 0, 0);
-  if (!rule || income <= 0 || income <= (rule.exemption || 0)) return 0;
-  if (Number.isFinite(rule.rate)) return income * Math.max(rule.rate, 0);
+  const exemption = Math.max(rule?.exemption || 0, 0);
+  if (!rule || income <= 0) {
+    return { taxableIncome: income, exemption, exempt: false, slices: [], total: 0 };
+  }
+  if (income <= exemption) {
+    return { taxableIncome: income, exemption, exempt: true, slices: [], total: 0 };
+  }
+  if (Number.isFinite(rule.rate)) {
+    const rate = Math.max(rule.rate, 0);
+    return {
+      taxableIncome: income,
+      exemption,
+      exempt: false,
+      slices: [{ taxableAmount: income, rate, tax: income * rate }],
+      total: income * rate
+    };
+  }
 
-  let tax = 0;
+  let total = 0;
   let previousLimit = 0;
+  const slices = [];
   for (const bracket of rule.brackets || []) {
     const upperLimit = Number.isFinite(bracket.upTo) ? bracket.upTo : Infinity;
     const taxableSlice = Math.max(Math.min(income, upperLimit) - previousLimit, 0);
-    tax += taxableSlice * Math.max(bracket.rate || 0, 0);
+    const rate = Math.max(bracket.rate || 0, 0);
+    const tax = taxableSlice * rate;
+    if (taxableSlice > 0) {
+      slices.push({ taxableAmount: taxableSlice, rate, tax });
+    }
+    total += tax;
     previousLimit = upperLimit;
     if (income <= upperLimit) break;
   }
-  return tax;
+  return { taxableIncome: income, exemption, exempt: false, slices, total };
+}
+
+/** Calcola l'importo dovuto per una singola regola già normalizzata. */
+export function calculateLocalTaxAmount(taxableIncome, rule) {
+  return calculateLocalTaxBreakdown(taxableIncome, rule).total;
 }
 
 /** Somma regionale e comunale, oppure la sola regola piatta manuale. */

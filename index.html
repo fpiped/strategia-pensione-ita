@@ -842,17 +842,17 @@
                                     <p>Le detrazioni riducono l’IRPEF lorda; le addizionali si aggiungono dopo, mentre le somme erogate riducono il costo fiscale finale.</p>
                                     <div class="step-formula" id="annual-tax-components-formula">-</div>
                                     <div class="step-rows">
-                                        <div class="step-row"><div><span>IRPEF lorda</span><b>Scaglioni 23% · 33% · 43%</b></div><strong id="annual-irpef-value">-</strong></div>
-                                        <div class="step-row"><div><span>IRPEF lorda da lavoro</span><b>Usata per il trattamento integrativo fino a 15.000 €</b></div><strong id="annual-work-irpef-value">-</strong></div>
-                                        <div class="step-row"><div><span>Addizionali</span><b id="annual-addizionali-detail">Regionale + comunale stimate</b></div><strong id="annual-addizionali-value">-</strong></div>
-                                        <div class="step-row"><div><span>Aliquota marginale</span><b>IRPEF sull'ultimo euro dedotto</b></div><strong id="annual-marginal-rate-value">-</strong></div>
-                                        <div class="step-row"><div><span>Detrazione lavoro</span><b>Art. 13 TUIR sull'imponibile</b></div><strong id="annual-employee-deduction-value">-</strong></div>
-                                        <div class="step-row"><div><span>Detrazioni ordinarie</span><b>Riducono l’IRPEF, non il trattamento integrativo</b></div><strong id="annual-ordinary-deductions-value">-</strong></div>
-                                        <div class="step-row"><div><span>Detrazioni rilevanti</span><b>Riducono l’IRPEF e rilevano per il trattamento integrativo</b></div><strong id="annual-supplementary-deductions-value">-</strong></div>
-                                        <div class="step-row"><div><span>Imposta netta</span><b>Lorda + addizionali − detrazioni, minimo 0</b></div><strong id="annual-net-tax-value">-</strong></div>
-                                        <div class="step-row"><div><span>Trattamento integrativo</span><b>Ex Bonus Renzi, con soglie e capienza</b></div><strong id="annual-supplementary-treatment-value">-</strong></div>
-                                        <div class="step-row"><div><span>Beneficio cuneo effettivo</span><b>Somma esente oppure detrazione usata entro la capienza</b></div><strong id="annual-tax-wedge-bonus-value">-</strong></div>
-                                        <div class="step-row"><div><span>Agevolazioni riconosciute</span><b>Trattamento integrativo + beneficio cuneo effettivo</b></div><strong id="annual-bonuses-value">-</strong></div>
+                                        <div class="step-row"><div><span>IRPEF lorda</span><b class="step-row-calculation" id="annual-irpef-detail">Calcolo per scaglioni effettivamente attraversati</b></div><strong id="annual-irpef-value">-</strong></div>
+                                        <div class="step-row"><div><span>IRPEF lorda da lavoro</span><b class="step-row-calculation" id="annual-work-irpef-detail">Calcolo sulla sola base da lavoro</b></div><strong id="annual-work-irpef-value">-</strong></div>
+                                        <div class="step-row"><div><span>Addizionali</span><b class="step-row-calculation" id="annual-addizionali-detail">Calcolo regionale e comunale</b></div><strong id="annual-addizionali-value">-</strong></div>
+                                        <div class="step-row"><div><span>Aliquota marginale</span><b class="step-row-calculation" id="annual-marginal-rate-detail">Scaglione dell’ultimo euro imponibile</b></div><strong id="annual-marginal-rate-value">-</strong></div>
+                                        <div class="step-row"><div><span>Detrazione lavoro</span><b class="step-row-calculation" id="annual-employee-deduction-detail">Formula Art. 13 TUIR applicata</b></div><strong id="annual-employee-deduction-value">-</strong></div>
+                                        <div class="step-row"><div><span>Detrazioni ordinarie</span><b class="step-row-calculation" id="annual-ordinary-deductions-detail">Importo inserito e riduzioni applicate</b></div><strong id="annual-ordinary-deductions-value">-</strong></div>
+                                        <div class="step-row"><div><span>Detrazioni rilevanti</span><b class="step-row-calculation" id="annual-supplementary-deductions-detail">Importo inserito e riduzioni applicate</b></div><strong id="annual-supplementary-deductions-value">-</strong></div>
+                                        <div class="step-row"><div><span>Imposta netta</span><b class="step-row-calculation" id="annual-net-tax-detail">IRPEF netta + addizionali dovute</b></div><strong id="annual-net-tax-value">-</strong></div>
+                                        <div class="step-row"><div><span>Trattamento integrativo</span><b class="step-row-calculation" id="annual-supplementary-treatment-detail">Soglia e verifica di capienza applicate</b></div><strong id="annual-supplementary-treatment-value">-</strong></div>
+                                        <div class="step-row"><div><span>Beneficio cuneo effettivo</span><b class="step-row-calculation" id="annual-tax-wedge-detail">Formula della fascia applicata</b></div><strong id="annual-tax-wedge-bonus-value">-</strong></div>
+                                        <div class="step-row"><div><span>Agevolazioni riconosciute</span><b class="step-row-calculation" id="annual-bonuses-detail">Somma delle componenti riconosciute</b></div><strong id="annual-bonuses-value">-</strong></div>
                                     </div>
                                 </div>
                             </details>

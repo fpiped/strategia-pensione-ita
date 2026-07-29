@@ -46,13 +46,15 @@ test('distingue media e marginale per il caso Lombardia e Milano mostrato in UI'
   assert.equal(Number((result.municipalRate * 100).toFixed(2)), 0.8);
   assert.equal(Number((result.municipalMarginalRate * 100).toFixed(2)), 0.8);
   assert.deepEqual(result.regionalBreakdown.slices, [
-    { taxableAmount: 15000, rate: 0.0123 },
-    { taxableAmount: 13000, rate: 0.0158 },
-    { taxableAmount: 3783.5, rate: 0.0172 }
+    { taxableAmount: 15000, rate: 0.0123, tax: 184.5 },
+    { taxableAmount: 13000, rate: 0.0158, tax: 205.40000000000003 },
+    { taxableAmount: 3783.5, rate: 0.0172, tax: 65.0762 }
   ]);
   assert.deepEqual(result.municipalBreakdown.slices, [
-    { taxableAmount: 31783.5, rate: 0.008 }
+    { taxableAmount: 31783.5, rate: 0.008, tax: 254.268 }
   ]);
+  assert.equal(result.regionalBreakdown.total, result.regionalTax);
+  assert.equal(result.municipalBreakdown.total, result.municipalTax);
 });
 
 test('calcola aliquota effettiva da scaglioni regionali e comunali', () => {
