@@ -1,6 +1,9 @@
 import { FINANCIAL_CONSTANTS } from '../constants/financial-constants.js';
 import { CURRENT_FISCAL_RULES } from '../constants/fiscal-rules.js';
-import { calculateLocalTaxAmount } from './local-tax-calculator.js';
+import {
+  calculateLocalTaxAmount,
+  calculateLocalTaxBreakdown
+} from './local-tax-calculator.js';
 
 const { irpef } = CURRENT_FISCAL_RULES;
 
@@ -94,8 +97,10 @@ function calculateTaxPosition({
   detrazioniOrdinarie,
   detrazioniTrattamentoIntegrativo
 }) {
-  const grossIncomeTax = calculateIncomeTax(taxableIncome);
-  const employeeDeduction = calculateEmployeeDeduction(personalIncome);
+  const grossIncomeTaxBreakdown = calculateIncomeTaxBreakdown(taxableIncome);
+  const grossIncomeTax = grossIncomeTaxBreakdown.total;
+  const employeeDeductionBreakdown = calculateEmployeeDeductionBreakdown(personalIncome);
+  const employeeDeduction = employeeDeductionBreakdown.total;
   const highIncomeDeductionsCut = calculateHighIncomeDetrazioniCut(personalIncome);
   const otherDeductions = detrazioniOrdinarie + detrazioniTrattamentoIntegrativo;
   const usableOtherDeductions = Math.max(otherDeductions - highIncomeDeductionsCut, 0);
@@ -108,21 +113,27 @@ function calculateTaxPosition({
   const estimatedLocalTaxComponents = localTaxRules.map(
     (rule) => calculateLocalTaxAmount(taxableIncome, rule)
   );
+  const localTaxBreakdowns = localTaxRules.map(
+    (rule) => calculateLocalTaxBreakdown(taxableIncome, rule)
+  );
   const localTaxes = estimatedLocalTaxComponents.reduce((sum, value) => sum + value, 0);
   const { irpefNetta, addizionaliDovute, impostaNetta } = calculateNetTaxDue({
     impostaLorda: grossIncomeTax,
     addizionali: localTaxes,
     detrazioni: employeeDeduction + usableOtherDeductions + taxWedge.taxDeduction
   });
-  const supplementaryTreatmentWorkGrossTax = calculateIncomeTax(workIncome);
-  const supplementaryTreatmentTotalGrossTax = calculateIncomeTax(personalIncome);
-  const supplementaryTreatment = calculateTrattamentoIntegrativo({
+  const supplementaryTreatmentWorkGrossTaxBreakdown = calculateIncomeTaxBreakdown(workIncome);
+  const supplementaryTreatmentWorkGrossTax = supplementaryTreatmentWorkGrossTaxBreakdown.total;
+  const supplementaryTreatmentTotalGrossTaxBreakdown = calculateIncomeTaxBreakdown(personalIncome);
+  const supplementaryTreatmentTotalGrossTax = supplementaryTreatmentTotalGrossTaxBreakdown.total;
+  const supplementaryTreatmentBreakdown = calculateTrattamentoIntegrativoBreakdown({
     redditoComplessivo: personalIncome,
     impostaLordaLavoro: supplementaryTreatmentWorkGrossTax,
     impostaLordaComplessiva: supplementaryTreatmentTotalGrossTax,
     detrazioniLavoro: employeeDeduction,
     detrazioniRilevanti: detrazioniTrattamentoIntegrativo
   });
+  const supplementaryTreatment = supplementaryTreatmentBreakdown.total;
 
   return {
     taxableIncome,
@@ -130,11 +141,14 @@ function calculateTaxPosition({
     taxWedgeTotalIncome: personalIncome,
     taxWedgeWorkIncome: workIncome,
     grossIncomeTax,
+    grossIncomeTaxBreakdown,
     localTaxes: addizionaliDovute,
     localTaxComponents: addizionaliDovute > 0
       ? estimatedLocalTaxComponents
       : estimatedLocalTaxComponents.map(() => 0),
+    localTaxBreakdowns,
     employeeDeduction,
+    employeeDeductionBreakdown,
     ordinaryDeductions: detrazioniOrdinarie,
     supplementaryTreatmentDeductions: detrazioniTrattamentoIntegrativo,
     otherDeductions,
@@ -142,8 +156,11 @@ function calculateTaxPosition({
     irpefNetTax: irpefNetta,
     netTax: impostaNetta,
     supplementaryTreatmentWorkGrossTax,
+    supplementaryTreatmentWorkGrossTaxBreakdown,
     supplementaryTreatmentTotalGrossTax,
+    supplementaryTreatmentTotalGrossTaxBreakdown,
     supplementaryTreatment,
+    supplementaryTreatmentBreakdown,
     taxWedgeCashAmount: taxWedge.cashAmount,
     taxWedgeDeduction: taxWedge.taxDeduction,
     taxWedgeDeductionUsed,
@@ -195,19 +212,49 @@ export function calculateTrattamentoIntegrativo({
   reddito = 0,
   impostaLorda = 0
 }) {
+  return calculateTrattamentoIntegrativoBreakdown({
+    redditoComplessivo,
+    impostaLordaLavoro,
+    impostaLordaComplessiva,
+    detrazioniLavoro,
+    detrazioniRilevanti,
+    reddito,
+    impostaLorda
+  }).total;
+}
+
+export function calculateTrattamentoIntegrativoBreakdown({
+  redditoComplessivo = null,
+  impostaLordaLavoro = null,
+  impostaLordaComplessiva = null,
+  detrazioniLavoro = 0,
+  detrazioniRilevanti = 0,
+  reddito = 0,
+  impostaLorda = 0
+}) {
   const safeReddito = Math.max(redditoComplessivo ?? reddito, 0);
   const safeImpostaLordaLavoro = Math.max(impostaLordaLavoro ?? impostaLorda, 0);
   const safeImpostaLordaComplessiva = Math.max(impostaLordaComplessiva ?? impostaLorda, 0);
   const importo = FINANCIAL_CONSTANTS.TRATTAMENTO_INTEGRATIVO_IMPORTO;
+  const adjustedEmployeeDeduction = Math.max(
+    detrazioniLavoro - FINANCIAL_CONSTANTS.TRATTAMENTO_INTEGRATIVO_RIDUZIONE_DETRAZIONE,
+    0
+  );
 
   // Fino a 15.000€ la capienza usa esclusivamente l'imposta lorda generata
   // dai redditi di lavoro ammessi. La detrazione lavoro si confronta ridotta
   // di 75€ per neutralizzare l'aumento da 1.880€ a 1.955€.
   if (
     safeReddito <= FINANCIAL_CONSTANTS.TRATTAMENTO_INTEGRATIVO_SOGLIA_PIENA &&
-    safeImpostaLordaLavoro > detrazioniLavoro - FINANCIAL_CONSTANTS.TRATTAMENTO_INTEGRATIVO_RIDUZIONE_DETRAZIONE
+    safeImpostaLordaLavoro > adjustedEmployeeDeduction
   ) {
-    return importo;
+    return {
+      total: importo,
+      path: 'full-capacity',
+      income: safeReddito,
+      workGrossTax: safeImpostaLordaLavoro,
+      adjustedEmployeeDeduction
+    };
   }
 
   if (
@@ -217,10 +264,26 @@ export function calculateTrattamentoIntegrativo({
     const incapienzaDetrazioni = detrazioniLavoro
       + Math.max(detrazioniRilevanti, 0)
       - safeImpostaLordaComplessiva;
-    return Math.max(Math.min(importo, incapienzaDetrazioni), 0);
+    return {
+      total: Math.max(Math.min(importo, incapienzaDetrazioni), 0),
+      path: 'deductions-gap',
+      income: safeReddito,
+      totalGrossTax: safeImpostaLordaComplessiva,
+      employeeDeduction: detrazioniLavoro,
+      relevantDeductions: Math.max(detrazioniRilevanti, 0),
+      deductionsGap: incapienzaDetrazioni
+    };
   }
 
-  return 0;
+  return {
+    total: 0,
+    path: safeReddito > FINANCIAL_CONSTANTS.TRATTAMENTO_INTEGRATIVO_SOGLIA_MAX
+      ? 'over-income-limit'
+      : 'no-capacity',
+    income: safeReddito,
+    workGrossTax: safeImpostaLordaLavoro,
+    adjustedEmployeeDeduction
+  };
 }
 
 /**
@@ -282,18 +345,27 @@ export function calculateIrpefTaxableIncome({
 }
 
 export function calculateIncomeTax(reddito) {
+  return calculateIncomeTaxBreakdown(reddito).total;
+}
+
+export function calculateIncomeTaxBreakdown(reddito) {
   const safeReddito = Math.max(reddito, 0);
-  let imposta = 0;
+  let total = 0;
   let lowerBound = 0;
+  const slices = [];
 
   for (const bracket of irpef.brackets) {
     const taxableAmount = Math.max(Math.min(safeReddito, bracket.upTo) - lowerBound, 0);
-    imposta += taxableAmount * bracket.rate;
+    const tax = taxableAmount * bracket.rate;
+    if (taxableAmount > 0) {
+      slices.push({ taxableAmount, rate: bracket.rate, tax });
+    }
+    total += tax;
     if (safeReddito <= bracket.upTo) break;
     lowerBound = bracket.upTo;
   }
 
-  return imposta;
+  return { taxableIncome: safeReddito, slices, total };
 }
 
 /**
@@ -316,28 +388,55 @@ export function calculateMarginalIncomeTaxRate(reddito) {
 }
 
 export function calculateEmployeeDeduction(reddito) {
+  return calculateEmployeeDeductionBreakdown(reddito).total;
+}
+
+export function calculateEmployeeDeductionBreakdown(reddito) {
   const rules = irpef.employeeDeduction;
-  let detrazione;
+  const safeIncome = Math.max(Number(reddito) || 0, 0);
+  let baseAmount = 0;
+  let path = 'none';
+  let numerator = 0;
+  let denominator = 1;
+  let fixedAmount = 0;
+  let variableAmount = 0;
 
-  if (reddito <= rules.minimumIncomeLimit) {
-    detrazione = rules.minimumAmount;
-  } else if (reddito <= rules.middleIncomeLimit) {
+  if (safeIncome <= rules.minimumIncomeLimit) {
+    path = 'minimum';
+    fixedAmount = rules.minimumAmount;
+    baseAmount = fixedAmount;
+  } else if (safeIncome <= rules.middleIncomeLimit) {
+    path = 'middle';
     const range = rules.middleIncomeLimit - rules.minimumIncomeLimit;
-    const rapporto = (rules.middleIncomeLimit - reddito) / range;
-    detrazione = rules.middleBaseAmount + (rules.middleVariableAmount * rapporto);
-  } else if (reddito <= rules.maximumIncomeLimit) {
+    numerator = rules.middleIncomeLimit - safeIncome;
+    denominator = range;
+    fixedAmount = rules.middleBaseAmount;
+    variableAmount = rules.middleVariableAmount;
+    baseAmount = fixedAmount + (variableAmount * numerator / denominator);
+  } else if (safeIncome <= rules.maximumIncomeLimit) {
+    path = 'upper';
     const range = rules.maximumIncomeLimit - rules.middleIncomeLimit;
-    const rapporto = (rules.maximumIncomeLimit - reddito) / range;
-    detrazione = rules.middleBaseAmount * rapporto;
-  } else {
-    detrazione = 0;
+    numerator = rules.maximumIncomeLimit - safeIncome;
+    denominator = range;
+    variableAmount = rules.middleBaseAmount;
+    baseAmount = variableAmount * numerator / denominator;
   }
 
-  if (reddito >= rules.extraFrom && reddito <= rules.extraTo) {
-    detrazione += rules.extraAmount;
-  }
+  const extraAmount = safeIncome >= rules.extraFrom && safeIncome <= rules.extraTo
+    ? rules.extraAmount
+    : 0;
 
-  return detrazione;
+  return {
+    income: safeIncome,
+    path,
+    fixedAmount,
+    variableAmount,
+    numerator,
+    denominator,
+    baseAmount,
+    extraAmount,
+    total: baseAmount + extraAmount
+  };
 }
 
 function clamp(value, min, max) {

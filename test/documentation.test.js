@@ -113,11 +113,35 @@ test('rende progressivo e compatto il dettaglio annuale', () => {
   assert.match(styles, /\.fiscal-threshold-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2/s);
 });
 
+test('mantiene compatte le azioni e le disclosure su mobile', () => {
+  const mobileDensityStart = styles.indexOf('Mobile density: preserve 44px touch targets');
+  const mobileDensity = styles.slice(mobileDensityStart);
+
+  assert.ok(mobileDensityStart > 0);
+  assert.match(mobileDensity, /\.guided-dialog \.guided-footer\s*\{[^}]*grid-template-columns:\s*repeat\(2/s);
+  assert.match(mobileDensity, /\.guided-dialog \.guided-footer \.btn\s*\{[^}]*min-height:\s*2\.75rem/s);
+  assert.match(mobileDensity, /\.calc-step-summary\s*\{[^}]*min-height:\s*3rem/s);
+  assert.match(mobileDensity, /\.fiscal-thresholds-summary\s*\{[^}]*min-height:\s*3rem/s);
+  assert.match(mobileDensity, /\.docs-index\s*\{[^}]*grid-template-columns:\s*repeat\(2/s);
+  assert.match(styles, /@media \(max-width: 768px\)\s*\{[\s\S]*?\.investment-frequency-buttons\s*\{[^}]*flex:\s*0 0 auto/s);
+});
+
 test('separa i nuclei fiscali nell esploratore annuale', () => {
   assert.ok(html.includes('1 · Reddito e previdenza'));
   assert.ok(html.includes('2 · Imposta e agevolazioni'));
   assert.ok(html.includes('annual-supplementary-treatment-value'));
   assert.ok(html.includes('annual-tax-wedge-bonus-value'));
+  [
+    'annual-irpef-detail',
+    'annual-work-irpef-detail',
+    'annual-addizionali-detail',
+    'annual-employee-deduction-detail',
+    'annual-net-tax-detail',
+    'annual-supplementary-treatment-detail',
+    'annual-tax-wedge-detail',
+    'annual-bonuses-detail'
+  ].forEach((id) => assert.ok(html.includes(`id="${id}"`), id));
+  assert.match(styles, /\.step-row \.step-row-calculation\s*\{[^}]*font-family:\s*var\(--font-mono\)/s);
 });
 
 test('separa le altre detrazioni per effetto sul trattamento integrativo', () => {

@@ -1,4 +1,6 @@
 import { renderSiteIcons } from '../icons.js';
+import { FINANCIAL_CONSTANTS } from '../constants/financial-constants.js';
+import { CURRENT_FISCAL_RULES } from '../constants/fiscal-rules.js';
 import { getPresentedAllocation } from '../utils/result-presentation.js';
 
 /**
@@ -693,6 +695,52 @@ export class FinancialView {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       })}%`;
+      const rate = (value) => `${((value || 0) * 100).toLocaleString('it-IT', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      })}%`;
+      const formatProgressiveTax = (breakdown = {}) => {
+        const slices = Array.isArray(breakdown.slices) ? breakdown.slices : [];
+        if (!slices.length) return `${money(breakdown.taxableIncome)} imponibile = ${money(0)}`;
+        return `${slices
+          .map((slice) => `${money(slice.taxableAmount)} × ${rate(slice.rate)}`)
+          .join(' + ')} = ${money(breakdown.total)}`;
+      };
+      const formatLocalTax = (breakdown = {}, label, amountDue) => {
+        if (breakdown.exempt) {
+          return `${label}: ${money(breakdown.taxableIncome)} ≤ esenzione ${money(breakdown.exemption)} = ${money(0)}`;
+        }
+        if (amountDue <= 0 && (breakdown.total || 0) > 0) {
+          return `${label}: ${formatProgressiveTax(breakdown)}, non dovuta perché l’IRPEF netta è zero`;
+        }
+        return `${label}: ${formatProgressiveTax(breakdown)}`;
+      };
+      const formatEmployeeDeduction = (breakdown = {}) => {
+        if (breakdown.path === 'minimum') {
+          return `${money(breakdown.income)} ≤ ${money(CURRENT_FISCAL_RULES.irpef.employeeDeduction.minimumIncomeLimit)}: minimo ${money(breakdown.fixedAmount)} = ${money(breakdown.total)}`;
+        }
+        if (breakdown.path === 'middle') {
+          const extra = breakdown.extraAmount > 0 ? ` + ${money(breakdown.extraAmount)}` : '';
+          return `${money(breakdown.fixedAmount)} + ${money(breakdown.variableAmount)} × ${money(breakdown.numerator)} ÷ ${money(breakdown.denominator)}${extra} = ${money(breakdown.total)}`;
+        }
+        if (breakdown.path === 'upper') {
+          const extra = breakdown.extraAmount > 0 ? ` + ${money(breakdown.extraAmount)}` : '';
+          return `${money(breakdown.variableAmount)} × ${money(breakdown.numerator)} ÷ ${money(breakdown.denominator)}${extra} = ${money(breakdown.total)}`;
+        }
+        return `${money(breakdown.income)} > ${money(CURRENT_FISCAL_RULES.irpef.employeeDeduction.maximumIncomeLimit)} = ${money(0)}`;
+      };
+      const formatSupplementaryTreatment = (breakdown = {}) => {
+        if (breakdown.path === 'full-capacity') {
+          return `${money(breakdown.income)} ≤ ${money(FINANCIAL_CONSTANTS.TRATTAMENTO_INTEGRATIVO_SOGLIA_PIENA)} e ${money(breakdown.workGrossTax)} IRPEF lavoro > ${money(breakdown.adjustedEmployeeDeduction)} detrazione rettificata = ${money(breakdown.total)}`;
+        }
+        if (breakdown.path === 'deductions-gap') {
+          return `max(min(${money(FINANCIAL_CONSTANTS.TRATTAMENTO_INTEGRATIVO_IMPORTO)}, ${money(breakdown.employeeDeduction)} + ${money(breakdown.relevantDeductions)} − ${money(breakdown.totalGrossTax)}), 0) = ${money(breakdown.total)}`;
+        }
+        if (breakdown.path === 'over-income-limit') {
+          return `${money(breakdown.income)} > ${money(FINANCIAL_CONSTANTS.TRATTAMENTO_INTEGRATIVO_SOGLIA_MAX)} = ${money(0)}`;
+        }
+        return `${money(breakdown.workGrossTax)} IRPEF lavoro ≤ ${money(breakdown.adjustedEmployeeDeduction)} detrazione rettificata = ${money(0)}`;
+      };
       const e = explorer || {};
       const beforeTax = e.taxComparison?.before || {};
       const afterTax = e.taxComparison?.after || {};
@@ -727,24 +775,56 @@ export class FinancialView {
       setText('annual-gross-income-value', money(e.redditoFiscaleAnno));
       setText('annual-inps-value', `-${money(e.contributiInps)}`);
       setText('annual-irpef-value', money(e.irpefLorda));
+      setText('annual-irpef-detail', formatProgressiveTax(beforeTax.grossIncomeTaxBreakdown));
       setText('annual-work-irpef-value', money(e.irpefLordaLavoro));
+      setText('annual-work-irpef-detail', formatProgressiveTax(beforeTax.supplementaryTreatmentWorkGrossTaxBreakdown));
       setText('annual-addizionali-value', money(e.addizionali));
       const localTaxComponents = beforeTax.localTaxComponents || [];
+      const localTaxBreakdowns = beforeTax.localTaxBreakdowns || [];
       setText('annual-addizionali-detail', Array.isArray(config.localTaxRules) && config.localTaxRules.length >= 2
-        ? `${money(localTaxComponents[0])} regionale + ${money(localTaxComponents[1])} comunale su ${money(beforeTax.taxableIncome)}`
-        : `Aliquota manuale sulla base di ${money(beforeTax.taxableIncome)}`);
+        ? [
+            formatLocalTax(localTaxBreakdowns[0], 'Regionale', localTaxComponents[0] || 0),
+            formatLocalTax(localTaxBreakdowns[1], 'Comunale', localTaxComponents[1] || 0)
+          ].join('; ')
+        : formatLocalTax(localTaxBreakdowns[0], 'Aliquota manuale', localTaxComponents[0] || 0));
       setText('annual-marginal-rate-value', `${e.aliquotaMarginale}%`);
+      const marginalBracket = CURRENT_FISCAL_RULES.irpef.brackets
+        .find((bracket) => beforeTax.taxableIncome <= bracket.upTo)
+        || CURRENT_FISCAL_RULES.irpef.brackets.at(-1);
+      setText('annual-marginal-rate-detail', `${money(beforeTax.taxableIncome)}: l’ultimo euro ricade nello scaglione ${rate(marginalBracket.rate)}`);
       setText('annual-employee-deduction-value', `-${money(e.detrazioneLavoro)}`);
+      setText('annual-employee-deduction-detail', formatEmployeeDeduction(beforeTax.employeeDeductionBreakdown));
       setText('annual-ordinary-deductions-value', `-${money(e.detrazioniOrdinarie)}`);
+      const usableOtherDeductions = Math.max(
+        (beforeTax.otherDeductions || 0) - (beforeTax.highIncomeDeductionsCut || 0),
+        0
+      );
+      const deductionsCutDetail = beforeTax.highIncomeDeductionsCut > 0
+        ? `; totale per oneri ${money(beforeTax.otherDeductions)} − riduzione redditi alti ${money(beforeTax.highIncomeDeductionsCut)} = ${money(usableOtherDeductions)} utilizzabile`
+        : '; nessuna riduzione per redditi alti';
+      setText('annual-ordinary-deductions-detail', `Importo nominale inserito: ${money(e.detrazioniOrdinarie)}${deductionsCutDetail}`);
       setText('annual-supplementary-deductions-value', `-${money(e.detrazioniTrattamentoIntegrativo)}`);
+      setText('annual-supplementary-deductions-detail', `Importo nominale inserito: ${money(e.detrazioniTrattamentoIntegrativo)}${deductionsCutDetail}`);
       setText('annual-net-tax-value', money(e.impostaNetta));
+      setText('annual-net-tax-detail', `max(${money(beforeTax.grossIncomeTax)} − ${money(beforeTax.employeeDeduction)} − ${money(usableOtherDeductions)} − ${money(beforeTax.taxWedgeDeduction)} cuneo, 0) + ${money(beforeTax.localTaxes)} addizionali = ${money(beforeTax.netTax)}`);
       setText('annual-supplementary-treatment-value', `+${money(e.trattamentoIntegrativo)}`);
+      setText('annual-supplementary-treatment-detail', formatSupplementaryTreatment(beforeTax.supplementaryTreatmentBreakdown));
       setText('annual-tax-wedge-bonus-value', e.sommaCuneo > 0
         ? `+${money(e.sommaCuneo)} somma`
         : e.detrazioneCuneoNominale > 0
           ? `-${money(e.detrazioneCuneoUsata)} detrazione`
           : money(0));
+      const taxWedgeCapacity = Math.max(
+        beforeTax.grossIncomeTax - beforeTax.employeeDeduction - usableOtherDeductions,
+        0
+      );
+      setText('annual-tax-wedge-detail', beforeTax.taxWedgeCashAmount > 0
+        ? `${money(beforeTax.taxWedgeWorkIncome)} × ${rate(beforeTax.taxWedgeCashAmount / beforeTax.taxWedgeWorkIncome)} = ${money(beforeTax.taxWedgeCashAmount)} somma esente`
+        : beforeTax.taxWedgeDeduction > 0
+          ? `min(${money(beforeTax.taxWedgeDeduction)} detrazione nominale, ${money(taxWedgeCapacity)} capienza) = ${money(beforeTax.taxWedgeDeductionUsed)}`
+          : `${money(beforeTax.taxWedgeTotalIncome)} fuori dalle fasce agevolate = ${money(0)}`);
       setText('annual-bonuses-value', `+${money(e.trattamentoIntegrativo + e.bonusCuneo)}`);
+      setText('annual-bonuses-detail', `${money(beforeTax.supplementaryTreatment)} trattamento + ${money(beforeTax.taxWedgeBonus)} cuneo = ${money(beforeTax.supplementaryTreatment + beforeTax.taxWedgeBonus)}`);
       setText('annual-fiscal-cost-step-value', money(beforeTax.fiscalCost));
       const detrazioniNominali = Math.max(
         e.detrazioneLavoro + e.altreDetrazioniTotali - (e.riduzioneDetrazioniAltiRedditi || 0),
