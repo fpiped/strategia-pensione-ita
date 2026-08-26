@@ -11,6 +11,5 @@
   "devDependencies": {
     "playwright": "^1.61.1"
   },
-  "keywords": ["fondo-pensione", "etf", "pac", "calculator"],
-  "license": "MIT"
+  "keywords": ["fondo-pensione", "etf", "pac", "calculator"]
 }
